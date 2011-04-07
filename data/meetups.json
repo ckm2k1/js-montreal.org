@@ -309,5 +309,43 @@
             ]
          }
       ]
+   },{
+      "num": 10,
+      "title":"JS-MONTREAL #10: Depeche Node",
+      "on":"20110412",
+      "blurb": "Back from our March break with some excellent presentations. First off with <a href=\"http://christianjoudrey.com/\">Christian Joudrey</a> of <a href=\"http://cakemail.com\">Cakemail</a> who will show us how easy it is to get started with a typical web app project using Node JS, Connect & Express. Secondly a presentation by Scott Burch on Jasmine BDD, a testing framework for Javascript.",
+      "speakers":[
+         {
+            "title":"Jump into Node: Building your first Node app with Connect & Express",
+            "email":"cmallette@gmail.com",
+            "name":"Christian Joudrey",
+            "url":"http://christianjoudrey.com/",
+            "synopsis": "Christian will show us how easy it is to get started with Node JS, creating a basic web application with Connect & Express.",
+            "links":[
+               {
+                  "url":"http://nodejs.org",
+                  "title":"Node JS"
+               },{
+                 "url": "http://expressjs.com",
+                 "title": "express"
+               },{
+                 "url": "https://github.com/senchalabs/Connect",
+                 "title": "connect"
+               }      
+            ]
+         },{
+            "title":"BDD with Jasmine",
+            "email":"scott@bulldoginfo.com",
+            "name":"Scott Burch",
+            "url":"http://www.can2go.com/",
+            "synopsis": "Jasmine is an open-source BDD testing framework for Javascript.  After Scott's talk, you will not have any excuse not to unit test your JS. :D",
+            "links":[
+               {
+                  "url":"http://pivotal.github.com/jasmine/",
+                  "title":"Jasmine"
+               }              
+            ]
+         }
+      ]
    }
 ]
