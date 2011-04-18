@@ -323,6 +323,10 @@
             "synopsis": "Christian will show us how easy it is to get started with Node JS, creating a basic web application with Connect & Express.",
             "links":[
                {
+                  "url":"http://www.slideshare.net/cjoudrey/building-your-first-node-app-with-connect-express",
+                  "title":"Slides from the presentation"
+               },
+               {
                   "url":"http://nodejs.org",
                   "title":"Node JS"
                },{
@@ -337,7 +341,7 @@
             "title":"BDD with Jasmine",
             "email":"scott@bulldoginfo.com",
             "name":"Scott Burch",
-            "url":"http://www.can2go.com/",
+            "url":"http://scottburch.net/",
             "synopsis": "Jasmine is an open-source BDD testing framework for Javascript.  After Scott's talk, you will not have any excuse not to unit test your JS. :D",
             "links":[
                {
