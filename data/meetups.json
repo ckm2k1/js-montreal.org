@@ -351,5 +351,37 @@
             ]
          }
       ]
+   },{
+      "num": 11,
+      "title":"JS-MONTREAL #11: You look good in that script",
+      "on":"20110510",
+      "blurb": "",
+      "speakers":[
+         {
+            "title"     : "On CoffeeScript",
+            "email"     : "derek@derekbrans.com",
+            "name"      : "Derek Brans",
+            "url"       : "http://derekbrans.com/",
+            "synopsis"  : "CoffeeScript is a little language that compiles into JavaScript. Underneath all of those embarrassing braces and semicolons, JavaScript has always had a gorgeous object model at its heart. CoffeeScript is an attempt to expose the good parts of JavaScript in a simple way.  Derek's also going to talk about the IDE he's working on - built for CoffeeScript, in CoffeeScript on top of nodejs.",
+            "links"     :[
+               {
+                  "url":"http://coffeescript.org",
+                  "title":"Coffeescript"
+               }
+            ]
+         },{
+            "title":"Super Klassy",
+            "email":"mazesoul@gmail.com",
+            "name":"Laurent Villeneuve",
+            "url":"http://laurentvilleneuve.com/",
+            "synopsis": "Flash presentation about Laurent's new script, Super.js - a micro sized JS class implementation.",
+            "links":[
+               {
+                  "url":"https://gist.github.com/957713",
+                  "title":"Super.js : micro JS Class"
+               }              
+            ]
+         }
+      ]
    }
 ]
