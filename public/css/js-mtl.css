@@ -58,7 +58,7 @@ padding: 1em;
 
 header {
   padding: 20px 0 0 0;
-  margin-bottom: 1em;
+  margin-bottom: 2em;
   display: block;
 }
 
@@ -88,9 +88,8 @@ box-shadow: 0px -5px 8px #333;
 
 h1 {
   color : #000;
-  font-family: 'Helvetica';
   font-size : 3em;
-  margin : 0.5em 0px 0.25em 0px;
+  margin : 0em 0px 0.25em 0px;
   text-shadow : 1px 1px 1px white;
 }
 
@@ -155,13 +154,16 @@ a:hover {
 }
 
 a.twit {
-  font-family: 'Helvetica';
-  border : 0 none;
-  position : absolute;
-  right : 10px;
-  text-decoration : none;
-  top : 2em;
-  color: black;
+    background: url("/img/newbird32.png") no-repeat scroll right center #31CCFF;
+    border: 0 none;
+    color: white;
+    font-size: 14px;
+    padding: 6px 34px 5px 10px;
+    position: absolute;
+    right: 0;
+    text-decoration: none;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
+    top: 0;
 }
 
 #promote-js {

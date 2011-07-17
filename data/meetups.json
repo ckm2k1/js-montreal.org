@@ -387,7 +387,7 @@
       "num": 12,
       "title":"JS-MONTREAL #12",
       "on":"20110712",
-      "blurb": "<h3>ATTENTION: NEW LOCATION!!!</h3>This time exceptionally (?) we're having our meeting at our friends over at <a href=\"http://www.cakemail.com/\">Cakemail</a> (host of the new <a href=\"http://nodemtl.com\">NodeMTL</a> group). <h3>Please, check out the instructions on how to get there <a href=\"http://nodemtl.com/where\">HERE</a>.</h3>",
+      "blurb": "",
       "speakers":[
          {
             "title"     : "LiveTool - Dessin dans le browser multi-utilisateur",
