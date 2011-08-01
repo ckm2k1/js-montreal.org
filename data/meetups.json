@@ -415,5 +415,25 @@
             ]
          }
       ]
+   },{
+      "num": 13,
+      "title":"JS-MONTREAL LUCKY #13",
+      "on":"20110809",
+      "blurb": "",
+      "speakers":[
+         {
+            "title"     : "jQuery Spaghetti, Version Sans Gras",
+            "email"     : "cedric_dugas@hotmail.com",
+            "name"      : "Cedric Dugas",
+            "url"       : "http://www.position-absolute.com/",
+            "synopsis"  : "Dans cette présentation, Cedric démontre de simples trucs pour améliorer votre code tout en gardant la simplicité de jQuery intacte. Un entre deux pour ceux qui ne sont pas prêts à se lancer dans Backbone.js et autres frameworks plus complexes.",
+            "links"     :[
+               {
+                  "url":"http://jquery.com",
+                  "title":"jQuery"
+               }
+            ]
+         }
+      ]
    }
 ]

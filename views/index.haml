@@ -12,8 +12,16 @@
   - else
     Find out all the details and register at
     %a{ :href => "http://js-montreal.eventbrite.com", :target => "_new" }Eventbrite
+
+    
 %ol.padded
   = haml :meetup, :locals => { :meetup => meetup }, :layout => false
+- if !booked?
+  %p.padded.onemore
+    %em.small
+      Looks like there's space for one more presentation!
+      %a{ :href=> "mailto:contact@js-montreal.org "}
+        email us
 #members{ :style => 'display: none;' }
   Members:
   %select#sigs

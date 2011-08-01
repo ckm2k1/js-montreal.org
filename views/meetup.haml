@@ -1,5 +1,5 @@
 %li.meetup
-  %em #{meetup["on"]}
+  / %em #{gogodate(meetup["on"])}
   %h3 #{meetup["title"]}
   - if meetup["blurb"]
     %p.blurb #{meetup["blurb"]}

@@ -57,6 +57,18 @@ helpers do
   def past?(meetup)
     Date.parse(meetup["on"]) < Date.today
   end
+  
+  # Do we have enough speakers for the next meetup (ie, more than 1)
+  # If not we're gonna change the header a bit..
+  def booked?
+    meetup = Model::MEETUPS.first
+    meetup["speakers"].size > 1
+  end
+  
+  def gogodate( yyyymmdd )
+    "#{yyyymmdd[0..3]}.#{yyyymmdd[4..5]}.#{yyyymmdd[6..7]}"
+  end
+  
 end
 
 before do

@@ -131,6 +131,7 @@ color: #AAA;
 img.gravatar {
 float: right;
 border: 5px solid #555;
+margin-left: 1em;
 }
 
 .condensed {
@@ -197,11 +198,18 @@ span.focus {
 
 em {
   background-color : #222;
-  color : white;
-  font-size : 1.1em;
+  /* font-weight: bold; */
+  color : #eee;
+  /*font-size : 1.1em; */
   font-style : normal;
   font-variant : normal;
-padding: 2px;
+  padding: 2px;
+}
+
+p.onemore {
+	margin: -2em auto 3em;
+	padding-top: 0;
+	text-align: center;
 }
 
 .shadowed {
@@ -300,7 +308,7 @@ background-color: transparent;
 }
 
 .meetup em {
-font-family: "Courier New", monospace;
+  /* font-family: "Courier New", monospace; */
 }
 
 .blurb {
