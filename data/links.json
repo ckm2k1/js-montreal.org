@@ -10,6 +10,9 @@
 		"href": "mailto:contact@js-montreal.org"
 	}],
 	"friends": [{
+		"label": "nodeMTL",
+		"href": "http://nodemtl.com/"
+	},{
 		"label": "montreal.rb",
 		"href": "http://www.montrealonrails.com/"
 	},{
