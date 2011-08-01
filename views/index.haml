@@ -3,7 +3,7 @@
     Our last meetup happened on
   - else
     Our next meetup is happening on
-  %em #{Date.parse( meetup["on"] ).strftime("%A, %B %d")} @ 18:30
+  %em #{Date.parse( meetup["on"] ).strftime("%A, %B %d")} @ 18:45
   %br<
   - if past?(meetup)
     Register at
@@ -12,16 +12,13 @@
   - else
     Find out all the details and register at
     %a{ :href => "http://js-montreal.eventbrite.com", :target => "_new" }Eventbrite
-
-    
 %ol.padded
   = haml :meetup, :locals => { :meetup => meetup }, :layout => false
 - if !booked?
-  %p.padded.onemore
-    %em.small
-      Looks like there's space for one more presentation!
-      %a{ :href=> "mailto:contact@js-montreal.org "}
-        email us
+  %p.padded.onemore.small
+    Looks like there's space for one more presentation!
+    %a{ :href=> "mailto:contact@js-montreal.org "}
+      email us
 #members{ :style => 'display: none;' }
   Members:
   %select#sigs
