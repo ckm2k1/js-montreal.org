@@ -417,16 +417,16 @@
       ]
    },{
       "num": 13,
-      "title":"JS-MONTREAL LUCKY #13",
+      "title":"JS-MONTREAL #13: Get organized",
       "on":"20110809",
-      "blurb": "",
+      "blurb": "We all know how to write code. But what happens when the line count grows and new teammates join your project? You need structure. This month we have two presentations tackling this very subject. Cedric will present strategies for jQuery based projects of small to medium size. As for Martin, he will show us how they moved their web application codebase to a front-end centric architecture using Backbone.js.",
       "speakers":[
          {
             "title"     : "jQuery Spaghetti, Version Sans Gras",
             "email"     : "cedric_dugas@hotmail.com",
             "name"      : "Cedric Dugas",
             "url"       : "http://www.position-absolute.com/",
-            "synopsis"  : "Dans cette présentation, Cedric démontre de simples trucs pour améliorer votre code tout en gardant la simplicité de jQuery intacte. Un entre deux pour ceux qui ne sont pas prêts à se lancer dans Backbone.js et autres frameworks plus complexes.",
+            "synopsis"  : "Cedric nous démontre de simples trucs pour améliorer votre code tout en gardant la simplicité de jQuery intacte. Un entre deux pour ceux qui ne sont pas prêts à se lancer dans Backbone.js et autres frameworks plus complexes.",
             "links"     :[
                {
                   "url":"http://jquery.com",

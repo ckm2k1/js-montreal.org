@@ -126,6 +126,7 @@ font-weight: normal;
 line-height: 1.4em;
 font-size: 0.9em;
 color: #AAA;
+margin-right: 9em;
 }
 
 img.gravatar {
@@ -313,9 +314,12 @@ background-color: transparent;
 
 .blurb {
 line-height: 1.4em;
-font-size: 0.9em;
-color: #aaa;
+font-size: 1em;
+color: #eee;
 margin-bottom: 2em;
+margin-right: 9em;
+font-style: italic;
+font-family: Georgia, serif;
 }
 ol.numnum {
 list-style-type: decimal inside none;
@@ -348,6 +352,10 @@ padding: 0px;
 text-align: center;
 line-height: 1em;
 }
+
+/* http://www.vcarrer.com/2009/06/1-line-css-grid-framework.html */
+.dp50 {width:50%;  float:left;  display: inline;  *margin-right:-1px; }
+
 
 ol.fun li:last-child {
   border-radius : 0px 12px 0px 0px;
