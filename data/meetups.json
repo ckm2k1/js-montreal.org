@@ -433,6 +433,23 @@
                   "title":"jQuery"
                }
             ]
+         },
+         {
+            "title"     : "Moving Planbox to Backbone.js: What we learned",
+            "email"     : "martin@planbox.com",
+            "name"      : "Martin Drapeau",
+            "url"       : "http://www.planbox.com/",
+            "synopsis"  : "<a href=\"http://planbox.com\">Planbox</a> is web-based Agile Project management tool. Project management can quickly become quite complex and Martin and his team have discovered that <a href=\"http://documentcloud.github.com/backbone\">Backbone.js</a> has really helped them keeping things simple. Come see how they moved the MVC stack to the forefront with Backbone. Learn about the benefits and downsides. Actually there are no downsides!",
+            "links"     :[
+               {
+                   "url":"http://documentcloud.github.com/backbone/",
+                   "title": "Backbone.js"
+               },
+               {
+                  "url":"http://planbox.com",
+                  "title":"Planbox"
+               }
+            ]
          }
       ]
    }
