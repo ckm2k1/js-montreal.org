@@ -1,7 +1,7 @@
 [
    {
       "num":1,
-      "title":"JS-MONTREAL.ORG Inaugural meetup!",
+      "title":"JS-MONTREAL #1: Inaugural meetup!",
       "on":"20100121",
       "speakers":[
          {
@@ -42,7 +42,7 @@
    },
    {
       "num":2,
-      "title":"Plugins In Your Web App: The How-To",
+      "title":"JS-MONTREAL #2: Plugins In Your Web App: The How-To",
       "on":"20100210",
       "speakers":[
          {
@@ -66,7 +66,7 @@
    },
    {
       "num":3,
-      "title":"Node JS: An introduction",
+      "title":"JS-MONTREAL #3: Node JS: An introduction",
       "on":"20100413",
       "speakers":[
          {
