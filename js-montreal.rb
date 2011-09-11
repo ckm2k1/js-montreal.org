@@ -28,13 +28,13 @@ module Model
           { :label => "Want to present?", :href => "present", :section => "present"},
           { :label => "About", :href => "about", :section => "about"}]
 
-  SITE = {
-    :index      => { :label => "Current", :href => "/", :cls => "current" },
-    :previously => { :label => "Previously", :href => "meetups" },
-    :directions => { :label => "Where is it?", :href => "map" },
-    :present    => { :label => "Want to present?", :href => "present" },
-    :about      => { :label => "About", :href => "about" }
-  }
+  # SITE = {
+  #   :index      => { :label => "Current", :href => "/", :cls => "current" },
+  #   :previously => { :label => "Previously", :href => "meetups" },
+  #   :directions => { :label => "Where is it?", :href => "map" },
+  #   :present    => { :label => "Want to present?", :href => "present" },
+  #   :about      => { :label => "About", :href => "about" }
+  # }
 end
 
 helpers do
@@ -48,7 +48,7 @@ helpers do
   # Builds the top menu like a boss.
   def menu(current)
     Model::MENU.map{ |m|
-      li_class = [current == m[:section] ? "selected" : "", m[:cls].to_s].join(" ")
+      li_class = [current == m[:section] ? "active" : "", m[:cls].to_s].join(" ")
       "<li class=\"#{li_class}\"><a href=\"#{m[:href]}\">#{m[:label]}</a>"
     }.join("")
   end
@@ -85,7 +85,7 @@ end
 
 get "/?" do
   @section = "index"
-  haml :index, :locals => { :meetup => Model::MEETUPS.first }
+  haml :index, :locals => { :meetup => Model::MEETUPS[4] }
 end
 
 get "/about/?" do
