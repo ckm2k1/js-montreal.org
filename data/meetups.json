@@ -452,5 +452,29 @@
             ]
          }
       ]
+   },{
+      "num": 14,
+      "title":"JS-MONTREAL #14",
+      "on":"20110913",
+      "blurb": "",
+      "speakers":[
+         {
+            "title"     : "Userscripts: smoothing the creases of the web",
+            "email"     : "mathiasbaert@gmail.com",
+            "name"      : "Mathias Baert",
+            "url"       : "https://twitter.com/mathiasbaert",
+            "synopsis"  : "What to do when a website you frequent has these irksome little annoyances that drive you crazy? What to do when your browsing experience is repeatedly interupted by something that could be so much better if only they would fix it? Do you send the website owner an email asking to adapt his site to your tastes? No, you whip out greasemonkey and fix it with a userscript of course! Userscripts are old news. Still, I bet you're not using them quite enough. (Presentation in English)",
+            "links"     : [
+               {
+                  "url":"http://userscripts.org/",
+                  "title":"Userscripts.org"
+               },
+               {
+                  "url":"https://github.com/greasemonkey/greasemonkey",
+                  "title":"Greasemonkey (on Github)"
+               }
+            ]
+         }
+      ]
    }
 ]
