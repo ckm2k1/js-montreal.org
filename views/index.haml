@@ -6,15 +6,15 @@
 - first  = meetup["speakers"].first
 - second = meetup["speakers"].last
 - date   = Date.parse( meetup["on"] )
-
 .row.meetup
   .span8.columns
     .speaker
-      .bigtime<
-        .month<
-          =date.strftime("%B")
-        .date<
-          =date.strftime("%d")
+      /
+        .bigtime<
+          .month<
+            =date.strftime("%B")
+          .date<
+            =date.strftime("%d")
       = haml :speaker, :locals => { :s => first }, :layout => false
   .span8.columns
     .speaker

@@ -474,7 +474,20 @@
                   "title":"Greasemonkey (on Github)"
                }
             ]
-         }
+         },{
+               "title"     : "State of the JS-MONTREAL address",
+               "email"     : "neonskimmer@gmail.com",
+               "name"      : "Bruno Carriere & Everyone else",
+               "url"       : "https://twitter.com/jsmontreal",
+               "synopsis"  : "We're quickly closing in on <em>two years</em> of JS-MONTREAL. Let's talk about what we want to see more of, less of and new things we want to accomplish over the next few months. Also we need halp! Are you interested in volunteering your time to make JS-MONTREAL better? It's a good time to get involved.",
+               "links"     : [
+                  {
+                     "url":"http://js-montreal.org/",
+                     "title":"js-montreal.org"
+                  }
+               ]
+            }
+         
       ]
    }
 ]

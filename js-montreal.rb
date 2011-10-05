@@ -85,7 +85,7 @@ end
 
 get "/?" do
   @section = "index"
-  haml :index, :locals => { :meetup => Model::MEETUPS[4] }
+  haml :index, :locals => { :meetup => Model::MEETUPS.first }
 end
 
 get "/about/?" do
