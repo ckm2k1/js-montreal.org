@@ -493,7 +493,7 @@
       "num": 15,
       "title":"JavaScript in your pocket",
       "on":"20111011",
-      "blurb": "Mobile web applications are no longer the future, they're the present. There are a lot of tools out there to give you a headstart creating JavaScript mobile applications. Today we see two promising mobile frameworks.",
+      "blurb": "Mobile web applications are no longer the future, they're the present. There are a lot of tools out there to give you a headstart creating JavaScript mobile applications. This month we see two promising mobile frameworks.",
       "speakers":[
          {
             "title"     : "State of jQuery Mobile",
