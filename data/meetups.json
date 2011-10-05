@@ -510,7 +510,7 @@
             "email"     : "neonskimmer@gmail.com",
             "name"      : "Bruno Carriere",
             "url"       : "http://js-montreal.org/",
-            "synopsis"  : "Sencha Touch is a mobile framework with a heavy emphasis on a hiearchy of widgets; much like its <a href='http://www.sencha.com/products/extjs/'>big brother</a> it is designed to be driven with a lot of JavaScript, and very little HTML.",
+            "synopsis"  : "Sencha Touch is a mobile framework with a heavy emphasis on a hierarchy of widgets; much like its <a href='http://www.sencha.com/products/extjs/'>big brother</a> it is designed to be driven with a lot of JavaScript, and very little HTML.",
             "links" : [{
                "url":"http://www.sencha.com/products/touch/",
                "title":"Sencha Touch"
