@@ -274,7 +274,7 @@
                {
                   "url":"http://documentcloud.github.com/underscore/",
                   "title":"Underscore"
-               }               
+               }
             ]
          }
       ]
@@ -293,7 +293,7 @@
                {
                   "url":"http://oreilly.com/catalog/9780596101992",
                   "title":"Javascript: The Definitive Guide"
-               }              
+               }
             ]
          },{
             "title":"Canards & Canvas",
@@ -305,7 +305,7 @@
                {
                   "url":"http://duckhunt.grosbouddha.com/",
                   "title":"Duck Hunt"
-               }              
+               }
             ]
          }
       ]
@@ -335,7 +335,7 @@
                },{
                  "url": "https://github.com/senchalabs/Connect",
                  "title": "connect"
-               }      
+               }
             ]
          },{
             "title":"BDD with Jasmine",
@@ -347,7 +347,7 @@
                {
                   "url":"http://pivotal.github.com/jasmine/",
                   "title":"Jasmine"
-               }              
+               }
             ]
          }
       ]
@@ -379,7 +379,7 @@
                {
                   "url":"https://gist.github.com/957713",
                   "title":"Super.js : micro JS Class"
-               }              
+               }
             ]
          }
       ]
@@ -411,7 +411,7 @@
                {
                   "url":"https://developer.palm.com/",
                   "title":"WebOS Developer Center"
-               }              
+               }
             ]
          }
       ]
@@ -487,7 +487,35 @@
                   }
                ]
             }
-         
+
+      ]
+   },{
+      "num": 15,
+      "title":"JavaScript in your pocket",
+      "on":"20111011",
+      "blurb": "Mobile web applications are no longer the future, they're the present. There are a lot of tools out there to give you a headstart creating JavaScript mobile applications. Today we see two promising mobile frameworks.",
+      "speakers":[
+         {
+            "title"     : "State of jQuery Mobile",
+            "email"     : "cedric.dugas@cakemail.com",
+            "name"      : "Cedric Dugas",
+            "url"       : "http://www.position-absolute.com/",
+            "synopsis"  : "The jQuery mobile team has just released 1.0 RC1 nearly one year after its announcement and with it we are getting very close to a 1.0 release. Let's examine this framework and find out what makes it great as well as its weaknesses.",
+            "links" : [{
+               "url":"http://jquerymobile.com/",
+               "title":"jQuery Mobile"
+            }]
+         },{
+            "title"     : "Getting started with Sencha Touch",
+            "email"     : "neonskimmer@gmail.com",
+            "name"      : "Bruno Carriere",
+            "url"       : "http://js-montreal.org/",
+            "synopsis"  : "Sencha Touch is a mobile framework with a heavy emphasis on a hiearchy of widgets; much like its <a href='http://www.sencha.com/products/extjs/'>big brother</a> it is designed to be driven with a lot of JavaScript, and very little HTML.",
+            "links" : [{
+               "url":"http://www.sencha.com/products/touch/",
+               "title":"Sencha Touch"
+            }]
+         }
       ]
    }
 ]
