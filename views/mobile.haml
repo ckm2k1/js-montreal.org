@@ -4,9 +4,12 @@
     %meta{ :charset => "utf-8" }
     %meta{ :name => "description", :content => "Montreal (Canada) Javascript User Group" }
     %meta{ :name => "keywords", :content => "montreal,javascript,js,usergroup,user group" }
-    %script(src="/lib/touch/sencha-touch.js")
     %link(href="/lib/touch/resources/css/sencha-touch.css" rel="stylesheet" type="text/css")
-    /%meta(name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes")
+    %link(href="/css/mobile.css" rel="stylesheet" type="text/css")
+    %script(src="/lib/touch/sencha-touch.js")
+    %script(src="/src/jsmtl-sencha.js")
+    %script(type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true")
+
     %title js-montreal : JavaScript User Group in Montreal, Quebec
     :javascript
       var _gaq = _gaq || [];

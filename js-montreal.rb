@@ -1,5 +1,4 @@
 #!/usr/bin/env ruby
-#$LOAD_PATH.unshift *Dir["#{File.dirname(__FILE__)}/vendor/**/lib"]
 require 'rubygems'
 require 'haml'
 require 'open-uri'
@@ -38,7 +37,7 @@ module Model
 end
 
 helpers do
-  
+
   # Returns the URL for the gravatar image associated with the email
   def gravaturl(email)
     hash = MD5::md5(email.downcase)
@@ -52,23 +51,22 @@ helpers do
       "<li class=\"#{li_class}\"><a href=\"#{m[:href]}\">#{m[:label]}</a>"
     }.join("")
   end
-  
+
   # Is this meetup happening in the past?
   def past?(meetup)
     Date.parse(meetup["on"]) < Date.today
   end
-  
+
   # Do we have enough speakers for the next meetup (ie, more than 1)
   # If not we're gonna change the header a bit..
   def booked?
     meetup = Model::MEETUPS.first
     meetup["speakers"].size > 1
   end
-  
+
   def gogodate( yyyymmdd )
     "#{yyyymmdd[0..3]}.#{yyyymmdd[4..5]}.#{yyyymmdd[6..7]}"
   end
-  
 end
 
 before do
@@ -76,11 +74,39 @@ before do
   @links = Model::LINKS
 end
 
+# Again, what could possibly go wrong.
+get "/meetups/*.json" do |index|
+  content_type :json
+
+  body = (if index == "current"
+    Model::MEETUPS.first
+  else
+    meetup = Model::MEETUPS.detect{|m| m["num"] == index.to_i}
+    meetup ||= {}
+  end).to_json
+end
+
+get "/meetups.json" do
+  content_type :json
+  body Model::MEETUPS.to_json
+end
+
+get "/css/mobile.css" do
+  sass :mobile
+end
+
+get "/meetups/current/?" do
+  # Exclude the current meeting
+  haml :_meetup_mobile, :layout => false, :locals => { :meetup => Model::MEETUPS.first }
+end
+
+
 get "/meetups/?" do
   @section = "previously"
 
   # Exclude the current meeting
-  haml :meetups, :locals => { :meetups => Model::MEETUPS.reject{ |m| m == Model::MEETUPS.first }}
+  haml :meetups, :locals => { :meetups => Model::MEETUPS.reject{
+    |m| m == Model::MEETUPS.first }}
 end
 
 get "/?" do
@@ -96,6 +122,10 @@ end
 get "/present/?" do
   @section = "present"
   haml :present, :locals => { :purpose => Model::PURPOSE }
+end
+
+get "/mobile/?" do
+  haml :mobile, :layout => false
 end
 
 # Return the contents of the Yahoo Pipe
