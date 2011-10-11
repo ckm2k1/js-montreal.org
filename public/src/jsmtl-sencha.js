@@ -2,28 +2,20 @@
 // Sencha Touch mobile version
 
 
-// GOTCHAS so far
-// 1. the rendering sequence
-// 'fullscreen' renders the component immediately!  don't use that
-// unless that's what you need
-
-
 (function(){
 
-
-
-//var mainView = {
-
 var mainView = {
+
   id: 'mainPanel',
   fullscreen: true,
   cls: 'mobile',
-
+  defaults: {
+    styleHtmlContent: true
+  },
   items: [{
-    ui: 'dark',
     iconCls: 'favorites',
-    title: 'Currently',
-    html: 'Currently'
+    title: 'Current',
+    scroll: 'vertical'
   },{
     iconCls: 'favorites',
     title: 'Previously',
@@ -54,12 +46,25 @@ var mainView = {
 };
 
 var jsmtl = new Ext.Application({
-    name: 'jsmtl',
+  name: 'jsmtl',
 
-    launch: function() {
-      this.viewport = new Ext.TabPanel(mainView);
-    }
+  launch: function() {
+    this.viewport = new Ext.TabPanel(mainView);
+  }
 });
+
+jsmtl.on('launch', function(app){
+
+  Ext.Ajax.request({
+    url: "/meetups/current",
+    callback: function(options, success, response){
+      //console.debug(app.viewport);
+      app.viewport.items.getAt(0).update(response.responseText);
+    }
+  });
+
+});
+
 
 
 
