@@ -1,10 +1,6 @@
 // JS-MONTREAL.ORG
 // Sencha Touch mobile version
 
-//todo
-// add "big stuff to slides"
-// components, layouts, stores
-// show the class hiearchy
 
 (function(){
 
@@ -21,7 +17,6 @@ new Ext.Application({
     this.viewport = new Ext.TabPanel(mainView);
   }
 });
-
 
 
 
@@ -130,14 +125,16 @@ var mainView = {
         xtype : 'toolbar',
         title : 'Previous meetup',
         items  : [{
-          itemCls: 'back',
-          text: 'Back'
+
+          id      : 'backbutton',
+          itemCls : 'back',
+          text    : 'Back'
+
         }]
-      }],
+      }]
     }]
 
   },{
-
     iconCls: 'locate',
     title: 'Where',
     items: {
@@ -160,6 +157,7 @@ var mainView = {
 
 
 jsmtl.on('launch', function(app){
+
 
   var viewportItems = app.viewport.items,
 
@@ -233,6 +231,21 @@ jsmtl.on('launch', function(app){
     }
 
   });
+
+// You can always find a component by Id if you must
+// Here, the back button we've defined in the historical
+// meetup view
+
+
+  var backbutton = Ext.getCmp('backbutton');
+
+  backbutton.on('tap', function(){
+
+    list.deselect( list.getSelectedRecords() );
+    history.setActiveItem(0);
+
+  });
+
 
 
 });
