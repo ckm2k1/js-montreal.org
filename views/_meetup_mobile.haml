@@ -2,7 +2,6 @@
   = zedate(meetup)
   %h2= meetup["title"]
   %p.blurb= meetup["blurb"]
-  %h4 This Month's Talks:
   %ul.speakers
     - meetup["speakers"].each do |s|
       %li
