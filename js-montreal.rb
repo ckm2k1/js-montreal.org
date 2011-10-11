@@ -67,6 +67,10 @@ helpers do
   def gogodate( yyyymmdd )
     "#{yyyymmdd[0..3]}.#{yyyymmdd[4..5]}.#{yyyymmdd[6..7]}"
   end
+
+  def zedate(meetup)
+    Date.parse(meetup["on"]).strftime("%A, %B %d")
+  end
 end
 
 before do

@@ -1,17 +1,19 @@
 .meetup
+  = zedate(meetup)
   %h2= meetup["title"]
   %p.blurb= meetup["blurb"]
+  %h4 This Month's Talks:
   %ul.speakers
     - meetup["speakers"].each do |s|
       %li
-        %a(href="#{s["url"]}" target="_new")
-          %img.gravatar(src="#{gravaturl(s["email"])}")
-        %h4
+        .title
+          %a(href="#{s["url"]}" target="_new")
+            %img.gravatar(src="#{gravaturl(s["email"])}")
           %a(href="#{s["url"]}" target="_new")#{s["name"]}
-        %h5 #{s["title"]}
+        %h3 #{s["title"]}
         %p.synopsis #{s["synopsis"]}
-        %ul.links
+        Links:
+        %ul.links.comma-separated
           - s["links"].each do |l|
             %li<
               %a(href="#{l["url"]}" target="_new")#{l["title"]}
-              = ", " unless s["links"].last == l
