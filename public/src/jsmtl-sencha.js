@@ -46,7 +46,7 @@ var mainView = {
 
 // Will get applied to the main container for the application
 // The cls key is a regular css class that Sencha adds when
-// building the widgetes
+// building the widgets
 
   cls: 'mobile',
 
