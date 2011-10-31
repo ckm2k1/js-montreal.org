@@ -1,7 +1,7 @@
 [
    {
       "num":1,
-      "title":"JS-MONTREAL.ORG Inaugural meetup!",
+      "title":"Inaugural meetup!",
       "on":"20100121",
       "speakers":[
          {
@@ -123,7 +123,7 @@
    },
    {
       "num":4,
-      "title":"JS-MONTREAL #4: Function the Ultimate",
+      "title":"Function the Ultimate",
       "on":"20100511",
       "speakers":[
          {
@@ -153,7 +153,7 @@
    },
    {
       "num":5,
-      "title":"JS-MONTREAL #5: Spring is the new summer",
+      "title":"Spring is the new summer",
       "on":"20100713",
       "speakers":[
          {
@@ -183,7 +183,7 @@
    },
    {
       "num":6,
-      "title":"JS-MONTREAL #6",
+      "title":"Statechart to ECMAScript, Real-time apps with CouchDB",
       "on":"20100914",
       "blurb":"After a short hiatus we return with two great presentations. Jacob is back from <a href=\"http://svgopen.org/2010/\">SVG Open 2010</a> in Paris to tell us more about his SCXML -> JavaScript compiler. Alexis will be doing his second presentation for JS-MTL on the subject of CouchDB and real-time web applications.  <a href=\"http://js-montreal.org/map\">See you there!</a>",
       "speakers":[
@@ -224,7 +224,7 @@
       ]
    },{
       "num": 7,
-      "title":"JS-MONTREAL #7: Homegrown JavaScript",
+      "title":"Homegrown JavaScript",
       "on":"20101109",
       "blurb":"We all know the benefits of eating and buying local products. As I sat in <i>cosmic reflexion</i>, it occured to me: Why not apply this ecologically sound point of view to the code we use?  This month we're looking at things you can use in your everyday coding, developped locally. <b>There are more spots, contact us!</b>",
       "speakers":[
@@ -257,7 +257,7 @@
       ]
    },{
       "num": 8,
-      "title":"JS-MONTREAL #8",
+      "title":"Backbone.js, Part 1",
       "on":"20110111",
       "speakers":[
          {
@@ -274,13 +274,13 @@
                {
                   "url":"http://documentcloud.github.com/underscore/",
                   "title":"Underscore"
-               }               
+               }
             ]
          }
       ]
    },{
       "num": 9,
-      "title":"JS-MONTREAL #9",
+      "title":"The function object + Duck Hunt",
       "on":"20110208",
       "speakers":[
          {
@@ -293,7 +293,7 @@
                {
                   "url":"http://oreilly.com/catalog/9780596101992",
                   "title":"Javascript: The Definitive Guide"
-               }              
+               }
             ]
          },{
             "title":"Canards & Canvas",
@@ -305,13 +305,13 @@
                {
                   "url":"http://duckhunt.grosbouddha.com/",
                   "title":"Duck Hunt"
-               }              
+               }
             ]
          }
       ]
    },{
       "num": 10,
-      "title":"JS-MONTREAL #10: Depeche Node",
+      "title":"Depeche Node",
       "on":"20110412",
       "blurb": "Back from our March break with some excellent presentations. First off with <a href=\"http://christianjoudrey.com/\">Christian Joudrey</a> of <a href=\"http://cakemail.com\">Cakemail</a> who will show us how easy it is to get started with a typical web app project using Node JS, Connect & Express. Secondly a presentation by Scott Burch on Jasmine BDD, a testing framework for Javascript.",
       "speakers":[
@@ -335,7 +335,7 @@
                },{
                  "url": "https://github.com/senchalabs/Connect",
                  "title": "connect"
-               }      
+               }
             ]
          },{
             "title":"BDD with Jasmine",
@@ -347,13 +347,13 @@
                {
                   "url":"http://pivotal.github.com/jasmine/",
                   "title":"Jasmine"
-               }              
+               }
             ]
          }
       ]
    },{
       "num": 11,
-      "title":"JS-MONTREAL #11: You look good in that script",
+      "title":"You look good in that script",
       "on":"20110510",
       "blurb": "",
       "speakers":[
@@ -379,13 +379,13 @@
                {
                   "url":"https://gist.github.com/957713",
                   "title":"Super.js : micro JS Class"
-               }              
+               }
             ]
          }
       ]
    },{
       "num": 12,
-      "title":"JS-MONTREAL #12",
+      "title":"WebOS Intro, LiveTool: Peer to Peer in the browser",
       "on":"20110712",
       "blurb": "",
       "speakers":[
@@ -411,13 +411,13 @@
                {
                   "url":"https://developer.palm.com/",
                   "title":"WebOS Developer Center"
-               }              
+               }
             ]
          }
       ]
    },{
       "num": 13,
-      "title":"JS-MONTREAL #13: Get organized",
+      "title":"Get organized",
       "on":"20110809",
       "blurb": "We all know how to write code. But what happens when the line count grows and new teammates join your project? You need structure. This month we have two presentations tackling this very subject. Cedric will present strategies for jQuery based projects of small to medium size. As for Martin, he will show us how they moved their web application codebase to a front-end centric architecture using Backbone.js.",
       "speakers":[
@@ -454,7 +454,7 @@
       ]
    },{
       "num": 14,
-      "title":"JS-MONTREAL #14",
+      "title":"Userscripts, and state of JS-MONTREAL",
       "on":"20110913",
       "blurb": "",
       "speakers":[
@@ -487,7 +487,35 @@
                   }
                ]
             }
-         
+
+      ]
+   },{
+      "num": 15,
+      "title":"JavaScript in your pocket",
+      "on":"20111011",
+      "blurb": "Mobile web applications are no longer the future, they're the present. There are a lot of tools out there to give you a headstart creating JavaScript mobile applications. This month we see two promising mobile frameworks.",
+      "speakers":[
+         {
+            "title"     : "State of jQuery Mobile",
+            "email"     : "cedric.dugas@cakemail.com",
+            "name"      : "Cedric Dugas",
+            "url"       : "http://www.position-absolute.com/",
+            "synopsis"  : "The jQuery mobile team has just released 1.0 RC1 nearly one year after its announcement and with it we are getting very close to a 1.0 release. Let's examine this framework and find out what makes it great as well as its weaknesses.",
+            "links" : [{
+               "url":"http://jquerymobile.com/",
+               "title":"jQuery Mobile"
+            }]
+         },{
+            "title"     : "Getting started with Sencha Touch",
+            "email"     : "neonskimmer@gmail.com",
+            "name"      : "Bruno Carriere",
+            "url"       : "http://js-montreal.org/",
+            "synopsis"  : "Sencha Touch is a mobile framework with a heavy emphasis on a hierarchy of widgets; much like its <a href='http://www.sencha.com/products/extjs/'>big brother</a> it is designed to be driven with a lot of JavaScript, and very little HTML.",
+            "links" : [{
+               "url":"http://www.sencha.com/products/touch/",
+               "title":"Sencha Touch"
+            }]
+         }
       ]
    }
 ]

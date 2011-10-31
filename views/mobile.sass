@@ -1,0 +1,41 @@
+.mobile
+
+  h2
+    line-height: 1.2em
+    font-weight: bold
+
+  color: #333
+
+  .meetup
+    background-color: transparent
+
+    .title
+      img
+        clear: right
+        float: left
+        padding-right: 10px
+
+
+  ul.comma-separated
+    li:after
+      content: ","
+    li:last-child:after
+      content: ""
+
+
+  ul
+    margin: 0
+    padding: 0
+    li
+      margin: 0
+      padding: 0
+      list-style-type: none
+
+    &.links
+      display: inline
+      li
+        display: inline
+
+    &.speakers
+      li
+        margin-bottom: 2em
