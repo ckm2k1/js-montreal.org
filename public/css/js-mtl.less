@@ -1,22 +1,25 @@
-html, body {
+@import "/css/bootstrap/lib/bootstrap.less";
+
+html {
+  background-color: #dadada;
+}
+
+body {
   background-color: #fafafa;
-  padding-top: 40px;
+  padding-top: 20px;
 }
 
 #content {
-  min-height: 500px;
+  background-color: #fafafa;
+  /*min-height: 500px;*/
 }
 
-body.index .meetup {
-  margin-top: 40px;
-}
 
 a.twit {
   background: url("/img/newbird32.png") no-repeat scroll right center #31CCFF;
   border: 0 none;
   color: white;
   font-size: 14px;
-  //padding: 6px 34px 5px 10px;
   height: 40px;
   width: 120px;
   position: absolute;
@@ -26,50 +29,37 @@ a.twit {
   top: 0;
 }
 
-.bigtime {
-  position: absolute;
-  top: 0;
-  left: -80px;
-  background-color: #404040;
-  width: 80px;
-  height: 80px;  
-  
-  .month, .date {
-    position: absolute;
-    font-weight: bold;
-    width: 100%;
-    padding: 0;
-    margin: 0;
-    color: #fafafa;
-    text-shadow : 1px 1px 3px #303030;
+
+header {
+
+  #gradient > .vertical(#DADADA, #FAFAFA);
+
+  padding-top: 50px;
+  padding-bottom: 50px;
+
+  background-color: #DADADA;
+  color : #333;
+
+  h1 {
+    color: @grayDark;
+    text-shadow : 0px 1px 0.5px @grayLighter;
   }
-  
-  .month {
-    top: 5px;
-    text-align: center;
-    text-transform: uppercase;
-    font-size: 10px;
-    color: yellow;
-  }
-    
-  .date {
-    font-size: 58px;
-    line-height: 89px;
-    text-align: center;
-  }
+
 }
 
 p.synopsis {
-  text-align: justify;
+  text-align: left;
 }
 
-.row > .columns .speaker {
-
+p.blurb {
+  font-size: 120%;
+  line-height: 160%;
+  margin-bottom: 2em;
 }
 
 .speaker {
   position: relative;
-  //padding: 14px;
+  padding: 0px 14px 14px 0px;
   h5 {
     margin-top: -16px;
     text-overflow: ellipsis;
@@ -78,13 +68,9 @@ p.synopsis {
   }
 }
 
-header {
-  color : #000;
-  text-shadow : 1px 1px 1px white;
-}
 
 footer {
-
+  #gradient > .vertical(#FAFAFA, #DADADA);
 }
 
 h1 {

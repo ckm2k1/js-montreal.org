@@ -514,6 +514,9 @@
             "links" : [{
                "url":"http://www.sencha.com/products/touch/",
                "title":"Sencha Touch"
+            },{
+               "url":"https://github.com/bruno-c/js-montreal.org/blob/master/public/src/jsmtl-sencha.js",
+               "title":"js-montreal.org/mobile/ (code)"
             }]
          }
       ]

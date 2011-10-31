@@ -1,28 +1,32 @@
-/ %h3 #{meetup["title"]}
-/ - if meetup["blurb"]
-/   %p.blurb #{meetup["blurb"]}
-/.month<
-/=date.strftime("%B")
 - first  = meetup["speakers"].first
 - second = meetup["speakers"].last
 - date   = Date.parse( meetup["on"] )
+.row
+  .span12
+    %h2<
+      ="#{date.strftime("%B")} #{date.strftime("%Y")}:&nbsp;"
+      = meetup["title"]
+    - if meetup["blurb"]
+      %p.blurb= meetup["blurb"]
 .row.meetup
-  .span8.columns
+  .span6
     .speaker
-      /
-        .bigtime<
-          .month<
-            =date.strftime("%B")
-          .date<
-            =date.strftime("%d")
       = haml :speaker, :locals => { :s => first }, :layout => false
-  .span8.columns
+  .span6
     .speaker
       - if first == second
         %a.btn.info{ :href=> "mailto:contact@js-montreal.org "}
           Looks like there's space for one more presentation!
       - else
         = haml :speaker, :locals => { :s => second }, :layout => false
+  .span4
+    %img{ :src => '/img/js.png', :title => "This is the JavaScript community logo announced at JSConf EU this year"}
+    %p
+      The JavaScript Community Logo
+      %br
+      %a(href="https://github.com/voodootikigod/logo.js")<
+        Official Github repo
+
 #members{ :style => 'display: none;' }
   Members:
   %select#sigs

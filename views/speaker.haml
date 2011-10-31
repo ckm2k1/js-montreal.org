@@ -4,7 +4,7 @@
   %a{ :href => s["url"], :target => "_new" }#{s["name"]}
 %h5 #{s["title"]}
 %p.synopsis #{s["synopsis"]}
-%ul.speaker-links
+%ul.speaker-links.unstyled
   - s["links"].each do |l|
     %li<
       %a{ :href => l["url"], :target => "_new" }#{l["title"]}
