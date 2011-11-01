@@ -4,7 +4,6 @@
 .row
   .span12.blurb
     .when
-      /= "#{Date.parse( meetup["on"] ).strftime("%A, %B %d")} @ 18:45"
       = "#{date.strftime("%B")} #{date.strftime("%Y")}"
     %h2<
       = meetup["title"]
@@ -44,13 +43,6 @@
       - else
         %a.btn.info{ :href=> "mailto:contact@js-montreal.org "}
           Looks like there's space for one more presentation!
-    /
-      %img{ :src => '/img/js.png', :title => "This is the JavaScript community logo announced at JSConf EU this year"}
-      %p
-        The JavaScript Community Logo
-        %br
-        %a(href="https://github.com/voodootikigod/logo.js")<
-          Official Github repo
 #members{ :style => 'display: none;' }
   Members:
   %select#sigs

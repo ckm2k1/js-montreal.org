@@ -1,7 +1,6 @@
-%h2.section-top.rounded-top-right.meat< 
-  Previous meetups
-%div.padded
-  %p.ample-bottom Here's a list of our previous meetings along with links to some of the material that was presented.
-  %ol
-    -meetups.each do |m|
-      = haml :meetup, :locals => { :meetup => m }, :layout => false
+.row
+  .span12.blurb
+    %h2 Previous meetups
+    %p Here's a list of our previous meetings along with links to some of the material that was presented.
+- meetups.each do |m|
+  = haml :meetup, :locals => { :meetup => m }, :layout => false
