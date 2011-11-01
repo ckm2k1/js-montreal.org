@@ -52,7 +52,7 @@ helpers do
   def menu(current)
     Model::MENU.map{ |m|
       li_class =
-      [current == m[:section] ? "selected" : "", m[:cls].to_s].join(" ")
+      [current == m[:section] ? "active" : "", m[:cls].to_s].join(" ")
       "<li class=\"#{li_class}\"><a href=\"#{m[:href]}\">#{m[:label]}</a>"
     }.join("")
   end

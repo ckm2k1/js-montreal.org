@@ -6,27 +6,21 @@ html {
 
 body {
   background-color: #fafafa;
+
+  /* Account for top bar */
   padding-top: 20px;
 }
 
 #content {
   background-color: #fafafa;
-  /*min-height: 500px;*/
+  min-height: 500px;
 }
 
-
-a.twit {
-  background: url("/img/newbird32.png") no-repeat scroll right center #31CCFF;
-  border: 0 none;
-  color: white;
-  font-size: 14px;
-  height: 40px;
-  width: 120px;
-  position: absolute;
-  right: 0;
-  text-decoration: none;
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
-  top: 0;
+.when {
+  font-size: 16px;
+  color: #777;
+  font-weight: bold;
+  margin-bottom: 16px;
 }
 
 
@@ -34,8 +28,8 @@ header {
 
   #gradient > .vertical(#DADADA, #FAFAFA);
 
-  padding-top: 50px;
-  padding-bottom: 50px;
+  padding-top: 20px;
+  padding-bottom: 20px;
 
   background-color: #DADADA;
   color : #333;
@@ -43,18 +37,38 @@ header {
   h1 {
     color: @grayDark;
     text-shadow : 0px 1px 0.5px @grayLighter;
+    text-transform: uppercase;
+    font-size: 24px;
   }
-
 }
 
-p.synopsis {
-  text-align: left;
+.register {
+  background-color: #eaeaea;
+  border: solid 1px #fff;
+  border-radius: 0 0 5px 5px;
+  padding: 20px;
+  margin-top: -23px;
+  position: relative;
+  #gradient > .vertical(#EAEAEA, #FAFAFA);
 }
 
-p.blurb {
-  font-size: 120%;
+p.synopsis, p.attention {
+  // font-size: 120%;
   line-height: 160%;
-  margin-bottom: 2em;
+}
+
+.blurb {
+  h2 {
+    color: @blue;
+    font-size: 48px;
+  }
+  p {
+    font-size: 120%;
+    line-height: 160%;
+    margin-bottom: 3em;
+    border-left: 10px solid @grayLighter;
+    padding-left: 10px;
+  }
 }
 
 .speaker {
@@ -65,6 +79,7 @@ p.blurb {
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
+    font-size: 16px;
   }
 }
 
