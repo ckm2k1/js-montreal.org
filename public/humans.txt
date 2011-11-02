@@ -1,0 +1,21 @@
+/* SITE */
+
+JS-MONTREAL.ORG
+Montreal's JavaScript UserGroup
+
+The user group was founded in 2009 by:
+
+    Bruno Carriere (neonskimmer@gmail.com) &&
+Laurent Villeneuve (mazesoul@gmail.com)
+
+
+/* TEAM */
+
+This website was originally put together hastily in 2009 by:
+
+  Bruno Carriere
+  Twitter: @neonskimmer
+  neonskimmer@gmail.com
+
+And then it was updated by him again, in November 2011,
+and it took a bit longer that time.
