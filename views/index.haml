@@ -2,14 +2,14 @@
 - second = meetup["speakers"].last
 - date   = Date.parse( meetup["on"] )
 .row
-  .span12.blurb
+  .span11.blurb
     .when
       = "#{date.strftime("%B")} #{date.strftime("%Y")}"
     %h2<
       = meetup["title"]
     - if meetup["blurb"]
       %p= meetup["blurb"]
-  .span4
+  .span4.offset1
     .register<
       %a(href="http://twitter.com/jsmontreal" class="twitter-follow-button" data-button="grey" data-text-color="#FFFFFF" data-link-color="#049CDB" data-show-count="false")Follow @jsmontreal
       %script(src="http://platform.twitter.com/widgets.js" type="text/javascript")
@@ -33,10 +33,10 @@
           %a{ :href => "http://js-montreal.eventbrite.com", :target => "_new" }Eventbrite
 
 .row.meetup
-  .span8
+  .span7
     .speaker
       = haml :speaker, :locals => { :s => first }, :layout => false
-  .span8
+  .span7.offset2
     .speaker
       - if booked?
         = haml :speaker, :locals => { :s => second }, :layout => false

@@ -33,7 +33,6 @@
           %a.brand{ :href => '/' }js-montreal.org
           %ul.nav
             = menu(@section)
-    .container
   #content.container
     = yield
   %footer
@@ -64,10 +63,9 @@
             %li
               %a(href="http://bloomdigital.com")Bloom Digital
           %p for graciously offering us a space to hold our meetups.
-
         .span4
           %h3
-            %a(href="http://js-montreal.org")js-montreal.org
+            %a(href="/")js-montreal.org
           %p
             &copy; 2011.  Powered by
             %a(href="http://sinatrarb.com")<
