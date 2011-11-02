@@ -2,16 +2,15 @@
   .span16.blurb
     %h2 Want to show us something?
 .row
-  .span10
-    %h4<
-      %a(href="mailto:contact@js-montreal.org")Contact us
-    %p.synopsis
+  .span8
+    %p.synopsis.bigger
       Anything related to JavaScript will do. If you want to present a commercial product you benefit from, you are required to buy beer for everyone. That's it!
-    %h4 Une note concernant la langue
-    %p.synopsis
-      Lors de nos rencontres, les orateurs choisiront de pr&eacute;senter en anglais ou en francais, &agrave; leur guise. Normalement si le synopsis est en français, la présentation le sera aussi.
-  .span6
+    %a.btn.info(href="mailto:contact@js-montreal.org")Contact us
+  .span8
     %h4 Keep our objectives in mind:
     %ul
       - purpose.each do |p|
         %li #{p}
+    %h4 Une note concernant la langue
+    %p.synopsis
+      Lors de nos rencontres, les orateurs choisiront de pr&eacute;senter en anglais ou en francais, &agrave; leur guise. Normalement si le synopsis est en français, la présentation le sera aussi.

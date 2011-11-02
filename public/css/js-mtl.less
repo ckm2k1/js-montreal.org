@@ -58,43 +58,34 @@ header {
 
 
 .speaker {
-  position: relative;
-  padding: 0px 14px 14px 0px;
-  h5 {
-    margin-top: -16px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-    font-size: 16px;
+
+  img.gravatar {
+    width: 100%;
   }
 
-  .speakerbox {
-    img.gravatar {
-      float: left;
-      padding-right: 10px;
-    }
+  h5, h4 {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    line-height: 1.4;
+  }
 
-    h5 {
-      font-size: 18px;
-      line-height: 1.2;
-      font-weight: normal;
-    }
-
-    &:after {
-      content: "";
-      clear: both;
-      display: block;
-      position: relative;
-    }
+  p.synopsis {
+    margin-top: 1em;
   }
 }
+
+/*
 p.synopsis, p.attention {
-  // font-size: 120%;
   line-height: 160%;
 }
+*/
 
 p.attention {
   margin-top: 1em;
+}
+
+p.synopsis {
+
 }
 
 .bigger {

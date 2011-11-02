@@ -1,12 +1,13 @@
-.speakerbox
-  %a{ :href => s["url"], :target => "_new"}
-    %img.gravatar{ :src => gravaturl(s["email"]) }
-  %h4
-    %a{ :href => s["url"], :target => "_new" }#{s["name"]}
-  %h5 #{s["title"]}
-
-%p.synopsis #{s["synopsis"]}
+.row
+  .span2
+    %a{ :href => s["url"], :target => "_new"}
+      %img.gravatar{ :src => gravaturl(s["email"]) }
+  .span6
+    %h5
+      %a{ :href => s["url"], :target => "_new" }#{s["name"]}
+    %h4 #{s["title"]}
+%p.synopsis= s["synopsis"]
 %ul.speaker-links.unstyled
   - s["links"].each do |l|
     %li<
-      %a{ :href => l["url"], :target => "_new" }#{l["title"]}
+      %a{ :href => l["url"], :target => "_new" }= l["title"]
