@@ -520,5 +520,39 @@
             }]
          }
       ]
+   },{
+      "num": 16,
+      "title":"More client-side MVCs",
+      "on":"20111108",
+      "blurb": "We had a lot of discussion and feedback following previous discussions on client-side MVC frameworks such as Backbone JS. More on this subject this month.",
+      "speakers":[
+         {
+            "title"     : "Frameworks MVC JavaScript",
+            "email"     : "asobrasil@gmail.com",
+            "name"      : "André de Santi Oliveira",
+            "url"       : "https://github.com/ASOBrasil",
+            "synopsis"  : "Présentation des frameworks MVC JavaScript (SproutCore et JavascriptMVC) et l'écosystème autour d'eux (JavaScript frameworks, templates frameworks, dynamic stylesheet languages, mobile frameworks, etc).",
+            "links" : [{
+               "url":"http://javascriptmvc.com/",
+               "title":"JavaScriptMVC"
+            },{
+               "url":"http://www.sproutcore.com/",
+               "title":"SproutCore"
+            }]
+         },{
+            "title"     : "A fresh new website (with nothing on it)",
+            "email"     : "neonskimmer@gmail.com",
+            "name"      : "Bruno Carriere",
+            "url"       : "http://js-montreal.org/",
+            "synopsis"  : "The JSMTL web site was getting a bit old so I decided to go ahead and begin a redesign. It uses Twitter's new baseline library, Bootstrap. All the code is available on Github and I want to invite everyone to play with it, because I suck at design.",
+            "links" : [{
+               "url":"https://github.com/bruno-c/js-montreal.org",
+               "title":"js-montreal.org repo on GitHub"
+            },{
+               "url":"http://twitter.github.com/bootstrap/",
+               "title":"Twitter Bootstrap"
+            }]
+         }
+      ]
    }
 ]

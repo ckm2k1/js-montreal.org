@@ -17,7 +17,7 @@
         - if past?(meetup)
           Our last meetup was on
         - else
-          Our next meetup is happening on
+          Next meetup is happening
         %br<
         %b #{Date.parse( meetup["on"] ).strftime("%A, %B %d")}
         - if !past?(meetup)
