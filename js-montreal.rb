@@ -22,6 +22,7 @@ module Model
             b["num"] <=> a["num"] }
   PURPOSE = read_json_file('data/purpose.json')
   LINKS   = read_json_file('data/links.json')
+  JOBS    = read_json_file('data/jobs.json')
 
   MENU = [{ :label => "Current", :href => "/",
             :cls => "current", :section => "index"},
@@ -30,6 +31,7 @@ module Model
           { :label => "Where is it?", :href => "map", :section => "map"},
           { :label => "Want to present?", :href => "present",
             :section => "present"},
+          { :label => "Jobs", :href => "jobs", :section => "jobs"},
           { :label => "About", :href => "about", :section => "about"}]
   SITE = {
     :index      => { :label => "Current", :href => "/",
@@ -37,7 +39,8 @@ module Model
     :previously => { :label => "Previously", :href => "meetups" },
     :directions => { :label => "Where is it?", :href => "map" },
     :present    => { :label => "Want to present?", :href => "present" },
-    :about      => { :label => "About", :href => "about" }
+    :about      => { :label => "About", :href => "about" },
+    :jobs       => { :label => "Job board", :href => "job" }
   }
 end
 
@@ -152,6 +155,11 @@ end
 
 get "/mobile/?" do
   haml :mobile, :layout => false
+end
+
+get "/jobs/?" do
+  @section = "jobs"
+  haml :jobs, :locals => { :jobs => Model::JOBS }
 end
 
 

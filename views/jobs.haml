@@ -1,0 +1,30 @@
+.row
+  .span12.blurb
+    %h2
+      Jobs board
+
+    %p
+      Looking for a job ? Looking for a Javascript developer ? You can meet us during the meeting and get us some beer if you are looking for people.
+
+  .span12
+    %h2
+      List of jobs
+    %br
+
+    - jobs.each do |job|
+      .block-message.alert-message.job-offer
+        %h3
+          = job["company"]
+        %p
+          = job["description"]
+        %br
+        %a{ :href => job["site-link"]}
+          = job["site-text"]
+        
+        .div(style="clear:both;")
+
+        - job["tags"].each do |tag|
+          .tag 
+            = tag
+
+        .div(style="clear:both;")

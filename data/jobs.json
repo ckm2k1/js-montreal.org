@@ -1,0 +1,25 @@
+[
+	{
+		"company" : "Lorem ipsum inc.",
+		"description" : "Lorem ipsum inc. is a company that specialize in generating lorem ipsum text for web designer around the world. Join the only company that stills makes money out of the latin language.",
+		"site-link" : "http://example.net/",
+		"site-text" : "Lorem Ipsum website",
+		"tags" : ["javascript", "ruby", "less"]
+	},
+
+	{
+		"company" : "Lorem ipsum inc.",
+		"description" : "Lorem ipsum inc. is a company that specialize in generating lorem ipsum text for web designer around the world. Join the only company that stills makes money out of the latin language.",
+		"site-link" : "http://example.net/",
+		"site-text" : "Lorem Ipsum website",
+		"tags" : ["javascript", "ruby", "less"]
+	},
+
+	{
+		"company" : "Lorem ipsum inc.",
+		"description" : "Lorem ipsum inc. is a company that specialize in generating lorem ipsum text for web designer around the world. Join the only company that stills makes money out of the latin language.",
+		"site-link" : "http://example.net/",
+		"site-text" : "Lorem Ipsum website",
+		"tags" : ["javascript", "ruby", "less"]
+	}
+]
