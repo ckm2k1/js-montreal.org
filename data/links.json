@@ -1,18 +1,20 @@
 {
 	"contact": [{
+		"cls" : "linkedin",
+		"handle": "js-montreal.org",
 		"label": "LinkedIn",
 		"href": "http://www.linkedin.com/groups?gid=2514289"
 	},{
+		"cls" : "twitter",
+		"handle": "jsmontreal",
 		"label": "Twitter",
 		"href": "http://www.twitter.com/jsmontreal"
 	},{
+		"cls" : "email",
 		"label": "Email us",
 		"href": "mailto:contact@js-montreal.org"
 	}],
 	"friends": [{
-		"label": "nodeMTL",
-		"href": "http://nodemtl.com/"
-	},{
 		"label": "montreal.rb",
 		"href": "http://www.montrealonrails.com/"
 	},{
@@ -24,5 +26,5 @@
 	},{
 		"label": "mtl scheme &amp; lisp",
 		"href": "http://schemeway.dyndns.org/mslug/mslug-home/"
-	}]	
+	}]
 }

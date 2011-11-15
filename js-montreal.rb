@@ -23,14 +23,11 @@ module Model
   PURPOSE = read_json_file('data/purpose.json')
   LINKS   = read_json_file('data/links.json')
 
-  MENU = [{ :label => "Current", :href => "/",
-            :cls => "current", :section => "index"},
-          { :label => "Previously", :href => "meetups",
-            :section => "previously"},
-          { :label => "Where is it?", :href => "map", :section => "map"},
-          { :label => "Want to present?", :href => "present",
-            :section => "present"},
-          { :label => "About", :href => "about", :section => "about"}]
+  MENU=[
+    { :label => "About", :href => "about", :section => "about"},
+    { :label => "Where is it?", :href => "map", :section => "map"},
+    { :label => "Be a presenter", :href => "present", :section => "present"}]
+
   SITE = {
     :index      => { :label => "Current", :href => "/",
                      :cls => "current" },

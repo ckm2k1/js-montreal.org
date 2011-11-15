@@ -1,13 +1,17 @@
 .row
-  .span2
-    %a{ :href => s["url"], :target => "_new"}
-      %img.gravatar{ :src => gravaturl(s["email"]) }
-  .span5
+  .span7
+    %h4 #{s["title"]}
     %h5
       %a{ :href => s["url"], :target => "_new" }#{s["name"]}
-    %h4 #{s["title"]}
-%p.synopsis= s["synopsis"]
-%ul.speaker-links.unstyled
-  - s["links"].each do |l|
-    %li<
-      %a{ :href => l["url"], :target => "_new" }= l["title"]
+.row
+  .synopsis
+    .span2
+      %a{ :href => s["url"], :target => "_new"}
+        %img.gravatar{ :src => gravaturl(s["email"]) }
+    .span5<
+      %p<
+        = s["synopsis"]
+      %ul.speaker-links.unstyled
+        - s["links"].each do |l|
+          %li<
+            %a{ :href => l["url"], :target => "_new" }= l["title"]

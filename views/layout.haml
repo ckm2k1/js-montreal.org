@@ -39,22 +39,35 @@
   %footer
     .container
       .row
-        .span4
+        .span7
+          %h3<
+            %a(href="/")js-montreal.org
+          %p<
+            Our goal is to bring the MTL JS development community together and promote the use and understanding of the language, inside and outside the browser.
+          %p<
+            &copy; 2011.  Powered by
+            %a(href="http://sinatrarb.com")<
+              Sinatra
+            (yes, we love <a href="http://montrealonrails.com">Ruby</a> as well)
+        .span3
           %h3 Contact
-          %ul.unstyled
+          %ul.unstyled.contact
             - @links["contact"].each do |l|
-              %li
+              %li{ :class => l["cls"] }<
                 %a{ :href => l["href"]}<
-                  =l["label"]
-
-        .span4
+                  =l["handle"] || l["label"]
+                /
+                  - if l["handle"]
+                    &nbsp;@&nbsp;
+                    = l["label"]
+        .span3
           %h3 User Groups
           %ul.unstyled
             - @links["friends"].each do |l|
               %li
                 %a{ :href => l["href"]}<
                   =l["label"]
-        .span4
+        .span3
           %h3 Special thanks
           %ul.unstyled
             %li
@@ -63,12 +76,5 @@
               %a(href="http://crim.ca")CRIM
             %li
               %a(href="http://bloomdigital.com")Bloom Digital
-          %p for graciously offering us a space to hold our meetups.
-        .span4
-          %h3
-            %a(href="/")js-montreal.org
-          %p
-            &copy; 2011.  Powered by
-            %a(href="http://sinatrarb.com")<
-              Sinatra
-            (yes, we love <a href="http://montrealonrails.com">Ruby</a> as well)
+            %li
+              for graciously offering us a space to hold our meetups.
