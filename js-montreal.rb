@@ -1,8 +1,8 @@
-#!/usr/bin/env ruby
+#encoding: UTF-8
 require 'rubygems'
 require 'haml'
 require 'open-uri'
-require 'md5'
+require 'digest/md5'
 require 'json'
 
 require 'sinatra'
@@ -42,7 +42,7 @@ helpers do
 
   # Returns the URL for the gravatar image associated with the email
   def gravaturl(email)
-    hash = MD5::md5(email.downcase)
+    hash = Digest::MD5.hexdigest(email.downcase)
     "http://www.gravatar.com/avatar/#{hash}"
   end
 
