@@ -11,50 +11,28 @@
 		- i = 0
 		- members.list.sort{|a, b| b.talks.length <=> a.talks.length}.each_slice(2) do |member, member2|
 			.row
-				.member-info
-					.span2
-						%img{ :src => gravaturl(member.email) }
+				- [member, member2].each do |member|
+					- if member != nil
+						.member-info
+							.span2
+								%img{ :src => gravaturl(member.email) }
 
-					.span6
-						%a{ :href => member.website }
-							%h3
-								= member.name
+							.span6
+								%a{ :href => member.website }
+									%h3
+										= member.name
 
-						- member.badges.each do |badge|
-							.tag{ :class => badge[:color] }
-								= badge[:value]
+								- member.badges.each do |badge|
+									.tag{ :class => badge[:color] }
+										= badge[:value]
 
-						%div(style="clear:both;")
+								%div(style="clear:both;")
 
-						Latest presentation :
-						%br
-						%ul
-							- talks = member.talks.sort {|a, b| b[:date] <=> a[:date]}
-							- talks = talks.slice(0, 2) # We get only the last 2 presentations
-							- talks.each do |talk|
-								%li
-									= talk[:title]
-
-				.member-info
-					.span2
-						%img{ :src => gravaturl(member2.email) }
-
-					.span6
-						%a{ :href => member2.website }
-							%h3
-								= member2.name
-
-						- member2.badges.each do |badge|
-							.tag{ :class => badge[:color] }
-								= badge[:value]
-
-						%div(style="clear:both;")
-
-						Latest presentation :
-						%br
-						%ul
-							- talks = member2.talks.sort {|a, b| b[:date] <=> a[:date]}
-							- talks = talks.slice(0, 2) # We get only the last 2 presentations
-							- talks.each do |talk|
-								%li
-									= talk[:title]
+								Latest presentation :
+								%br
+								%ul
+									- talks = member.talks.sort {|a, b| b[:date] <=> a[:date]}
+									- talks = talks.slice(0, 2) # We get only the last 2 presentations
+									- talks.each do |talk|
+										%li
+											= talk[:title]
