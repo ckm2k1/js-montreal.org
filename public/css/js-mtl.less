@@ -101,19 +101,41 @@ p.attention {
   margin-top: 1em;
 }
 
+.about {
+  #content .row:last-child {
+    margin-top: 40px;
+    margin-bottom: 40px;
+  }
+}
+
+.foto {
+
+  padding: 4px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+
+  p {
+    padding-top: 4px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: normal;
+    font-color: #ddd;
+  }
+}
 
 .bigger {
   font-size: 120%;
   line-height: 1.2;
 }
 
+h2 {
+  color: @blue;
+  font-size: 48px;
+  line-height: 1.2;
+  letter-spacing: -0.04em;
+}
+
 .blurb {
-  h2 {
-    color: @blue;
-    font-size: 48px;
-    line-height: 1.2;
-    letter-spacing: -0.04em;
-  }
   p {
     font-size: 120%;
     line-height: 160%;
@@ -168,7 +190,6 @@ ol.directions {
 }
 
 ul.objectives {
-  font-size: 16px;
   line-height: 1.2;
   list-style-type: square;
   li {
