@@ -1,29 +1,20 @@
 .row
-  .span8.group-note
+  .span8.blurb
+    %h2 About
+    %p JS-MONTREAL is a user group run by volunteers. We meet in borrowed spaces, graciously provided by different companies and organisations. Our purpose is to provide a place where our members can have a good time talking about programming and meet other like minded folks. We talk shop, network and geek out.
+  .span8
+    %h6 Objectives
+    %ul.objectives.bigger
+      - purpose.each do |p|
+        %li #{p}
+.row
+  .span8
     .foto
       %img{:src=>'/img/nerd-herd.jpg'}
       %p<
         %em<
           January 2010
         &mdash; Our first meetup. Douglas Crockford in the house!
-  .span8
-    %h2 Objectives
-    %ul.objectives
-      - purpose.each do |p|
-        %li #{p}
-.row
-  .span8
-    %h4 A note from the group founders
-    %p.synopsis
-      Laurent et moi on se disait depuis un certain temps qu'on devrait partir notre propre user group.  On sentait qu'il y avait un momentum au niveau de l'adoption de JavaScript comme langage serieux; le timing etait vraiment parfait.
-    %p.synopsis
-      2 years on the group is still growing. Over a hundred different people have been to our meetups. JavaScript is all over the place as predicted.
-    %h4
-      %a(href="mailto:neonskimmer@gmail.com")Bruno Carriere
-      &amp;
-      %a(href="mailto:mazesoul@gmail.com")Laurent Villeneuve
-    %h6 Fondateurs
-
   .span8
     .foto
       %img{:src=>'/img/nerds.jpg'}
