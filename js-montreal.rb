@@ -24,18 +24,26 @@ module Model
   LINKS   = read_json_file('data/links.json')
 
   MENU=[
-    { :label => "About", :href => "about", :section => "about"},
-    { :label => "Where is it?", :href => "map", :section => "map"},
-    { :label => "Be a presenter", :href => "present", :section => "present"}]
+    { :label => "About",
+      :href => "about",
+      :section => "about"},
+    { :label => "Where is it?",
+      :href => "map",
+      :section => "map"},
+    { :label => "Be a presenter",
+      :href => "present",
+      :section => "present"},
+    { :label => "Archive",
+      :href => 'archive',
+      :section => 'archive'}]
 
-  SITE = {
-    :index      => { :label => "Current", :href => "/",
-                     :cls => "current" },
-    :previously => { :label => "Previously", :href => "meetups" },
-    :directions => { :label => "Where is it?", :href => "map" },
-    :present    => { :label => "Want to present?", :href => "present" },
-    :about      => { :label => "About", :href => "about" }
-  }
+  # SITE = {
+  #   :index      => { :label => "Current", :href => "/", :cls => "current" },
+  #   :archive    => { :label => "Archive", :href => "archive" },
+  #   :directions => { :label => "Where is it?", :href => "map" },
+  #   :present    => { :label => "Want to present?", :href => "present" },
+  #   :about      => { :label => "About", :href => "about" }
+  # }
 end
 
 helpers do
@@ -120,7 +128,7 @@ get "/meetups/current/?" do
 end
 
 
-get "/meetups/?" do
+get "/archive/?" do
   @section = "previously"
 
   # Exclude the current meeting

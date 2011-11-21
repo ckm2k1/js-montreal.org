@@ -1,7 +1,6 @@
 .row
-  .span12.blurb
-    %h2 Previous meetups
-    %p Here's a list of our previous meetings along with links to some of the material that was presented.
+  .span16
+    %h6 Previous meetups
 - meetups.each do |m|
   = haml :meetup, :locals => { :meetup => m }, :layout => false
   %hr
