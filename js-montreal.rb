@@ -155,11 +155,6 @@ get "/mobile/?" do
   haml :mobile, :layout => false
 end
 
-get "/mobile/?" do
-  haml :mobile, :layout => false
-end
-
-
 # Return the contents of the Yahoo Pipe
 # The pipe contains good shit.  It is displayed in the rainbow.
 get "/data/js-links" do
