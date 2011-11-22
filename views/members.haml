@@ -1,0 +1,38 @@
+.row
+	.span12.blurb
+		%h2
+			Members
+		%p
+			Here is a non-exclusive list of the members of Javascript Montreal.
+		
+	%div(style="clear:both;")
+
+	.span16
+		- i = 0
+		- members.list.sort{|a, b| b.talks.length <=> a.talks.length}.each_slice(2) do |member, member2|
+			.row
+				- [member, member2].each do |member|
+					- if member != nil
+						.member-info
+							.span2
+								%img{ :src => gravaturl(member.email) }
+
+							.span6
+								%a{ :href => member.website }
+									%h3
+										= member.name
+
+								- member.badges.each do |badge|
+									.tag{ :class => badge[:color] }
+										= badge[:value]
+
+								%div(style="clear:both;")
+
+								Latest presentation :
+								%br
+								%ul
+									- talks = member.talks.sort {|a, b| b[:date] <=> a[:date]}
+									- talks = talks.slice(0, 2) # We get only the last 2 presentations
+									- talks.each do |talk|
+										%li
+											= talk[:title]

@@ -7,6 +7,7 @@ require 'json'
 
 require 'sinatra'
 require 'date'
+require './member-list.rb'
 
 disable :run
 
@@ -18,10 +19,12 @@ end
 # That's right our database is the file system.
 module Model
   # Reverse chronological
-  MEETUPS = read_json_file('data/meetups.json').sort{ |a,b|
-            b["num"] <=> a["num"] }
-  PURPOSE = read_json_file('data/purpose.json')
-  LINKS   = read_json_file('data/links.json')
+  MEETUPS      = read_json_file('data/meetups.json').sort{ |a,b|
+                  b["num"] <=> a["num"] }
+  PURPOSE      = read_json_file('data/purpose.json')
+  LINKS        = read_json_file('data/links.json')
+  JOBS         = read_json_file('data/jobs.json')
+  CONTRIBUTORS = read_json_file('data/contributors.json')
 
   MENU=[
     { :label => "About",
@@ -33,17 +36,34 @@ module Model
     { :label => "Be a presenter",
       :href => "present",
       :section => "present"},
+    { :label => "Jobs",
+      :href => "jobs",
+      :section => "jobs"},
+    { :label => "Members",
+      :href => "members",
+      :section => "members"},
     { :label => "Archive",
       :href => 'archive',
       :section => 'archive'}]
 
-  # SITE = {
-  #   :index      => { :label => "Current", :href => "/", :cls => "current" },
-  #   :archive    => { :label => "Archive", :href => "archive" },
-  #   :directions => { :label => "Where is it?", :href => "map" },
-  #   :present    => { :label => "Want to present?", :href => "present" },
-  #   :about      => { :label => "About", :href => "about" }
-  # }
+  MEMBER_LIST = MemberList.new
+end
+
+# Getting the member list from the speaker list
+Model::MEETUPS.each do |meetup|
+  meetup["speakers"].each do |speaker|
+    member = Model::MEMBER_LIST.getMember(speaker["name"])
+
+    member.email = speaker["email"]
+    member.talks.push({ :title => speaker["title"], :date => meetup["on"] })
+    member.website = speaker["url"]
+  end
+end
+
+# Adding contributor information to the list
+Model::CONTRIBUTORS.each do |contributor|
+  member = Model::MEMBER_LIST.getMember(contributor["name"])
+  member.contributed = true
 end
 
 helpers do
@@ -89,7 +109,6 @@ before do
   @links = Model::LINKS
 end
 
-
 get "/meetups/*.json" do |index|
   content_type :json
 
@@ -101,7 +120,6 @@ get "/meetups/*.json" do |index|
   end).to_json
 end
 
-
 get "/meetups/*.html" do |index|
   content_type :html
 
@@ -110,7 +128,6 @@ get "/meetups/*.html" do |index|
        :locals => { :meetup => meetup }
 
 end
-
 
 get "/meetups.json" do
   content_type :json
@@ -127,10 +144,8 @@ get "/meetups/current/?" do
        :locals => { :meetup => Model::MEETUPS.first }
 end
 
-
 get "/archive/?" do
-  @section = "previously"
-
+  @section = "archive"
   # Exclude the current meeting
   haml :meetups, :locals => { :meetups => Model::MEETUPS.reject{
     |m| m == Model::MEETUPS.first }}
@@ -153,6 +168,16 @@ end
 
 get "/mobile/?" do
   haml :mobile, :layout => false
+end
+
+get "/jobs/?" do
+  @section = "jobs"
+  haml :jobs, :locals => { :jobs => Model::JOBS }
+end
+
+get "/members/?" do
+  @section = "members"
+  haml :members, :locals => { :members => Model::MEMBER_LIST }
 end
 
 # Return the contents of the Yahoo Pipe
