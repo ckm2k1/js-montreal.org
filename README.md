@@ -9,4 +9,4 @@ a host that's got Node JS on it or another server side JS platform, because afte
 open to suggestions.
 
 Log your suggestions using the issues panel. The site exist for the group, help us make it more useful. I'm going to log a
-few issues myself. If you feel like taking them on, let me know!
+few issues myself. If you feel like taking them on, go for it! Go fork and prosper!
