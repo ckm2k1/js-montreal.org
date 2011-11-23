@@ -1,5 +1,7 @@
 #encoding: UTF-8
 require 'rubygems'
+require "bundler/setup"
+
 require 'haml'
 require 'open-uri'
 require 'digest/md5'
