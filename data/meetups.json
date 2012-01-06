@@ -565,7 +565,7 @@
             "email"     : "gina.c.cook@gmail.com",
             "name"      : "Gina Cook",
             "url"       : "http://ilanguage.ca/",
-            "synopsis"  : "Getting JsTestDriver set up requires reading almost every issue in the issue tracker but it's worthed. Gina will present her findings to us and help us fullfil our testing resolutions. JsTestDriver is a test runner for Javascript unit tests that supports 3rd party frameworks.",
+            "synopsis"  : "Getting JsTestDriver set up requires reading almost every issue in the issue tracker but it's worth it. Gina will present her findings to us and help us fullfil our testing resolutions. JsTestDriver is a test runner for Javascript unit tests that supports 3rd party frameworks.",
             "links" : [{
                "url":"http://code.google.com/p/js-test-driver/",
                "title":"JsTestDriver"
