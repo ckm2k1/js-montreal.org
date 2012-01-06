@@ -554,5 +554,33 @@
             }]
          }
       ]
+   },{
+      "num": 17,
+      "title":"Fulfilling your 2012 coding resolutions",
+      "on":"20120110",
+      "blurb": "",
+      "speakers":[
+         {
+            "title"     : "Setting up your New Years Resolution:  JsTestDriver Part 1",
+            "email"     : "gina.c.cook@gmail.com",
+            "name"      : "Gina Cook",
+            "url"       : "http://ilanguage.ca/",
+            "synopsis"  : "Getting JsTestDriver set up requires reading almost every issue in the issue tracker but it's worthed. Gina will present her findings to us and help us fullfil our testing resolutions. JsTestDriver is a test runner for Javascript unit tests that supports 3rd party frameworks.",
+            "links" : [{
+               "url":"http://code.google.com/p/js-test-driver/",
+               "title":"JsTestDriver"
+            }]
+         },{
+            "title"     : "Readability through code formatting, idioms and compression tolerance",
+            "email"     : "mazesoul@gmail.com",
+            "name"      : "Laurent Villeneuve",
+            "url"       : "http://e-signlive.com/",
+            "synopsis"  : "After fiddling with code formatting for many years, Laurent will share some aspects of his idiosyncratic JS style. From comma-in-front formatting, to compression tolerance, to the elimination of flow control statement, we'll see how code can be transmuted to data for better scanability and eventually, architecture.",
+            "links" : [{
+               "url":"http://www.perforce.com/customers/white_papers/seven_pillars_pretty_code",
+               "title":"The Seven Pillars of Pretty Code"
+            }]
+         }
+      ]
    }
 ]
