@@ -577,8 +577,8 @@
             "url"       : "http://e-signlive.com/",
             "synopsis"  : "After fiddling with code formatting for many years, Laurent will share some aspects of his idiosyncratic JS style. From comma-in-front formatting, to compression tolerance, to the elimination of flow control statement, we'll see how code can be transmuted to data for better scanability and eventually, architecture.",
             "links" : [{
-               "url":"http://www.perforce.com/customers/white_papers/seven_pillars_pretty_code",
-               "title":"The Seven Pillars of Pretty Code"
+               "url":"http://mazesoul.github.com/Readability_idioms_and_compression_tolerance",
+               "title":"The slides"
             }]
          }
       ]
