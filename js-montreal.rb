@@ -12,6 +12,15 @@ require 'date'
 
 disable :run
 
+def special_event
+  filename = 'data/special_event.html'
+  if File.exists?('data/special_event.html')
+    File.open(filename){ |f| f.read }
+  else
+    nil
+  end
+end
+
 # What could possibly go wrong?
 def read_json_file(path)
   JSON.parse(File.open(path){ |f| f.read })
@@ -24,7 +33,7 @@ module Model
             b["num"] <=> a["num"] }
   PURPOSE = read_json_file('data/purpose.json')
   LINKS   = read_json_file('data/links.json')
-
+  SPECIAL = special_event
   MENU=[
     { :label => "About",
       :href => "about",
