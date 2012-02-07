@@ -1,5 +1,5 @@
 class MemberList
-	
+
 	def initialize
 		@members = Hash.new()
 	end
@@ -56,19 +56,19 @@ class Member
 	end
 
 	def contributed=(contributed)
-		@contributed = contributed	
+		@contributed = contributed
 	end
 
-	# The talks that the member did 
+	# The talks that the member did
 	def talks
 		if !defined?(@talk) or @talk == nil
 			@talk = []
 		end
-		
+
 		@talk
 	end
 
-	# Badges 
+	# Badges
 	def badges
 		lstBadges = []
 
@@ -79,7 +79,7 @@ class Member
 		if @talk.length >= 5
 			lstBadges.push({ :color => "silver", :value => "Orator" })
 		end
-		
+
 		if @talk.length >= 15
 			lstBadges.push({ :color => "gold", :value => "Speechmaker" })
 		end

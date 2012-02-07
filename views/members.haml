@@ -3,8 +3,8 @@
 		%h2
 			Members
 		%p
-			Here is a non-exclusive list of the members of Javascript Montreal.
-		
+			Here is a non-exclusive list of the members of Javascript Montreal. In fact, this is only a list of people who have given talks at one point or another.
+
 	%div(style="clear:both;")
 
 	.span16
@@ -32,7 +32,7 @@
 								%br
 								%ul
 									- talks = member.talks.sort {|a, b| b[:date] <=> a[:date]}
-									- talks = talks.slice(0, 2) # We get only the last 2 presentations
+									- talks = talks.slice(0, 5)
 									- talks.each do |talk|
 										%li
 											= talk[:title]

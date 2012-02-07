@@ -477,7 +477,7 @@
          },{
                "title"     : "State of the JS-MONTREAL address",
                "email"     : "neonskimmer@gmail.com",
-               "name"      : "Bruno Carriere & Everyone else",
+               "name"      : "Bruno Carriere",
                "url"       : "https://twitter.com/jsmontreal",
                "synopsis"  : "We're quickly closing in on <em>two years</em> of JS-MONTREAL. Let's talk about what we want to see more of, less of and new things we want to accomplish over the next few months. Also we need halp! Are you interested in volunteering your time to make JS-MONTREAL better? It's a good time to get involved.",
                "links"     : [
@@ -551,6 +551,65 @@
             },{
                "url":"http://twitter.github.com/bootstrap/",
                "title":"Twitter Bootstrap"
+            }]
+         }
+      ]
+   },{
+      "num": 17,
+      "title":"Fulfilling your 2012 coding resolutions",
+      "on":"20120110",
+      "blurb": "",
+      "speakers":[
+         {
+            "title"     : "Setting up your New Years Resolution:  JsTestDriver Part 1",
+            "email"     : "gina.c.cook@gmail.com",
+            "name"      : "Gina Cook",
+            "url"       : "http://ilanguage.ca/",
+            "synopsis"  : "Getting JsTestDriver set up requires reading almost every issue in the issue tracker but it's worth it. Gina will present her findings to us and help us fullfil our testing resolutions. JsTestDriver is a test runner for Javascript unit tests that supports 3rd party frameworks.",
+            "links" : [{
+               "url":"http://code.google.com/p/js-test-driver/",
+               "title":"JsTestDriver"
+            }]
+         },{
+            "title"     : "Readability through code formatting, idioms and compression tolerance",
+            "email"     : "mazesoul@gmail.com",
+            "name"      : "Laurent Villeneuve",
+            "url"       : "http://e-signlive.com/",
+            "synopsis"  : "After fiddling with code formatting for many years, Laurent will share some aspects of his idiosyncratic JS style. From comma-in-front formatting, to compression tolerance, to the elimination of flow control statement, we'll see how code can be transmuted to data for better scanability and eventually, architecture.",
+            "links" : [{
+               "url":"http://mazesoul.github.com/Readability_idioms_and_compression_tolerance",
+               "title":"The slides"
+            }]
+         }
+      ]
+   },{
+      "num": 18,
+      "title":"function forever(){ return 'alone' }",
+      "on":"20120214",
+      "blurb": "Yeah, we know it's on Valentine's day. Show your love for the world's most misunderstood programming language.",
+      "speakers":[
+         {
+            "title"     : " /^[FfC](?:(?:re?a|\*{1,2}|.*)c?)king$/ Regex",
+            "email"     : "mazesoul@gmail.com",
+            "name"      : "Laurent Villeneuve",
+            "url"       : "https://github.com/mazesoul",
+            "synopsis"  : "Do you, like most regular folks, suck at regular expressions?  What if you <a href=\"http://xkcd.com/208/\">suddenly had to save someone's life</a> using Regex? You could be a hero! Laurent's going to unlock the mysteries of Regex syntax and put us all on the path to regular expression enlightenment.",
+            "links" : [{
+               "url":"http://xkcd.com/208/",
+               "title":"Everybody stand back."
+            }]
+         },{
+            "title"     : "Building DocumentUp",
+            "email"     : "jeromegn@gmail.com",
+            "name"      : "Jerome Gravel-Niquet",
+            "url"       : "http://jgn.me/",
+            "synopsis"  : "Jerome's latest project, DocumentUp, uses many interesting js libraries and techniques to create documentation on the fly for your GitHub projects. He's going to tell us more about the technology behind DocumentUp: Ender, localStorage, Node and more.",
+            "links" : [{
+               "url":"http://documentup.com/",
+               "title":"DocumentUp"
+            },{
+               "url":"http://ender.no.de/",
+               "title":"Ender"
             }]
          }
       ]

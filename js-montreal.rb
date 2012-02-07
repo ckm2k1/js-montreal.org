@@ -1,5 +1,7 @@
 #encoding: UTF-8
 require 'rubygems'
+require "bundler/setup"
+
 require 'haml'
 require 'open-uri'
 require 'digest/md5'
@@ -10,6 +12,15 @@ require 'date'
 require './member-list.rb'
 
 disable :run
+
+def special_event
+  filename = 'data/special_event.html'
+  if File.exists?('data/special_event.html')
+    File.open(filename){ |f| f.read }
+  else
+    nil
+  end
+end
 
 # What could possibly go wrong?
 def read_json_file(path)
@@ -25,7 +36,7 @@ module Model
   LINKS        = read_json_file('data/links.json')
   JOBS         = read_json_file('data/jobs.json')
   CONTRIBUTORS = read_json_file('data/contributors.json')
-
+  SPECIAL = special_event
   MENU=[
     { :label => "About",
       :href => "about",

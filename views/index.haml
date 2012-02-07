@@ -43,6 +43,9 @@
       - else
         %a.btn.info{ :href=> "mailto:contact@js-montreal.org "}
           Looks like there's space for one more presentation!
+- unless Model::SPECIAL.nil?
+  = Model::SPECIAL
+
 #members{ :style => 'display: none;' }
   Members:
   %select#sigs
