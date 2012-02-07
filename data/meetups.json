@@ -582,5 +582,36 @@
             }]
          }
       ]
+   },{
+      "num": 18,
+      "title":"function forever(){ return 'alone' }",
+      "on":"20120214",
+      "blurb": "Yeah, we know it's on Valentine's day. Show your love for the world's most misunderstood programming language.",
+      "speakers":[
+         {
+            "title"     : " /^[FfC](?:(?:re?a|\*{1,2}|.*)c?)king$/ Regex",
+            "email"     : "mazesoul@gmail.com",
+            "name"      : "Laurent Villeneuve",
+            "url"       : "https://github.com/mazesoul",
+            "synopsis"  : "Do you, like most regular folks, suck at regular expressions?  What if you <a href=\"http://xkcd.com/208/\">suddenly had to save someone's life</a> using Regex? You could be a hero! Laurent's going to unlock the mysteries of Regex syntax and put us all on the path to regular expression enlightenment.",
+            "links" : [{
+               "url":"http://xkcd.com/208/",
+               "title":"Everybody stand back."
+            }]
+         },{
+            "title"     : "Building DocumentUp",
+            "email"     : "jeromegn@gmail.com",
+            "name"      : "Jerome Gravel-Niquet",
+            "url"       : "http://jgn.me/",
+            "synopsis"  : "Jerome's latest project, DocumentUp, uses many interesting js libraries and techniques to create documentation on the fly for your GitHub projects. He's going to tell us more about the technology behind DocumentUp: Ender, localStorage, Node and more.",
+            "links" : [{
+               "url":"http://documentup.com/",
+               "title":"DocumentUp"
+            },{
+               "url":"http://ender.no.de/",
+               "title":"Ender"
+            }]
+         }
+      ]
    }
 ]
