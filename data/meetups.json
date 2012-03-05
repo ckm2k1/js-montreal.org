@@ -613,5 +613,36 @@
             }]
          }
       ]
+   },{
+      "num": 19,
+      "title":"JS-MONTREAL #19",
+      "on":"20120313",
+      "blurb": "Two excellent talks this month. D3 is a fascinating data transformation library and Travis CI is the hottest thing to hit the Continuous Integration scene in years. Plus, it's much prettier than Jenkins.",
+      "speakers":[
+         {
+            "title"     : "Transform data into magic with D3",
+            "email"     : "ckm2k1@gmail.com",
+            "name"      : "Steve Venzerul",
+            "url"       : "https://github.com/ckm2k1",
+            "synopsis"  : "D3 applies data-driven transformation to a document. It is particularly adept at creating awesome visualisations using SVG and CSS3-transforms.Steve will show us how to get started with D3 and a few fun things you can do with it.",
+            "links" : [{
+               "url":"http://mbostock.github.com/d3/",
+               "title":"D3"
+            }, {
+               "url":"https://github.com/ckm2k1/d3_Presentation",
+               "title":"Presentation"
+            }]
+         },{
+            "title"     : "Continuous integration for your  projects using Travis CI",
+            "email"     : "cmallette@gmail.com",
+            "name"      : "Christian Joudrey",
+            "url"       : "http://christianjoudrey.com/",
+            "synopsis"  : "Travis CI is getting a lot of traction, particularly on Github where it is beautifully integrated. Christian will explain how easy it is to get your open-source project working with Travis.",
+            "links" : [{
+               "url":"http://travis-ci.org/",
+               "title":"Travis CI"
+            }]
+         }
+      ]
    }
 ]
