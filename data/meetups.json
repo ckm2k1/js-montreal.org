@@ -605,6 +605,9 @@
             "url"       : "http://jgn.me/",
             "synopsis"  : "Jerome's latest project, DocumentUp, uses many interesting js libraries and techniques to create documentation on the fly for your GitHub projects. He's going to tell us more about the technology behind DocumentUp: Ender, localStorage, Node and more.",
             "links" : [{
+               "url": "http://speakerdeck.com/u/jeromegn/p/documentup-jsmontreal",
+               "title": "Slides"
+            },{
                "url":"http://documentup.com/",
                "title":"DocumentUp"
             },{
