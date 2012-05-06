@@ -647,5 +647,32 @@
             }]
          }
       ]
+   },{
+      "num": 20,
+      "title":"JS-MONTREAL #20",
+      "on":"20120508",
+      "blurb": "Following our month off, here's an interesting presentation about QML, another place where your JS skills can be put to work. Since we only have one presentation this month, think of some libraries or tools you've discovered recently that you want to share with the group. See you all there!",
+      "speakers":[
+         {
+            "title"     : "QML - QT programs with JavaScript",
+            "email"     : "rahulgarg44@gmail.com",
+            "name"      : "Rahul Garg",
+            "url"       : "http://twitter.com/#!/codedivine",
+            "synopsis"  : "QML is a JavaScript-based, declarative language for designing user interface–centric applications. It is part of Qt Quick, the UI creation kit developed by Nokia within the Qt framework. QML is mainly used for mobile applications where touch input, fluid animations (60 FPS) and user experience are crucial. Rahul will show us how to get started with QML.",
+            "links" : [{
+               "url":"http://qt.nokia.com/qtquick/",
+               "title":"Qt Quick"
+            }]
+         },{
+            "title"     : "Show and tell",
+            "email"     : "neonskimmer@gmail.com",
+            "name"      : "Everyone",
+            "url"       : "http://js-montreal.org",
+            "synopsis"  : "Let's have an open show-and-tell about tools and libraries we've recently discovered or started using.",
+            "links" : [{
+               "url":"http://js-montreal.org",
+               "title":"js-montreal.org"
+            }]
+         }]
    }
 ]
