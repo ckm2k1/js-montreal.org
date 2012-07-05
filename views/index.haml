@@ -23,14 +23,11 @@
         - if !past?(meetup)
           %br<
           %b @ 18:45
-        %br<
-        - if past?(meetup)
-          Register on
-          %a{ :href => "http://js-montreal.eventbrite.com", :target => "_new" }Eventbrite
-          and you will be notified of our next event.
-        - else
-          Find out all the details and register at
-          %a{ :href => "http://js-montreal.eventbrite.com", :target => "_new" }Eventbrite
+        %br
+        %br
+        %a{ :class => "btn success", :href => "http://js-montreal.eventbrite.com", :target => "_new" }Register
+        %p
+          &rarr; to be notified of our events.
 
 .row.meetup
   .span7
@@ -40,9 +37,9 @@
     .speaker
       - if booked?
         = haml :speaker, :locals => { :s => second }, :layout => false
-      - else
-        %a.btn.info{ :href=> "mailto:contact@js-montreal.org "}
-          Looks like there's space for one more presentation!
+      / - else
+      /   %a.btn.info{ :href=> "mailto:contact@js-montreal.org "}
+      /     Looks like there's space for one more presentation!
 - unless Model::SPECIAL.nil?
   = Model::SPECIAL
 
@@ -52,6 +49,6 @@
     %option
   %p.credits
 / Here goes the signature plugins
-%script{ :src => "src/signatures/signatures.js", :type => "text/javascript" }
-%script{ :src => "src/signatures/example.js", :type => "text/javascript" }
-%script{ :src => "src/signatures/bruno-c.js", :type => "text/javascript" }
+/ %script{ :src => "src/signatures/signatures.js", :type => "text/javascript" }
+/ %script{ :src => "src/signatures/example.js", :type => "text/javascript" }
+/ %script{ :src => "src/signatures/bruno-c.js", :type => "text/javascript" }

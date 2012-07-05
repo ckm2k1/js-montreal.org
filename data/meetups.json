@@ -674,5 +674,25 @@
                "title":"js-montreal.org"
             }]
          }]
+   },{
+      "num": 21,
+      "title":"Jump into Node - Part 2",
+      "on":"20120710",
+      "blurb": "This month it's all about Node. If you still haven't had the chance to build something with Node, this month's presentation will be a good introduction to everything you need to know to get started. Node is no longer on the fringe. With the support and endorsement of giants like Microsoft, Yahoo, eBay, Joyent, LinkedIn - Node's time to hit the mainstream is imminent. Come see what all the fuss is about and leave with enough knowledge to hit the ground running.",
+      "speakers":[
+         {
+            "title"     : "Getting to know Node",
+            "email"     : "ckm2k1@gmail.com",
+            "name"      : "Steve Venzerul",
+            "url"       : "https://github.com/ckm2k1",
+            "synopsis"  : "Steve's going to show us how to get started building web apps using Node, Express and Jade. We'll also see explore some of the tools useful for Node development and a demonstration of Node's asynchronous nature through a small crawler program Steve has built. Exceptionally this month, there will be only one presentation because there is a lot of material to cover. And plenty of time for questions.",
+            "links" : [{
+               "url":"http://nodejs.org",
+               "title":"NodeJS"
+            },{
+               "url":"http://expressjs.com",
+               "title":"express"
+            }]
+         }]
    }
 ]
