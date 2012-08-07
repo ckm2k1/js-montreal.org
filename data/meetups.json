@@ -694,5 +694,25 @@
                "title":"express"
             }]
          }]
+   },{
+      "num": 22,
+      "title": "JS-MONTREAL #22",
+      "on":"20120814",
+      "blurb": "After a great Node meetup, here's more cool stuff you can do with it. I assure you there is an air conditioner where we meet.",
+      "speakers":[
+         {
+            "title"     : "Building assets on the fly with Node",
+            "email"     : "martindrapeau@gmail.com",
+            "name"      : "Martin Drapeau",
+            "url"       : "https://github.com/martindrapeau",
+            "synopsis"  : "Martin is going to demonstrate the technique he has been using to serve assets and templates without a 'watcher', using Node and Snockets.",
+            "links" : [{
+               "url":"http://nodejs.org",
+               "title":"NodeJS"
+            },{
+               "url":"https://github.com/TrevorBurnham/snockets",
+               "title":"Snockets"
+            }]
+         }]
    }
 ]

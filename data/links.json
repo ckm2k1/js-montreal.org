@@ -1,5 +1,9 @@
 {
 	"contact": [{
+		"cls" : "facebook",
+		"label" : "facebook group",
+		"href" : "https://www.facebook.com/groups/253683934748003/"
+	},{
 		"cls" : "linkedin",
 		"handle": "js-montreal.org",
 		"label": "LinkedIn",
@@ -26,5 +30,11 @@
 	},{
 		"label": "mtl scheme &amp; lisp",
 		"href": "http://schemeway.dyndns.org/mslug/mslug-home/"
+	},{
+		"label" : "bonjure (clojure)",
+		"href" : "http://www.bonjure.org/"
+	}, {
+		"label" : "cocoaheads mtl",
+		"href" : "http://cocoaheadsmtl.com/"
 	}]
 }

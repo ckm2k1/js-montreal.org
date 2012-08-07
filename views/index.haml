@@ -37,9 +37,11 @@
     .speaker
       - if booked?
         = haml :speaker, :locals => { :s => second }, :layout => false
-      / - else
-      /   %a.btn.info{ :href=> "mailto:contact@js-montreal.org "}
-      /     Looks like there's space for one more presentation!
+      - else
+        %br
+        %br
+        %a.btn.info{ :href=> "mailto:contact@js-montreal.org "}
+          Looks like there's space for one more presentation!
 - unless Model::SPECIAL.nil?
   = Model::SPECIAL
 
