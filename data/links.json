@@ -22,14 +22,11 @@
 		"label": "montreal.rb",
 		"href": "http://www.montrealonrails.com/"
 	},{
-		"label": "nodemtl",
-		"href": "http://nodemtl.com/"
+		"label": "php quebec",
+		"href": "http://www.phpquebec.org/"
 	},{
 		"label": "mtl python",
 		"href": "http://montrealpython.org/"
-	},{
-		"label": "mtl scheme &amp; lisp",
-		"href": "http://schemeway.dyndns.org/mslug/mslug-home/"
 	},{
 		"label" : "bonjure (clojure)",
 		"href" : "http://www.bonjure.org/"
