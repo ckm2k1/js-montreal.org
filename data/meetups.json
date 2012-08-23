@@ -707,6 +707,9 @@
             "url"       : "https://github.com/martindrapeau",
             "synopsis"  : "Martin is going to demonstrate the technique he has been using to serve assets and templates without a 'watcher', using Node and Snockets.",
             "links" : [{
+               "url":"http://www.slideshare.net/martindrapeau/building-assets-on-the-fly-with-node",
+               "title":"Slides"
+            },{
                "url":"http://nodejs.org",
                "title":"NodeJS"
             },{
@@ -719,7 +722,13 @@
             "name"      : "Anna Filina",
             "url"       : "http://annafilina.com",
             "synopsis"  : "Anna will pick a few Javascript frameworks and libraries that she used on a recent project (jQuery, RaphaelJS, Plupload, etc.). And then show a quick overview of the possibilities of each and how they helped her build a mission-critical application.",
-            "links" : []
+            "links" : [{
+               "url":"https://speakerdeck.com/u/afilina/p/javascript-tools-and-frameworks-faves-1",
+               "title":"Slides"
+            },{
+               "url":"https://github.com/afilina/demo_jsfaves",
+               "title":"Code & Examples"
+            }]
          }]
    }
 ]
