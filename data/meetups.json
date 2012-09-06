@@ -730,5 +730,28 @@
                "title":"Code & Examples"
             }]
          }]
+   },{
+      "num": 23,
+      "title": "JS-MONTREAL #23",
+      "on":"20120911",
+      "blurb": "",
+      "speakers":[
+         {
+            "title"     : "Next-generation JavaScript Frameworks",
+            "email"     : "cleung0@gmail.com",
+            "name"      : "Clarence Leung",
+            "url"       : "https://github.com/clarle",
+            "synopsis"  : "Now that we have both client-side and server-side JavaScript frameworks, the next step is to bring the two together. Clarence will explain the benefits of sharing code between client and server and demo three of the newest frameworks that take advantage of this: Mojito, Derby and Meteor.",
+            "links" : [{
+               "url":"http://developer.yahoo.com/cocktails/mojito/",
+               "title":"Mojito"
+            },{
+               "url":"http://derbyjs.com",
+               "title":"Derby"
+            },{
+               "url":"http://meteor.com",
+               "title":"Meteor"
+            }]
+         }]
    }
 ]
