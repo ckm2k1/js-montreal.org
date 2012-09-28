@@ -753,5 +753,28 @@
                "title":"Meteor"
             }]
          }]
+   },{
+      "num": 24,
+      "title": "JS-MONTREAL #24",
+      "on":"20121009",
+      "blurb": "This month we explore another, lesser known context for JavaScript applications - in the browser but completely offline, in the field.",
+      "speakers":[
+         {
+            "title"     : "Taking Javascript Into The Field: A case study",
+            "email"     : "gina.c.cook@gmail.com",
+            "name"      : "Gina Cook & Theresa Deering",
+            "url"       : "https://github.com/OpenSourceFieldlinguistics",
+            "synopsis"  : "FieldDB is a 100% Javascript stack for collaboratively collecting data. It was designed to run offline on multiple platforms (Chrome Extension and Android). In this talk we will discuss the hurdles along the way to building a data heavy offline app. We will focus two key libraries and how they fit into our stack: PouchDB alpha, a Javascript implementation of the NoSQL database CouchDB, for storing large amounts of data offline, and Require.js for simplifying development and deploying to different targets. The Javascript App, and its Node.js web services are <a  href=\"https://github.com/OpenSourceFieldlinguistics\">OpenSourced on GitHub</a>",
+            "links" : [{
+               "url":"http://pouchdb.com/",
+               "title":"PouchDB"
+            },{
+               "url":"http://requirejs.org/",
+               "title":"RequireJS"
+            },{
+               "url":"https://github.com/OpenSourceFieldlinguistics",
+               "title":"Open Source Field Linguistics on GitHub"
+            }]
+         }]
    }
 ]
