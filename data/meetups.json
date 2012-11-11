@@ -776,5 +776,25 @@
                "title":"Open Source Field Linguistics on GitHub"
             }]
          }]
+   },{
+      "num": 25,
+      "title": "JS-MONTREAL #25",
+      "on":"20121113",
+      "blurb": "Building complex web applications these days presents us a with a myriad of options. Rich, component based frameworks are one option and Enyo2 is one of them.",
+      "speakers":[
+         {
+            "title"     : "Introducing the Enyo 2.0 framework",
+            "email"     : "olafura@olafura.com",
+            "name"      : "Olafur Arason",
+            "url"       : "https://github.com/olafura",
+            "synopsis"  : "Enyo 2 is a new component based JavaScript framework. It promotes a sane structure for the code and is easy to get into to make powerful applications. Olafur will also discuss his project DataControl which integrates PouchDB into Enyo to provide a seamless experience when working in offline conditions.",
+            "links" : [{
+               "url":"http://enyojs.com/",
+               "title":"Enyo"
+            },{
+               "url":"https://github.com/olafura/datacontrol",
+               "title":"DataControl on Github"
+            }]
+         }]
    }
 ]
