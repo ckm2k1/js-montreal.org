@@ -687,4 +687,20 @@
          "title": "Blanket.js"
       }]
    }]
+}, {
+   "num": 26,
+   "title": "Going native",
+   "on": "20121211",
+   "blurb": "Building native mobile applications (not embedded browser applications) for multiple platforms, in JavaScript? Totally possible.",
+   "speakers": [{
+      "title": "Introduction a Appcelerator Titanium",
+      "email": "lamoureux.florent@gmail.com",
+      "name": "Florent Lamoureux",
+      "url": "http://www.florentlamoureux.fr/",
+      "synopsis": "Titanium est un framework open source JavaScript, maintenu par Appcelerator, qui permet de développer des applications natives multi plateformes à partir d'un même code source. Florent va présenter son principe de fonctionnement, atouts et inconvénients, et nous montrera en direct la création d'une petite application multi plateforme.",
+      "links": [{
+         "url": "http://www.appcelerator.com/",
+         "title": "Appcelerator"
+      }]
+   }]
 }]
