@@ -703,4 +703,20 @@
          "title": "Appcelerator"
       }]
    }]
+}, {
+   "num": 27,
+   "title": "Back in action",
+   "on": "20130312",
+   "blurb": "And we're back. With a lot of plans for the new year.",
+   "speakers": [{
+      "title": "Angular.js: Un survol",
+      "email": "nison.mael@gmail.com",
+      "name": "Maël Nison",
+      "url": "https://github.com/arcanis",
+      "synopsis": "Développé par Google, apportant un paradigme novateur, 'concurrent' direct d'Ember.js, AngularJS est un framework web faisant de parler de lui ces derniers temps. Maël nous présentera ses caractéristiques et points forts, avant d'évoquer quelques-uns des cas d'utilisations de l'outil.",
+      "links": [{
+         "url": "http://angularjs.org/",
+         "title": "AngularJS"
+      }]
+   }]
 }]
