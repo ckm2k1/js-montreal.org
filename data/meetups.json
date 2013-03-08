@@ -707,7 +707,7 @@
    "num": 27,
    "title": "Back in action",
    "on": "20130312",
-   "blurb": "And we're back. With a lot of plans for the new year.",
+   "blurb": "And we're back. With a lot of plans for the new year. De retour, avec plein de plans pour la nouvelle année.",
    "speakers": [{
       "title": "Angular.js: Un survol",
       "email": "nison.mael@gmail.com",
@@ -717,6 +717,16 @@
       "links": [{
          "url": "http://angularjs.org/",
          "title": "AngularJS"
+      }]
+   },{
+      "title": "jQuery Promises en 15 minutes",
+      "email": "maximeb@gmail.com",
+      "name": "Maxime Bergeron",
+      "url": "https://github.com/maxmx",
+      "synopsis": "Malgré le fait qu'elles existent à travers les 'Deferred' dans jQuery depuis plusieurs versions (1.5+), les 'promises' sont encore méconnues et mal comprises par beaucoup de programmeurs. À travers plusieurs exemples, Maxime va démystifier tout ça.",
+      "links": [{
+         "url": "http://api.jquery.com/category/deferred-object/",
+         "title": "jQuery: Deferred Object"
       }]
    }]
 }]
