@@ -729,4 +729,26 @@
          "title": "jQuery: Deferred Object"
       }]
    }]
+}, {
+   "num": 28,
+   "title": "JS-MONTREAL #28",
+   "on": "20130409",
+   "blurb": "This month, coding kata practice and a Minecraft like game. Ce mois-ci, un kata JavaScript et un jeu de type Minecraft.",
+   "speakers": [{
+      "title": "Un kata TDD en JavaScript: Prime Factors",
+      "email": "eric.mignot@gmail.com",
+      "name": "Eric Mignot",
+      "url": "http://ericminio.wordpress.com/",
+      "synopsis": "L'éco-système Javascript dispose aujourd'hui de tous les outils nécéssaires pour profiter du Développement piloté par les tests (TDD). Néanmoins sa maîtrise reste difficile. Les coding-dojos ont été conçus pour nous permettre d'apprendre à tirer le meilleurs du TDD tout en jouant. Alors amenez vos laptops et venez coder, js-montreal se transforme en dojo!",
+      "links": [{
+         "url": "http://visionmedia.github.com/mocha/",
+         "title": "Mocha"
+      },{
+         "url": "http://pivotal.github.com/jasmine/",
+         "title": "Jasmine"
+      }, {
+         "url": "http://butunclebob.com/ArticleS.UncleBob.ThePrimeFactorsKata",
+         "title": "The Prime Factors kata"
+      }]
+   }]
 }]
