@@ -739,7 +739,7 @@
       "email": "eric.mignot@gmail.com",
       "name": "Eric Mignot",
       "url": "http://ericminio.wordpress.com/",
-      "synopsis": "L'éco-système Javascript dispose aujourd'hui de tous les outils nécéssaires pour profiter du Développement piloté par les tests (TDD). Néanmoins sa maîtrise reste difficile. Les coding-dojos ont été conçus pour nous permettre d'apprendre à tirer le meilleurs du TDD tout en jouant. Alors amenez vos laptops et venez coder, js-montreal se transforme en dojo!",
+      "synopsis": "L'éco-système Javascript dispose aujourd'hui de tous les outils nécéssaires pour profiter du Développement piloté par les tests (TDD). Néanmoins sa maîtrise reste difficile. Les coding-dojos ont été conçus pour nous permettre d'apprendre à tirer le meilleur du TDD tout en jouant. Alors amenez vos laptops et venez coder, js-montreal se transforme en dojo!",
       "links": [{
          "url": "http://visionmedia.github.com/mocha/",
          "title": "Mocha"
@@ -749,6 +749,19 @@
       }, {
          "url": "http://butunclebob.com/ArticleS.UncleBob.ThePrimeFactorsKata",
          "title": "The Prime Factors kata"
+      }]
+   },{
+      "title": "Voxplode",
+      "email": "nison.mael@gmail.com",
+      "name": "Maël Nison",
+      "url": "https://github.com/voxplode",
+      "synopsis": "Voxplode est un jeu qui se passe dans un monde genéré de façon procédurale, et rendu a l'aide d'un engin voxel. Mael va nous présenter son jeu et les outils qu'il a conçu pour y arriver.",
+      "links": [{
+         "url": "https://github.com/arcanis/voxplode",
+         "title": "Voxplode"
+      },{
+         "url": "http://arcanis.github.io/swat/",
+         "title": "SWAT Game Engine"
       }]
    }]
 }]
