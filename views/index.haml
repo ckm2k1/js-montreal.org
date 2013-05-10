@@ -25,10 +25,16 @@
           %b @ 18:45
         %br
         %br
-        %a{ :class => "btn success", :href => "http://js-montreal.eventbrite.com", :target => "_new" }Register
+        %strong Join our members list
+        %form(method='get' accept-charset='UTF-8' name='oi_form' action='http://cmtd1.com/oi/1/4b73ed74e3eb76d8147a15ecbc336fdb')
+          %input(type='email' name='email' class="medium" placeholder="email")
+          %input(type='hidden' name='goto' value='')
+          %input(type='hidden' name='iehack' value='&#9760;')
+          %br
+          %br
+          %input(type='submit' class='btn success' value='Join')
         %p
           &rarr; to be notified of our events.
-
 .row.meetup
   .span7
     .speaker

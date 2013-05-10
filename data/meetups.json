@@ -784,7 +784,7 @@
       "email": "ben.nevile@gmail.com",
       "name": "Ben Neville",
       "url": "http://blog.mainsocial.com/",
-      "synopsis": "Hoodie is a brand new framework designed to help you build web applications super quickly. Ben is going to tell us about what it can do and show us how to get started.",
+      "synopsis": "Hoodie is a new \"frontend-only\" framework designed to help you build applications quickly without worrying about server-side programming. Ben is going to tell us about what it can do, what type of apps it's a good fit for, and show us how to get started.",
       "links": [{
          "url": "http://hood.ie/",
          "title": "Hoodie"
