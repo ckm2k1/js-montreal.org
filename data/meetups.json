@@ -764,4 +764,30 @@
          "title": "SWAT Game Engine"
       }]
    }]
+}, {
+   "num": 29,
+   "title": "Spring",
+   "on": "20130514",
+   "blurb": "Spring is here and so are a bunch of new JavaScript tools. This month: Better testing with Karma and Front-end only web apps with Hoodie.",
+   "speakers": [{
+      "title": "Continuous Testing with Karma",
+      "email": "danielrobertsdesign@gmail.com",
+      "name": "Daniel Roberts",
+      "url": "http://ericminio.wordpress.com/",
+      "synopsis": "Karma is a testing framework agnostic, blazingly fast automated test runner written by the Google team behind Angular.js. Karma listens to your filesystem and runs your tests every time you save a file. Daniel will cover how with Karma, writing tests first, before code, can speed up your day-to-day development process, and turn test writing from a chore to an essential time saving practice you couldn't live without.",
+      "links": [{
+         "url": "http://karma-runner.github.io/0.8/index.html",
+         "title": "Karma"
+      }]
+   },{
+      "title": "Hoodie",
+      "email": "ben.nevile@gmail.com",
+      "name": "Ben Neville",
+      "url": "http://blog.mainsocial.com/",
+      "synopsis": "Hoodie is a brand new framework designed to help you build web applications super quickly. Ben is going to tell us about what it can do and show us how to get started.",
+      "links": [{
+         "url": "http://hood.ie/",
+         "title": "Hoodie"
+      }]
+   }]
 }]
