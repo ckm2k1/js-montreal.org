@@ -790,4 +790,27 @@
          "title": "Hoodie"
       }]
    }]
+}, {
+   "num": 30,
+   "title": "Spring",
+   "on": "20130611",
+   "blurb": "Continuing our Spring session with more goodies. This month: Cedric will show us how to get started on mobile development, and Rowan will introduce Grunt.js for managing your builds and tasks in your awesome JS projects.",
+   "speakers": [{
+      "title": "Getting Started With Vanilla Mobile Apps",
+      "email": "cedric.dugas@gmail.com",
+      "name": "Cedric Dugas",
+      "url": "http://www.position-absolute.com/",
+      "synopsis": "Thinking about doing a mobile web app? See what issues you really don't want to tackle and learn some tips & tricks to get started.",
+      "links": []
+   },{
+      "title": "Grunt.js",
+      "email": "rowanu@gmail.com",
+      "name": "Rowan Udell",
+      "url": "http://dashboarddude.com/",
+      "synopsis": "A practical introduction to using the task runner GruntJS in your projects. More than just a build tool, Grunt makes it easy to automate your common tasks. Leverage concepts you already know, and an abundant ecosystem of plugins to quickly and easily improve your day-to-day workflow.",
+      "links": [{
+         "url": "http://www.gruntjs.com",
+         "title": "Grunt.js"
+      }]
+   }]
 }]
