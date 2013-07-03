@@ -479,7 +479,7 @@
    "on": "20120214",
    "blurb": "Yeah, we know it's on Valentine's day. Show your love for the world's most misunderstood programming language.",
    "speakers": [{
-      "title": " /^[FfC](?:(?:re?a|\*{1,2}|.*)c?)king$/ Regex",
+      "title": " /^[FfC](?:(?:re?a|\\*{1,2}|.*)c?)king$/ Regex",
       "email": "mazesoul@gmail.com",
       "name": "Laurent Villeneuve",
       "url": "https://github.com/mazesoul",
@@ -801,7 +801,10 @@
       "name": "Cedric Dugas",
       "url": "http://www.position-absolute.com/",
       "synopsis": "Thinking about doing a mobile web app? See what issues you really don't want to tackle and learn some tips & tricks to get started.",
-      "links": []
+      "links": [{
+         "url": "http://www.slideshare.net/cdugas1/presenattion-mobile-22864963",
+         "title": "Slides"
+      }]
    },{
       "title": "Grunt.js",
       "email": "rowanu@gmail.com",
@@ -811,6 +814,35 @@
       "links": [{
          "url": "http://www.gruntjs.com",
          "title": "Grunt.js"
+      }, {
+         "url": "http://rowanu.github.io/js-montreal-talk.gruntjs/",
+         "title": "Slides"
+      }]
+   }]
+}, {
+   "num": 31,
+   "title": "Summer",
+   "on": "20130709",
+   "blurb": "",
+   "speakers": [{
+      "title": "Pump.io - Next-Gen Social Network Engine",
+      "email": "ryan@kafei.ca",
+      "name": "Ryan Weal",
+      "url": "http://www.kafei.ca/",
+      "synopsis": "Pump.io is a next generation social network engine written in JavaScript built by the creators of StatusNet, a PHP-based social networking tool. This complete rewrite and protocol change lightens the social network stack so that it is easily manageable by a single developer who is familiar with node.js. Pump.io manages the entire decentralized social network in JavaScript handling protocol communication and including a built-in web UI with real-time updating for the user. In this session we will talk about how to join an existing pump.io instance and follow people on other instances, how pump.io’s decentralization protocols work, and then we will talk about how to setup your own pump.io server.",
+      "links": [{
+         "url": "http://www.pump.io",
+         "title": "Pump.io - Social Network Engine"
+      }]
+   }, {
+      "title": "Continuous Testing with Karma",
+      "email": "danielrobertsdesign@gmail.com",
+      "name": "Daniel Roberts",
+      "url": "http://ericminio.wordpress.com/",
+      "synopsis": "Karma is a testing framework agnostic, blazingly fast automated test runner written by the Google team behind Angular.js. Karma listens to your filesystem and runs your tests every time you save a file. Daniel will cover how with Karma, writing tests first, before code, can speed up your day-to-day development process, and turn test writing from a chore to an essential time saving practice you couldn't live without.",
+      "links": [{
+         "url": "http://karma-runner.github.io/0.8/index.html",
+         "title": "Karma"
       }]
    }]
 }]
