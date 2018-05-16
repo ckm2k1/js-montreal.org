@@ -1,0 +1,146 @@
+# -*- coding: utf-8 -*-
+#
+# config.py
+# Guillaume Smaha, 2018-05-01
+# Copyright (c) 2018 ElementAI. All rights reserved.
+#
+
+import re
+import six
+import logging
+from datetime import datetime
+import parsedatetime
+
+
+def convert_duration(value):
+    """ Convert an input duration in seconds
+    """
+    if type(value) is int:
+        return value
+
+    cal = parsedatetime.Calendar()
+    date_now = datetime.now().replace(microsecond=0)
+    date, _ = cal.parseDT(value, sourceTime=date_now)
+    return (date - date_now).total_seconds()
+
+
+configs = {
+    'logging_format': {
+        'description': 'Logging format',
+        'default': '[%(levelname)s]%(message)s',
+        'type': str
+    },
+    'logging_level': {
+        'description': 'Debug level: DEBUG, INFO, WARNING, ERROR, CRITICAL',
+        'default': 'INFO',
+        'type': int,
+        'convert': logging.getLevelName
+    },
+    'port': {
+        'description': 'Process agent server port',
+        'default': 8080,
+        'type': int
+    }
+}
+
+
+class Config:
+
+    configs_cached = {}
+    regex_config_replace = re.compile('%\w+%')
+
+    @staticmethod
+    def _parse_value(getter, value):
+        if isinstance(value, str):
+            for match in Config.regex_config_replace.findall(value):
+                replace_value = getter(match[1:-1], None)
+                if replace_value is not None:
+                    if value == match:
+                        value = replace_value
+                        break
+                    else:
+                        value = value.replace(match, str(replace_value))
+        return value
+
+    @staticmethod
+    def get_keys():
+        return configs.keys()
+
+    @staticmethod
+    def get_default(property_name, default=None):
+        """ Get default property value
+        """
+        prop = configs.get(property_name)
+        if not prop:
+            return default
+
+        value = prop.get('default')
+        value = Config._parse_value(Config.get_default, value)
+
+        if not value and default:
+            return default
+
+        return value
+
+    @staticmethod
+    def get(property_name, default=None):
+        """ Get property value
+        """
+        if property_name in Config.configs_cached and Config.configs_cached[property_name]:
+            return Config.configs_cached[property_name]
+
+        prop = configs.get(property_name)
+        if not prop:
+            return default
+
+        value = prop.get('value')
+        if value is None:
+            value = prop.get('default')
+        value = Config._parse_value(Config.get, value)
+
+        value = Config.convert(prop, value)
+        Config.configs_cached[property_name] = value
+
+        if not value and default:
+            return default
+
+        return value
+
+    @staticmethod
+    def set(property_name, value):
+        """ Set new property value
+        """
+        if property_name not in configs:
+            configs[property_name] = {}
+        Config.clear_cache(property_name)
+        configs[property_name]['value'] = value
+        return True
+
+    @staticmethod
+    def clear_cache(property_name):
+        """ Clear cache for property
+        """
+        if property_name in Config.configs_cached:
+            del Config.configs_cached[property_name]
+
+        prop_var = '%' + property_name + '%'
+        for (key, prop) in six.iteritems(configs):
+            if key in Config.configs_cached:
+                prop_value = prop.get('value')
+                if prop_value is None:
+                    prop_value = prop.get('default')
+                if isinstance(prop_value, str) and prop_var in prop_value:
+                    Config.clear_cache(key)
+
+    @staticmethod
+    def convert(prop, value):
+        """ Convert value to property type
+        """
+        if value:
+            if 'convert' in prop and callable(prop['convert']):
+                value = prop['convert'](value)
+
+            if 'type' in prop:
+                type_ = prop['type']
+                return type_(value)
+        return value

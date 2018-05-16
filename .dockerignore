@@ -1,0 +1,7 @@
+.git
+tests
+Dockerfile
+tox.ini
+test_runner.py
+testing_requirements.txt
+coverage_html

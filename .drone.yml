@@ -1,0 +1,73 @@
+pipeline:
+
+  clone:
+    image: plugins/git
+    tags: true
+
+  test:
+    image: images.borgy.elementai.lan/borgy/pythons
+    secrets: [ COVERALLS_REPO_TOKEN ]
+    commands:
+      - python3.6 -m venv venv
+      - . venv/bin/activate
+      - pip install -r requirements.txt
+      - pip install -r requirements-tests.txt
+      - make test.full
+      - coveralls --verbose
+      - deactivate
+      - rm -fr venv
+
+  publish:
+    image: images.borgy.elementai.lan/borgy/plugin-python-release:latest
+    secrets: [ github_token ]
+    environment:
+    - GITHUB_REPO=${DRONE_REPO_NAME}
+    - GITHUB_USER=${DRONE_REPO_OWNER}
+    commands:
+    - make DEPLOYZOR_RELEASE=1 package.build.process-agent
+    - export DEPLOYZOR_DISTRIB_BASE=/distrib/python
+    - make DEPLOYZOR_RELEASE=1 package.distrib.process-agent
+    - echo "Install using:" >> /tmp/notes.txt
+    - echo "pip install $(make package.distrib.process-agent.path)" | sed -e 's|/distrib|http://distrib.borgy.elementai.lan|' >> /tmp/notes.txt
+    - echo "" >> /tmp/notes.txt
+    - echo "Changes:" >> /tmp/notes.txt
+    - git log `git describe --tags HEAD^1 --abbrev=0`..HEAD --oneline >> /tmp/notes.txt
+    # Always delete release on github first, ignoring the result. This is to make sure
+    # that an update to a release moves it to the top.
+    - export GOPATH=`pwd`/.env
+    - /go/bin/github-release delete --tag ${DRONE_TAG} || true
+    # Upload release to github
+    - /go/bin/github-release release --tag ${DRONE_TAG} --name ${DRONE_TAG} --description "`cat /tmp/notes.txt`"
+    volumes:
+      - /mnt/borgy/distrib:/distrib
+    when:
+      event: tag
+      ref:
+        exclude: [ refs/tags/latest, refs/tags/latest_test ]
+
+  update_latest:
+    image: images.borgy.elementai.lan/borgy/plugin-python-release:latest
+    commands:
+    - export DEPLOYZOR_DISTRIB_BASE=/distrib/python
+    - make DEPLOYZOR_RELEASE=1 VERSION=${DRONE_TAG} package.distrib.process-agent.latest
+    volumes:
+      - /mnt/borgy/distrib:/distrib
+    when:
+      event: tag
+      ref: [ refs/tags/latest, refs/tags/latest_test ]
+
+  notify_deployment:
+    image: plugins/slack
+    secrets: [ slack_webhook ]
+    channel: borgy-dev-events
+    username: drone
+    template: >
+      {{#success build.status}}
+        *${DRONE_REPO_NAME}* *${DRONE_TAG}* release succeeded.
+      {{else}}
+        *${DRONE_REPO_NAME}* *${DRONE_TAG}* release failed. Panic.
+      {{/success}}
+      {{build.author}}: {{build.message}} <{{build.link}}|build {{build.number}}>
+    when:
+      status: [ success, failure ]
+      event: tag

@@ -1,0 +1,5 @@
+http://distrib.borgy.elementai.lan/python/borgy-process-agent-api/borgy-process-agent-api-server-0.0.4.tar.gz#egg=borgy-process-agent-api-server-0.0.4
+parsedatetime==2.4
+python-dateutil==2.7.3
+six==1.11.0
+dictdiffer==0.7.1
