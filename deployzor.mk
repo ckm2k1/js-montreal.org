@@ -22,7 +22,7 @@ DEPLOYZOR_BASE_PATH?=.
 
 COMPONENT_PREFIX_DIR=$(DEPLOYZOR_BASE_PATH)$(if $(findstring 1,$(DEPLOYZOR_USE_COMPONENT_PREFIX)),/%)
 
-_DEPLOYZOR_RELEASE:=$(if $(findstring 1,$(DEPLOYZOR_DEPLOYZOR_RELEASE)),true,false)
+_DEPLOYZOR_RELEASE:=$(if $(findstring 1,$(DEPLOYZOR_RELEASE)),true,false)
 
 # Version synthesis
 #
@@ -116,7 +116,21 @@ image.latest.%: image.publish.%
 	docker tag $(DOCKER_FULL_IMAGE_NAME) $(DOCKER_IMAGE_NAME):latest
 	docker push $(DOCKER_IMAGE_NAME):latest
 
-.PHONY: image.publish.% image.build.%
+SRC_PATH?=/usr/src/app
+image.scan.%: COMPONENT=$*
+image.scan.%: image.build.%
+	docker build \
+	--build-arg IMAGE_NAME=$(DOCKER_IMAGE_NAME) \
+	--build-arg IMAGE_TAG=$(VERSION) \
+	--build-arg API_KEY="$(BLACK_DUCK_API_KEY)" \
+	--build-arg PROJECT_NAME=$(DEPLOYZOR_PROJECT)-$(COMPONENT) \
+	--build-arg PROJECT_VERSION=$(VERSION) \
+	--build-arg PROJECT_PHASE=$(if $(VERSION_TAG),PRODUCTION,DEVELOPMENT) \
+	--build-arg PROJECT_SRC_PATH=$(SRC_PATH) \
+	-f docker/Dockerfile-image.scan \
+	.
+
+.PHONY: image.publish.% image.build.% image.scan.%
 
 # k8s deploy file parameterization
 

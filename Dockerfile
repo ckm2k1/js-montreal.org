@@ -1,0 +1,17 @@
+FROM python:3.6.5
+
+WORKDIR /usr/src/app
+
+RUN export DEBIAN_FRONTEND=noninteractive; apt update && apt -y upgrade \
+    && apt-get autoremove && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+ADD requirements.txt ./
+ADD setup.cfg ./
+ADD setup.py ./
+
+RUN pip install -r requirements.txt
+
+ENV VERSION ${version}
+
+ADD . .

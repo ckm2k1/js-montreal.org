@@ -17,7 +17,22 @@ pipeline:
       - deactivate
       - rm -fr venv
     when:
-      event: tag
+      event: [ push, tag ]
+      ref:
+        exclude: [ refs/tags/latest, refs/tags/latest_test ]
+
+  scan:
+    image: images.borgy.elementai.lan/borgy/plugin-k8s-deploy:latest
+    pull: true
+    secrets:
+      - black_duck_api_key
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /home/drone/cache:/var/lib/docker
+    commands:
+      - make image.scan.process-agent
+    when:
+      event: [ push, tag ]
       ref:
         exclude: [ refs/tags/latest, refs/tags/latest_test ]
 
