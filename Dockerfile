@@ -2,7 +2,7 @@ FROM python:3.6.5
 
 WORKDIR /usr/src/app
 
-RUN export DEBIAN_FRONTEND=noninteractive; apt update && apt -y upgrade \
+RUN export DEBIAN_FRONTEND=noninteractive; apt-get update && apt-get -y upgrade \
     && apt-get autoremove && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 

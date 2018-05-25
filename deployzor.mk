@@ -70,7 +70,7 @@ $(COMPONENT_PREFIX_DIR)/Dockerfile:
 #
 image.build.%: COMPONENT=$*
 image.build.%: $(COMPONENT_PREFIX_DIR)/Dockerfile $(if $(findstring 1,$(DEPLOYZOR_ENABLE_BUILD_DEPENDENCY)),build.%)
-	docker build --build-arg version=$(VERSION) -f $< -t $(DOCKER_FULL_IMAGE_NAME) $(if $(findstring 1,$(DEPLOYZOR_GLOBAL_DOCKER_CONTEXT)),.,$(<D))
+	docker build --build-arg version=$(VERSION) --build-arg PROJECT=$(DEPLOYZOR_PROJECT) --build-arg COMPONENT=$(COMPONENT) -f $< -t $(DOCKER_FULL_IMAGE_NAME) $(if $(findstring 1,$(DEPLOYZOR_GLOBAL_DOCKER_CONTEXT)),.,$(<D))
 
 image.run.%: COMPONENT=$*
 image.run.%: image.build.%
