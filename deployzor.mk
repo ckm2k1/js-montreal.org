@@ -125,7 +125,7 @@ image.scan.%: image.build.%
 	--build-arg API_KEY="$(BLACK_DUCK_API_KEY)" \
 	--build-arg PROJECT_NAME=$(DEPLOYZOR_PROJECT)-$(COMPONENT) \
 	--build-arg PROJECT_VERSION=$(VERSION) \
-	--build-arg PROJECT_PHASE=$(if $(VERSION_TAG),PRODUCTION,DEVELOPMENT) \
+	--build-arg PROJECT_PHASE=$(if $(VERSION_TAG),RELEASED,DEVELOPMENT) \
 	--build-arg PROJECT_SRC_PATH=$(SRC_PATH) \
 	-f docker/Dockerfile-image.scan \
 	.
