@@ -16,6 +16,10 @@ pipeline:
       - coveralls --verbose
       - deactivate
       - rm -fr venv
+    when:
+      event: tag
+      ref:
+        exclude: [ refs/tags/latest, refs/tags/latest_test ]
 
   publish:
     image: images.borgy.elementai.lan/borgy/plugin-python-release:latest
