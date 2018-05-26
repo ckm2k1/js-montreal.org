@@ -8,7 +8,7 @@
 from setuptools import setup, find_packages
 
 install_requires = [
-    "borgy-process-agent-api-server==0.0.4",
+    "borgy-process-agent-api-server==0.0.5",
     "parsedatetime==2.4",
     "python-dateutil==2.7.3",
     "six==1.11.0",
@@ -23,6 +23,6 @@ setup(
     packages=find_packages(exclude=('tests', 'docs')),
     install_requires=install_requires,
     dependency_links=[
-        'http://distrib.borgy.elementai.lan/python/borgy-process-agent-api/' # noqa
+        'http://distrib.borgy.elementai.lan/python/borgy-process-agent-api-server/' # noqa
     ]
 )
