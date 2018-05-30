@@ -6,6 +6,7 @@
 #
 
 import os
+import six
 import copy
 import uuid
 import click
@@ -127,8 +128,19 @@ class ProcessAgent():
         :rtype: Job
         """
         if job_id in self._process_agent_jobs:
-            return copy.copy(self._process_agent_jobs[job_id])
+            return copy.deepcopy(self._process_agent_jobs[job_id])
         return None
+
+    def get_job_by_state(self, state):
+        """Get all jobs in state
+
+        :rtype: List[Job]
+        """
+        jobs = []
+        for (job_id, j) in six.iteritems(self._process_agent_jobs):
+            if j.state == state:
+                jobs.append(j)
+        return copy.deepcopy(jobs)
 
     def get_jobs_in_creation(self):
         """Get all jobs in creation by the process agent and waiting for a return of the governor

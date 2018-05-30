@@ -10,6 +10,7 @@ from __future__ import absolute_import
 from flask import json
 from tests import BaseTestCase
 from tests.utils import MockJob
+from borgy_process_agent.job import State
 
 
 class TestProcessAgent(BaseTestCase):
@@ -30,6 +31,29 @@ class TestProcessAgent(BaseTestCase):
 
         job = self._pa.get_job_by_id('my-id')
         self.assertIsNone(job)
+
+    def test_pa_check_get_job_by_state(self):
+        """Test case for get_job_by_state
+        """
+        # Insert fake jobs in ProcessAgent
+        simple_job = MockJob(name='gsm1', state=State.QUEUED.value).get_job()
+        simple_job2 = MockJob(name='gsm1', state=State.QUEUED.value).get_job()
+        simple_job3 = MockJob(name='gsm3', state=State.RUNNING.value).get_job()
+        jobs = [simple_job, simple_job2, simple_job3]
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        jobs = self._pa.get_job_by_state(State.QUEUED.value)
+        self.assertEqual(len(jobs), 2)
+        self.assertEqual(jobs[0].name, 'gsm1')
+        self.assertEqual(jobs[1].name, 'gsm1')
+
+        jobs = self._pa.get_job_by_state(State.RUNNING.value)
+        self.assertEqual(len(jobs), 1)
+        self.assertEqual(jobs[0].name, 'gsm3')
+
+        jobs = self._pa.get_job_by_state(State.SUCCEEDED.value)
+        self.assertEqual(len(jobs), 0)
 
 
 if __name__ == '__main__':
