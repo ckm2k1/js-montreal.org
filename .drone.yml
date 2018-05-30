@@ -64,6 +64,20 @@ pipeline:
       ref:
         exclude: [ refs/tags/latest, refs/tags/latest_test ]
 
+  publish_pypi:
+    image: images.borgy.elementai.lan/borgy/plugin-pypi-release:latest
+    secrets: [ TWINE_USERNAME, TWINE_PASSWORD ]
+    commands:
+    # Upload to pypi
+    - export DEPLOYZOR_DISTRIB_BASE=/distrib/python
+    - twine upload --repository-url https://pypi.elmt.io/repo/eai-ai-enablement $(make package.distrib.process-agent.path)
+    volumes:
+      - /mnt/borgy/distrib:/distrib
+    when:
+      event: tag
+      ref:
+        exclude: [ refs/tags/latest, refs/tags/latest_test ]
+
   update_latest:
     image: images.borgy.elementai.lan/borgy/plugin-python-release:latest
     commands:
