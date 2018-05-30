@@ -111,3 +111,6 @@ distrib/
 
 #Package build
 borgy-process-agent*.tar.gz
+
+#VScode
+.vscode
