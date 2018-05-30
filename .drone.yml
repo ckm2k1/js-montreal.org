@@ -48,6 +48,8 @@ pipeline:
     - make DEPLOYZOR_RELEASE=1 package.distrib.process-agent
     - echo "Install using:" >> /tmp/notes.txt
     - echo "pip install $(make package.distrib.process-agent.path)" | sed -e 's|/distrib|http://distrib.borgy.elementai.lan|' >> /tmp/notes.txt
+    - echo "OR" >> /tmp/notes.txt
+    - echo "pip install --extra-index-url https://pypi.elmt.io/repo/eai-ai-enablement  borgy-process-agent-api-server" >> /tmp/notes.txt
     - echo "" >> /tmp/notes.txt
     - echo "Changes:" >> /tmp/notes.txt
     - git log `git describe --tags HEAD^1 --abbrev=0`..HEAD --oneline >> /tmp/notes.txt
