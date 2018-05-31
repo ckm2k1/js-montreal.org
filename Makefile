@@ -14,7 +14,7 @@ package.build.%:
 	. venv/bin/activate; \
 	python setup.py sdist; \
 	deactivate; \
-	mv dist/*.tar.gz $(DEPLOYZOR_PACKAGE_NAME); \
+	mv dist/*.tar.gz $(DEPLOYZOR_PACKAGE_NAME)
 
 docker-build-pythons:
 	docker build -f docker/Dockerfile-pythons -t $(DEPLOYZOR_DOCKER_REGISTRY)/$(DEPLOYZOR_PROJECT)/pythons .
