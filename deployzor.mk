@@ -26,7 +26,7 @@ _DEPLOYZOR_RELEASE:=$(if $(findstring 1,$(DEPLOYZOR_RELEASE)),true,false)
 
 # Version synthesis
 #
-_VERSION_TAG_LAST=$(shell git tag --sort=-version:refname -l '[0-9]*.*'|head -n 1)
+_VERSION_TAG_LAST=$(shell git describe --tags --abbrev=0)
 VERSION_TAG_LAST:=$(if $(_VERSION_TAG_LAST),$(_VERSION_TAG_LAST),0.0.1)
 VERSION_COMMIT=$(shell git rev-parse --short HEAD)
 VERSION_TAG=$(shell git describe --exact-match --tags $(VERSION_COMMIT) 2> /dev/null)
