@@ -7,7 +7,7 @@ test:
 	@tox
 
 test.full:
-	@tox -e 'flake8,cov-init,py27,py34,py35,py36,coverage'
+	@tox -e 'flake8,cov-init,py34,py35,py36,coverage'
 
 package.build.%:
 	virtualenv -p python3 venv; \
