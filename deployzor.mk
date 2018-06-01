@@ -65,6 +65,44 @@ DEPLOYZOR_PACKAGE_PATH?=$(DEPLOYZOR_DISTRIB_PACKAGE)/$(DEPLOYZOR_PACKAGE_NAME)
 $(COMPONENT_PREFIX_DIR)/Dockerfile:
 	@echo ""; echo "     " Expected \"$@\" is not found, can not build image.; echo ""; exit 1
 
+# Black duck Dockerfile
+define BLACK_DUCK_DOCKERFILE
+ARG IMAGE_TAG
+ARG IMAGE_NAME
+
+FROM $${IMAGE_NAME}:$${IMAGE_TAG} as base
+
+# Use same distro as your base image https://hub.docker.com/_/openjdk/
+FROM openjdk:8-jre as blackduck
+
+ARG API_KEY
+ARG PROJECT_NAME
+ARG PROJECT_VERSION
+ARG PROJECT_PHASE
+ARG PROJECT_SRC_PATH
+
+# According to the BD documentation
+# https://blackducksoftware.atlassian.net/wiki/spaces/INTDOCS/pages/49131875/Hub+Detect#HubDetect-DownloadingandrunningHubDetect
+WORKDIR /hub-detect
+RUN curl -s https://blackducksoftware.github.io/hub-detect/hub-detect.sh > hub-detect.sh && chmod +x hub-detect.sh
+
+COPY --from=base / /
+
+RUN pip install --no-cache-dir "pip<10" # work only with pip<10
+RUN pip freeze > /requirements.txt # need a requirements.txt to work
+
+RUN /hub-detect/hub-detect.sh \\
+    --detect.pip.requirements.path=/requirements.txt \\
+    --detect.project.version.name=$${PROJECT_VERSION} \\
+    --detect.project.version.phase=$${PROJECT_PHASE} \\
+    --detect.project.name=$${PROJECT_NAME} \\
+    --blackduck.hub.url=https://elementai.blackducksoftware.com/ \\
+    --blackduck.hub.api.token="$${API_KEY}" \\
+    --detect.pip.python3=true \\
+    --detect.source.path="$${PROJECT_SRC_PATH}"
+endef
+export BLACK_DUCK_DOCKERFILE
+
 # Generic docker build target
 # `make image.build.foo` builds a docker based on the foo/Dockerfile file.
 #
@@ -116,9 +154,13 @@ image.latest.%: image.publish.%
 	docker tag $(DOCKER_FULL_IMAGE_NAME) $(DOCKER_IMAGE_NAME):latest
 	docker push $(DOCKER_IMAGE_NAME):latest
 
+image.scan.%.dockerfile: COMPONENT=$*
+image.scan.%.dockerfile:
+	echo "$$BLACK_DUCK_DOCKERFILE" > $@
+
 SRC_PATH?=/usr/src/app
 image.scan.%: COMPONENT=$*
-image.scan.%: image.build.%
+image.scan.%: image.build.% image.scan.%.dockerfile
 	docker build \
 	--build-arg IMAGE_NAME=$(DOCKER_IMAGE_NAME) \
 	--build-arg IMAGE_TAG=$(VERSION) \
@@ -127,7 +169,7 @@ image.scan.%: image.build.%
 	--build-arg PROJECT_VERSION=$(VERSION) \
 	--build-arg PROJECT_PHASE=$(if $(VERSION_TAG),RELEASED,DEVELOPMENT) \
 	--build-arg PROJECT_SRC_PATH=$(SRC_PATH) \
-	-f docker/Dockerfile-image.scan \
+	-f image.scan.$*.dockerfile \
 	.
 
 .PHONY: image.publish.% image.build.% image.scan.%
