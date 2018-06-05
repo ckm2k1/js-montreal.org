@@ -5,7 +5,7 @@ pipeline:
     tags: true
 
   test:
-    image: images.borgy.elementai.lan/borgy/pythons
+    image: images.borgy.elementai.lan/borgy/plugin-pythons-testenv:latest
     secrets: [ COVERALLS_REPO_TOKEN ]
     commands:
       - python3.6 -m venv venv
