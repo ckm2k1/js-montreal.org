@@ -6,8 +6,9 @@ pipeline:
 
   test:
     image: images.borgy.elementai.lan/borgy/plugin-pythons-testenv:latest
-    secrets: [ COVERALLS_REPO_TOKEN ]
+    secrets: [ COVERALLS_REPO_TOKEN, TWINE_USERNAME, TWINE_PASSWORD ]
     commands:
+      - export PIP_EXTRA_INDEX_URL="https://$TWINE_USERNAME:$TWINE_PASSWORD@pypi.elmt.io/repo/eai-ai-enablement"
       - python3.6 -m venv venv
       - . venv/bin/activate
       - pip install -r requirements.txt

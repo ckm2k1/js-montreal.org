@@ -66,8 +66,20 @@ process_agent.start()
 
 ### Install requirements
 
+Update `~/.pip/pip.conf` with extra index url:
 ```sh
-pip install --extra-index-url https://pypi.elmt.io/repo/eai-ai-enablement -r ./requirements.txt
+[global]
+extra-index-url = https://username:password@pypi.elmt.io/repo/eai-ai-enablement
+```
+and call pip to install requirements
+```sh
+pip install -r ./requirements.txt
+```
+
+OR call directly pip with extra index url in parameter:
+
+```sh
+pip install --extra-index-url https://username:password@pypi.elmt.io/repo/eai-ai-enablement -r ./requirements.txt
 ```
 
 ## Build
