@@ -25,12 +25,12 @@ pipeline:
   scan:
     image: images.borgy.elementai.lan/borgy/plugin-k8s-deploy:latest
     pull: true
-    secrets:
-      - black_duck_api_key
+    secrets: [ black_duck_api_key, TWINE_USERNAME, TWINE_PASSWORD ]
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /home/drone/cache:/var/lib/docker
     commands:
+      - export PIP_EXTRA_INDEX_URL="https://$TWINE_USERNAME:$TWINE_PASSWORD@pypi.elmt.io/repo/eai-ai-enablement"
       - make image.scan.process-agent
     when:
       event: [ push, tag ]
