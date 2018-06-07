@@ -358,6 +358,7 @@ class TestJobsController(BaseTestCase):
 
         # Callback
         def callback_job_update(event):
+            self.assertIn('pa', event)
             current_value['callback']['called'] = True
             self.assertEqual(len(event.jobs), len(current_value['events']))
             for (e, e_check) in zip(event.jobs, current_value['events']):

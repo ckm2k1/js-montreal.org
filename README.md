@@ -54,8 +54,9 @@ def return_new_jobs(pa):
 
 process_agent.set_callback_jobs_provider(return_new_jobs)
 
-def jobs_update(jobs):
-    print(jobs)
+def jobs_update(event):
+    print(event.pa)
+    print(event.jobs)
 
 process_agent.subscribe_jobs_update(jobs_update)
 

@@ -116,7 +116,7 @@ class ProcessAgent():
             self._process_agent_jobs[j.id] = j
 
         if jobs_updated:
-            self._observable_jobs_update.dispatch(jobs=jobs_updated)
+            self._observable_jobs_update.dispatch(pa=self, jobs=jobs_updated)
 
     def is_shutdown(self) -> bool:
         """Return if process agent is shutdown or not
