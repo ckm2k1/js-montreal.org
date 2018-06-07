@@ -14,8 +14,8 @@ from borgy_process_agent import ProcessAgent
 
 
 class BaseTestCase(TestCase):
-
     def create_app(self):
+        self._base_dir = os.path.dirname(os.path.realpath(__file__))
         self._pa = None
         logging.getLogger('connexion.operation').setLevel('ERROR')
         app = ProcessAgent.get_server_app()
