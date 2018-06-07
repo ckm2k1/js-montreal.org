@@ -36,7 +36,7 @@ class TestFlow(BaseTestCase):
         i_job = [1]
 
         # Set callback to return only job
-        def get_new_jobs():
+        def get_new_jobs(pa):
             job = {
                 'name': 'job-' + str(i_job[0])
             }
@@ -157,7 +157,7 @@ class TestFlow(BaseTestCase):
         i_job = [1]
 
         # Set callback to return only job
-        def get_new_jobs():
+        def get_new_jobs(pa):
             jobs = [{
                 'name': 'job-' + str(i_job[0])
             }, {

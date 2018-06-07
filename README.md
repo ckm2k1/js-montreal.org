@@ -46,7 +46,7 @@ from borgy_process_agent import ProcessAgent
 i_job = 0
 process_agent = ProcessAgent()
 
-def return_new_jobs():
+def return_new_jobs(pa):
     global i_job
     i_job = i_job + 1
     res = [{'command': ['sleep', str(i_job)]}]

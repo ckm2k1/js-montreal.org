@@ -80,6 +80,26 @@ class TestProcessAgent(BaseTestCase):
         self.assertEqual(job, simple_job2)
         del job_service_call_delete
 
+    def test_pa_check_callback_contains_process_agent(self):
+        """Test case for get_job_by_state
+        """
+        # Insert fake jobs in ProcessAgent
+        simple_job = MockJob(name='gsm1', state=State.QUEUED.value).get_job()
+        simple_job2 = MockJob(name='gsm1', state=State.QUEUED.value).get_job()
+        simple_job3 = MockJob(name='gsm3', state=State.RUNNING.value).get_job()
+        jobs = [simple_job, simple_job2, simple_job3]
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        def get_new_jobs(pa):
+            jobs = pa.get_jobs()
+            self.assertEquals(len(jobs), 3)
+            return {
+                'name': 'my-job'
+            }
+        self._pa.set_callback_jobs_provider(get_new_jobs)
+        self.client.open('/v1/jobs', method='GET')
+
 
 if __name__ == '__main__':
     import unittest

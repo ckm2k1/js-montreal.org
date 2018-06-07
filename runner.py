@@ -22,7 +22,7 @@ def main():
     Config.set('port', 1234)
     process_agent = ProcessAgent()
 
-    def return_new_jobs():
+    def return_new_jobs(pa):
         global i_pa
         i_pa = i_pa + 1
         res = [{'command': ['bash', str(i_pa)]}]

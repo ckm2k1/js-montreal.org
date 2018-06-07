@@ -197,7 +197,7 @@ class ProcessAgent():
             raise NotReadyError("Process agent is not ready yet!")
 
         if not self._process_agent_jobs_in_creation:
-            jobs = self._callback_jobs_provider()
+            jobs = self._callback_jobs_provider(self)
             if jobs is None:
                 self._shutdown = True
                 return None

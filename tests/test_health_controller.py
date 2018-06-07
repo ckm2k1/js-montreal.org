@@ -25,7 +25,7 @@ class TestHealthController(BaseTestCase):
         self.assertEqual(health.is_shutdown, False, "Should be not shutdown.")
 
         # Define callback for PA. Should be ready.
-        self._pa.set_callback_jobs_provider(lambda: [])
+        self._pa.set_callback_jobs_provider(lambda pa: [])
         response = self.client.open('/v1/health', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
         health = HealthCheck.from_dict(response.get_json())
@@ -33,7 +33,7 @@ class TestHealthController(BaseTestCase):
         self.assertEqual(health.is_shutdown, False, "Should be not shutdown.")
 
         # Return None on callback for PA. Should be shutdown yet.
-        self._pa.set_callback_jobs_provider(lambda: None)
+        self._pa.set_callback_jobs_provider(lambda pa: None)
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 204, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
         response = self.client.open('/v1/health', method='GET')
@@ -54,7 +54,7 @@ class TestHealthController(BaseTestCase):
         self.assertEqual(health.is_shutdown, False, "Should be not shutdown.")
 
         # Define callback for second PA. Should be ready.
-        pa2.set_callback_jobs_provider(lambda: [])
+        pa2.set_callback_jobs_provider(lambda pa: [])
         response = self.client.open('/v1/health', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
         health = HealthCheck.from_dict(response.get_json())
@@ -62,7 +62,7 @@ class TestHealthController(BaseTestCase):
         self.assertEqual(health.is_shutdown, False, "Should be not shutdown.")
 
         # Define callback for first PA. Should be ready.
-        self._pa.set_callback_jobs_provider(lambda: [])
+        self._pa.set_callback_jobs_provider(lambda pa: [])
         response = self.client.open('/v1/health', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
         health = HealthCheck.from_dict(response.get_json())
@@ -70,7 +70,7 @@ class TestHealthController(BaseTestCase):
         self.assertEqual(health.is_shutdown, False, "Should be not shutdown.")
 
         # Return None on callback for first PA. Should be not shutdown yet.
-        self._pa.set_callback_jobs_provider(lambda: None)
+        self._pa.set_callback_jobs_provider(lambda pa: None)
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
         response = self.client.open('/v1/health', method='GET')
@@ -80,7 +80,7 @@ class TestHealthController(BaseTestCase):
         self.assertEqual(health.is_shutdown, False, "Should be not shutdown.")
 
         # Return None on callback for second PA. Should be shutdown.
-        pa2.set_callback_jobs_provider(lambda: None)
+        pa2.set_callback_jobs_provider(lambda pa: None)
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 204, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
         response = self.client.open('/v1/health', method='GET')

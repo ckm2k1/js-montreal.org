@@ -27,7 +27,7 @@ class TestJobsController(BaseTestCase):
         self.assertStatus(response, 418, 'Should return 418. Response body is : ' + response.data.decode('utf-8'))
 
         # Define callback for first PA. Should be ready.
-        self._pa.set_callback_jobs_provider(lambda: [])
+        self._pa.set_callback_jobs_provider(lambda pa: [])
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
 
@@ -40,12 +40,12 @@ class TestJobsController(BaseTestCase):
         self.assertStatus(response, 418, 'Should return 418. Response body is : ' + response.data.decode('utf-8'))
 
         # Define callback for second PA. Should still not ready.
-        pa2.set_callback_jobs_provider(lambda: [])
+        pa2.set_callback_jobs_provider(lambda pa: [])
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 418, 'Should return 418. Response body is : ' + response.data.decode('utf-8'))
 
         # Define callback for first PA. Should be ready.
-        self._pa.set_callback_jobs_provider(lambda: [])
+        self._pa.set_callback_jobs_provider(lambda pa: [])
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
 
@@ -55,24 +55,24 @@ class TestJobsController(BaseTestCase):
         """Test case for undefined environment variables
         """
         os.environ['BORGY_JOB_ID'] = ''
-        self._pa.set_callback_jobs_provider(lambda: {})
+        self._pa.set_callback_jobs_provider(lambda pa: {})
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 400, 'Should return 400. Response body is : ' + response.data.decode('utf-8'))
 
         os.environ['BORGY_JOB_ID'] = '1234'
         os.environ['BORGY_USER'] = ''
-        self._pa.set_callback_jobs_provider(lambda: {})
+        self._pa.set_callback_jobs_provider(lambda pa: {})
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 400, 'Should return 400. Response body is : ' + response.data.decode('utf-8'))
 
         del os.environ['BORGY_USER']
-        self._pa.set_callback_jobs_provider(lambda: {})
+        self._pa.set_callback_jobs_provider(lambda pa: {})
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 400, 'Should return 400. Response body is : ' + response.data.decode('utf-8'))
 
         del os.environ['BORGY_JOB_ID']
         os.environ['BORGY_USER'] = 'gsm'
-        self._pa.set_callback_jobs_provider(lambda: {})
+        self._pa.set_callback_jobs_provider(lambda pa: {})
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 400, 'Should return 400. Response body is : ' + response.data.decode('utf-8'))
 
@@ -87,7 +87,7 @@ class TestJobsController(BaseTestCase):
         ]
 
         for v in failing_values:
-            self._pa.set_callback_jobs_provider(lambda: v)
+            self._pa.set_callback_jobs_provider(lambda pa: v)
             response = self.client.open('/v1/jobs', method='GET')
             self.assertStatus(response, 400, 'Should return 400. Value is: ' + str(v)
                               + '. Response body is : ' + response.data.decode('utf-8'))
@@ -101,7 +101,7 @@ class TestJobsController(BaseTestCase):
 
         for v in succeeded_values:
             self._pa.clear_jobs_in_creation()
-            self._pa.set_callback_jobs_provider(lambda: v)
+            self._pa.set_callback_jobs_provider(lambda pa: v)
             response = self.client.open('/v1/jobs', method='GET')
             self.assertStatus(response, 200, 'Should return 200. Value is: ' + str(v)
                               + '. Response body is : ' + response.data.decode('utf-8'))
@@ -109,11 +109,11 @@ class TestJobsController(BaseTestCase):
     def test_v1_jobs_get_stop_jobs_provider(self):
         """Test case for jobs keep returning 204 when pa is shutdown
         """
-        self._pa.set_callback_jobs_provider(lambda: None)
+        self._pa.set_callback_jobs_provider(lambda pa: None)
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 204, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
 
-        self._pa.set_callback_jobs_provider(lambda: [])
+        self._pa.set_callback_jobs_provider(lambda pa: [])
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 204, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
 
@@ -123,7 +123,7 @@ class TestJobsController(BaseTestCase):
         job_spec = {
             'command': ['bash', '-c', 'sleep', 'inifinity']
         }
-        self._pa.set_callback_jobs_provider(lambda: job_spec)
+        self._pa.set_callback_jobs_provider(lambda pa: job_spec)
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
         jobs = response.get_json()
@@ -139,7 +139,7 @@ class TestJobsController(BaseTestCase):
         new_job_spec = {
             'command': ['killall', 'sleep']
         }
-        self._pa.set_callback_jobs_provider(lambda: new_job_spec)
+        self._pa.set_callback_jobs_provider(lambda pa: new_job_spec)
         jobs = response.get_json()
         self.assertEqual(len(jobs), 1)
         job = Job.from_dict(jobs[0])
@@ -262,7 +262,7 @@ class TestJobsController(BaseTestCase):
         """
         in_creation_job = MockJob().get_job()
 
-        def get_new_jobs():
+        def get_new_jobs(pa):
             return {
                 'name': 'my-job'
             }
