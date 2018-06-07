@@ -16,5 +16,6 @@ def v1_health_get():
     :rtype: HealthCheck
     """
     return HealthCheck.from_dict({
-        'isReady': all([pa.is_ready() for pa in process_agents])
+        'isReady': any([pa.is_ready() for pa in process_agents]),
+        'isShutdown': all([pa.is_shutdown() for pa in process_agents])
     })

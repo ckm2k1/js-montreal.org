@@ -106,8 +106,8 @@ class TestJobsController(BaseTestCase):
             self.assertStatus(response, 200, 'Should return 200. Value is: ' + str(v)
                               + '. Response body is : ' + response.data.decode('utf-8'))
 
-    def test_v1_jobs_get_stop_jobs_provider_types(self):
-        """Test case for type returns by callback of jobs provider
+    def test_v1_jobs_get_stop_jobs_provider(self):
+        """Test case for jobs keep returning 204 when pa is shutdown
         """
         self._pa.set_callback_jobs_provider(lambda: None)
         response = self.client.open('/v1/jobs', method='GET')
@@ -118,7 +118,7 @@ class TestJobsController(BaseTestCase):
         self.assertStatus(response, 204, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
 
     def test_v1_jobs_keep_last_creation(self):
-        """Test case for type returns by callback of jobs provider
+        """Test case for jobs keep returning last creation list
         """
         job_spec = {
             'command': ['bash', '-c', 'sleep', 'inifinity']

@@ -8,6 +8,7 @@
 from __future__ import absolute_import
 
 from flask import json
+from mock import patch
 from tests import BaseTestCase
 from tests.utils import MockJob
 from borgy_process_agent.job import State
@@ -54,6 +55,30 @@ class TestProcessAgent(BaseTestCase):
 
         jobs = self._pa.get_job_by_state(State.SUCCEEDED.value)
         self.assertEqual(len(jobs), 0)
+
+    def test_pa_kill_job(self):
+        """Test case for kill_job
+        """
+        # Insert fake jobs in ProcessAgent
+        simple_job = MockJob(name='gsm1', state=State.SUCCEEDED.value).get_job()
+        simple_job2 = MockJob(name='gsm2', state=State.QUEUED.value).get_job()
+        simple_job3 = MockJob(name='gsm3', state=State.RUNNING.value).get_job()
+        jobs = [simple_job, simple_job2, simple_job3]
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        job = self._pa.kill_job('random')
+        self.assertEqual(job, None)
+
+        job = self._pa.kill_job(simple_job.id)
+        self.assertEqual(job, simple_job)
+
+        mock_method = 'borgy_job_service_client.api.jobs_api.JobsApi.v1_jobs_job_id_delete'
+        job_service_call_delete = patch(mock_method, lambda s, x, y: simple_job.to_dict()).start()
+
+        job = self._pa.kill_job(simple_job2.id)
+        self.assertEqual(job, simple_job2)
+        del job_service_call_delete
 
 
 if __name__ == '__main__':

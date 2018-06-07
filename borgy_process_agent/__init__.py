@@ -13,15 +13,17 @@ import click
 import connexion
 import logging
 from enum import Enum
+from typing import List, Dict
 from dictdiffer import diff
 from borgy_process_agent import controllers
 from borgy_process_agent.event import Observable
-from borgy_process_agent.job import Restart
+from borgy_process_agent.job import Restart, State
 from borgy_process_agent.exceptions import NotReadyError, EnvironmentVarError
 from borgy_process_agent.config import Config
 import borgy_process_agent_api_server
 from borgy_process_agent_api_server import encoder
 from borgy_process_agent_api_server.models.job import Job
+import borgy_job_service_client
 
 
 process_agents = []
@@ -53,6 +55,21 @@ class ProcessAgent():
         self._callback_jobs_provider = None
         self._shutdown = False
         process_agents.append(self)
+        self._job_service = self._init_job_service()
+
+    def _init_job_service(self):
+        """Delete process agent
+
+        :rtype: JobsApi
+        """
+        config = borgy_job_service_client.Configuration()
+        config.host = Config.get('job_service_url')
+        config.ssl_ca_cert = Config.get('job_service_certificate')
+
+        api_client = borgy_job_service_client.ApiClient(config)
+
+        # create an instance of the API class
+        return borgy_job_service_client.JobsApi(api_client)
 
     def delete(self):
         """Delete process agent
@@ -61,7 +78,7 @@ class ProcessAgent():
         """
         process_agents.remove(self)
 
-    def _push_jobs(self, jobs):
+    def _push_jobs(self, jobs: List[Job]):
         """Call when PUT API receives jobs
 
         :rtype: void
@@ -101,7 +118,14 @@ class ProcessAgent():
         if jobs_updated:
             self._observable_jobs_update.dispatch(jobs=jobs_updated)
 
-    def is_ready(self):
+    def is_shutdown(self) -> bool:
+        """Return if process agent is shutdown or not
+
+        :rtype: bool
+        """
+        return self._shutdown
+
+    def is_ready(self) -> bool:
         """Return if process agent is ready or not
 
         :rtype: bool
@@ -115,14 +139,14 @@ class ProcessAgent():
         """
         self._callback_jobs_provider = callback
 
-    def get_jobs(self):
+    def get_jobs(self) -> Dict[str, Job]:
         """Get all jobs created by the process agent
 
         :rtype: Dict[id => Job]
         """
         return copy.deepcopy(self._process_agent_jobs)
 
-    def get_job_by_id(self, job_id):
+    def get_job_by_id(self, job_id: str) -> Job:
         """Get a job by his id
 
         :rtype: Job
@@ -131,7 +155,7 @@ class ProcessAgent():
             return copy.deepcopy(self._process_agent_jobs[job_id])
         return None
 
-    def get_job_by_state(self, state):
+    def get_job_by_state(self, state: str) -> List[Job]:
         """Get all jobs in state
 
         :rtype: List[Job]
@@ -142,14 +166,26 @@ class ProcessAgent():
                 jobs.append(j)
         return copy.deepcopy(jobs)
 
-    def get_jobs_in_creation(self):
+    def kill_job(self, job_id: str) -> Job:
+        """Kill a job
+
+        :rtype: Job
+        """
+        if job_id in self._process_agent_jobs:
+            if self._process_agent_jobs[job_id].state in [State.QUEUING.value, State.QUEUED.value, State.RUNNING.value]:
+                info = ProcessAgent.get_info()
+                self._job_service.v1_jobs_job_id_delete(job_id, info['createdBy'])
+            return copy.deepcopy(self._process_agent_jobs[job_id])
+        return None
+
+    def get_jobs_in_creation(self) -> List[Job]:
         """Get all jobs in creation by the process agent and waiting for a return of the governor
 
         :rtype: List[Job]
         """
         return copy.deepcopy(self._process_agent_jobs_in_creation)
 
-    def get_job_to_create(self):
+    def get_job_to_create(self) -> List[Job]:
         """Return the list of jobs to create. Returns job in creation if the list is not empty.
 
         :rtype: List[Job]
@@ -228,7 +264,7 @@ class ProcessAgent():
         }
 
     @staticmethod
-    def get_default_job(job=None):
+    def get_default_job(job=None) -> Job:
         """Get default parameters for a  job
 
         :rtype: Job

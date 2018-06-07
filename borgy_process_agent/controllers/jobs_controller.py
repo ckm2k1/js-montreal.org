@@ -18,6 +18,7 @@ def v1_jobs_get():
     :rtype: List[Job]
     """
     jobs = []
+    pa_state = []
     for pa in process_agents:
         try:
             j = pa.get_job_to_create()
@@ -27,8 +28,14 @@ def v1_jobs_get():
             return str(e), 400
 
         if j is None:
-            return 'No more jobs', 204
+            pa_state.append(None)
+            continue
+
+        pa_state.append(True)
         jobs += j
+
+    if all(v is None for v in pa_state):
+        return 'No more jobs', 204
 
     return jobs
 

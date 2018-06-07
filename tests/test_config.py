@@ -323,6 +323,65 @@ class TestConfig(BaseTestCase):
         self.assertEqual(Config.get('cache_duration_data1'), 300)
         self.assertEqual(Config.get('cache_duration_data2'), 300)
 
+    def test_load_file_not_exist(self):
+        """Test case to load unexistant config file
+        """
+        with self.assertRaises(FileNotFoundError):
+            Config.load_file('./tests/fixtures/config.notexist')
+
+    def test_load_file_bad_content(self):
+        """Test case to load config file with bad content
+        """
+        with self.assertRaises(ValueError):
+            Config.load_file('./tests/fixtures/config.badcontent')
+
+    def test_load_file_bad_yaml_content(self):
+        """Test case to load config file with bad yaml content
+        """
+        with self.assertRaises(ValueError):
+            Config.load_file('./tests/fixtures/config.badyaml')
+
+    def test_load_file_empty(self):
+        """Test case to load empty config file
+        """
+        Config.load_file('./tests/fixtures/config.empty')
+
+    def test_load_file_json(self):
+        """Test case to load JSON config file
+        """
+        config.configs = {
+            'cache_duration': {
+                'default': 3600,
+                'type': int
+            },
+            'cache_duration_data1': {
+                'default': 1200,
+                'type': int
+            }
+        }
+        Config.load_file('./tests/fixtures/config.json')
+        self.assertEqual(Config.get('config1'), 'value')
+        self.assertEqual(Config.get('cache_duration'), 1234)
+        self.assertEqual(Config.get('cache_duration_data1'), 2000)
+
+    def test_load_file_yaml(self):
+        """Test case to load YAML config file
+        """
+        config.configs = {
+            'cache_duration': {
+                'default': 3600,
+                'type': int
+            },
+            'cache_duration_data1': {
+                'default': 1200,
+                'type': int
+            }
+        }
+        Config.load_file('./tests/fixtures/config.yaml')
+        self.assertEqual(Config.get('config1'), 'value')
+        self.assertEqual(Config.get('cache_duration'), 1234)
+        self.assertEqual(Config.get('cache_duration_data1'), 2000)
+
 
 if __name__ == '__main__':
     import unittest

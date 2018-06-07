@@ -7,6 +7,8 @@
 
 import re
 import six
+import json
+import yaml
 import logging
 from datetime import datetime
 import parsedatetime
@@ -40,6 +42,16 @@ configs = {
         'description': 'Process agent server port',
         'default': 8080,
         'type': int
+    },
+    'job_service_url': {
+        'description': 'Job service URL',
+        'default': 'https://job-service.borgy.elementai.lan',
+        'type': str
+    },
+    'job_service_certificate': {
+        'description': 'Job service certificates',
+        'default': './borgy-job-service.crt',
+        'type': str
     }
 }
 
@@ -81,6 +93,35 @@ class Config:
             return default
 
         return value
+
+    @staticmethod
+    def load_file(filename):
+        """ Load a file JSON or YAML
+        """
+        with open(filename, "r") as f:
+            config_str = f.read()
+
+        valid = False
+        config_dict = {}
+        try:
+            config_dict = json.loads(config_str)
+            valid = True
+        except ValueError:
+            valid = False
+
+        if not valid:
+            try:
+                config_dict = yaml.safe_load(config_str)
+                valid = True
+            except yaml.scanner.ScannerError:
+                valid = False
+
+        if not valid or config_dict is not None and not isinstance(config_dict, dict):
+            raise ValueError("Config file {} have to contain JSON or YAML content".format(filename))
+
+        if config_dict:
+            for (key, value) in six.iteritems(config_dict):
+                Config.set(key, value)
 
     @staticmethod
     def get(property_name, default=None):
