@@ -175,6 +175,7 @@ class ProcessAgent():
             if self._process_agent_jobs[job_id].state in [State.QUEUING.value, State.QUEUED.value, State.RUNNING.value]:
                 info = ProcessAgent.get_info()
                 self._job_service.v1_jobs_job_id_delete(job_id, info['createdBy'])
+                self._process_agent_jobs[job_id].state  = State.CANCELLING.value
             return copy.deepcopy(self._process_agent_jobs[job_id])
         return None
 

@@ -73,11 +73,30 @@ class TestProcessAgent(BaseTestCase):
         job = self._pa.kill_job(simple_job.id)
         self.assertEqual(job, simple_job)
 
+        count_call = [0]
+        def mock_jobs_delete(s, job_id, user):
+            count_call[0] += 1
+            return simple_job.to_dict()
+
         mock_method = 'borgy_job_service_client.api.jobs_api.JobsApi.v1_jobs_job_id_delete'
-        job_service_call_delete = patch(mock_method, lambda s, x, y: simple_job.to_dict()).start()
+        job_service_call_delete = patch(mock_method, mock_jobs_delete).start()
 
         job = self._pa.kill_job(simple_job2.id)
-        self.assertEqual(job, simple_job2)
+        self.assertEqual(job.id, simple_job2.id)
+        # Test if state is directly updated to CANCELLING
+        self.assertEqual(job.state, State.CANCELLING.value)
+        job = self._pa.get_job_by_id(simple_job2.id)
+        self.assertEqual(job.state, State.CANCELLING.value)
+
+        # Call a second time should not call job service
+        job = self._pa.kill_job(simple_job2.id)
+        self.assertEqual(job.id, simple_job2.id)
+        self.assertEqual(job.state, State.CANCELLING.value)
+        job = self._pa.get_job_by_id(simple_job2.id)
+        self.assertEqual(job.state, State.CANCELLING.value)
+        # Test if job service was called only one time CANCELLING
+        self.assertEqual(count_call[0], 1)
+
         del job_service_call_delete
 
     def test_pa_check_callback_contains_process_agent(self):
