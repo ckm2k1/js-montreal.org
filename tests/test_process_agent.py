@@ -69,6 +69,7 @@ class TestProcessAgent(BaseTestCase):
 
         # Mock
         count_call = [0]
+
         def mock_jobs_delete(s, job_id, user):
             count_call[0] += 1
             return simple_job2.to_dict()
@@ -116,6 +117,7 @@ class TestProcessAgent(BaseTestCase):
 
         # Mock
         count_call = [0]
+
         def mock_jobs_rerun(s, job_id):
             count_call[0] += 1
             return simple_job2.to_dict()
