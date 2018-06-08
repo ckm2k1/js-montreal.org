@@ -179,6 +179,19 @@ class ProcessAgent():
             return copy.deepcopy(self._process_agent_jobs[job_id])
         return None
 
+    def rerun_job(self, job_id: str) -> Job:
+        """Rerun a job
+
+        :rtype: Job
+        """
+        if job_id in self._process_agent_jobs:
+            if self._process_agent_jobs[job_id].state in [State.FAILED.value, State.CANCELLED.value]:
+                info = ProcessAgent.get_info()
+                self._job_service.v1_jobs_job_id_rerun_put(job_id)
+                self._process_agent_jobs[job_id].state  = State.QUEUING.value
+            return copy.deepcopy(self._process_agent_jobs[job_id])
+        return None
+
     def get_jobs_in_creation(self) -> List[Job]:
         """Get all jobs in creation by the process agent and waiting for a return of the governor
 
