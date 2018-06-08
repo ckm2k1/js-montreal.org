@@ -7,11 +7,14 @@
 
 from __future__ import absolute_import
 
+import time
+import threading
 from flask import json
 from mock import patch
 from tests import BaseTestCase
 from tests.utils import MockJob
 from borgy_process_agent.job import State
+from borgy_process_agent.config import Config
 
 
 class TestProcessAgent(BaseTestCase):
@@ -171,6 +174,90 @@ class TestProcessAgent(BaseTestCase):
             }
         self._pa.set_callback_jobs_provider(get_new_jobs)
         self.client.open('/v1/jobs', method='GET')
+
+    def test_start_stop_server(self):
+        """Test case to test start and stop server application
+        """
+        # Update port
+        Config.set('port', 9652)
+        count_call = [0]
+
+        def start():
+            self._pa.start()
+            count_call[0] += 1
+
+        # start server in thread
+        app = threading.Thread(name='Web App', target=start)
+        app.setDaemon(True)
+        app.start()
+        # wait 2s
+        time.sleep(1)
+        # Stop server
+        self._pa.stop()
+        # Start should go to the next instruction
+        self.assertEqual(count_call[0], 1)
+
+    def test_pa_autokill(self):
+        """Autokill test case
+        """
+        count_call = [0, 0]
+
+        def mock_borgy_process_agent_start(s):
+            count_call[0] += 1
+
+        def mock_borgy_process_agent_stop(s):
+            count_call[1] += 1
+
+        mock_method = 'borgy_process_agent.ProcessAgent.start'
+        borgy_process_agent_start = patch(mock_method, mock_borgy_process_agent_start).start()
+        mock_method = 'borgy_process_agent.ProcessAgent.stop'
+        borgy_process_agent_stop = patch(mock_method, mock_borgy_process_agent_stop).start()
+
+        def get_stop_job(pa):
+            return None
+        self._pa.clear_jobs_in_creation()
+        self._pa.set_callback_jobs_provider(get_stop_job)
+
+        self._pa.set_autokill(True)
+        self._pa.start()
+        self.assertEqual(count_call, [1, 0])
+
+        # Insert fake jobs in ProcessAgent
+        simple_job = MockJob(name='gsm1', state=State.QUEUED.value).get_job()
+        simple_job2 = MockJob(name='gsm1', state=State.QUEUED.value).get_job()
+        simple_job3 = MockJob(name='gsm3', state=State.RUNNING.value).get_job()
+        jobs = [simple_job, simple_job2, simple_job3]
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        self.assertEqual(count_call, [1, 0])
+        self.assertEqual(self._pa.is_shutdown(), False)
+
+        # Update jobs in ProcessAgent
+        simple_job.state = State.RUNNING.value
+        simple_job2.state = State.RUNNING.value
+        simple_job3.state = State.FAILED.value
+        jobs = [simple_job, simple_job2, simple_job3]
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        self.assertEqual(count_call, [1, 0])
+        self.assertEqual(self._pa.is_shutdown(), False)
+
+        # Governor call /v1/jobs to get jobs to schedule.
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 204, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
+        self.assertEqual(self._pa.is_shutdown(), True)
+
+        # Update jobs in ProcessAgent
+        simple_job.state = State.CANCELLED.value
+        simple_job2.state = State.SUCCEEDED.value
+        jobs = [simple_job, simple_job2]
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        # self._pa.stop() should be call
+        self.assertEqual(count_call, [1, 1])
+
+        del borgy_process_agent_start
+        del borgy_process_agent_stop
 
 
 if __name__ == '__main__':

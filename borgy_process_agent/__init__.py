@@ -14,6 +14,7 @@ import connexion
 import logging
 from enum import Enum
 from typing import List, Dict
+from flask import request
 from dictdiffer import diff
 from borgy_process_agent import controllers
 from borgy_process_agent.event import Observable
@@ -44,7 +45,7 @@ class JobEventState(Enum):
 class ProcessAgent():
     """Process Agent
     """
-    def __init__(self):
+    def __init__(self, autokill: bool = True):
         """Contrustor
 
         :rtype: void
@@ -54,8 +55,10 @@ class ProcessAgent():
         self._observable_jobs_update = Observable()
         self._callback_jobs_provider = None
         self._shutdown = False
+        self._autokill = False
         process_agents.append(self)
         self._job_service = self._init_job_service()
+        self.set_autokill(autokill)
 
     def _init_job_service(self):
         """Delete process agent
@@ -70,6 +73,20 @@ class ProcessAgent():
 
         # create an instance of the API class
         return borgy_job_service_client.JobsApi(api_client)
+
+    def set_autokill(self, autokill):
+        """Enable or disable autokill
+
+        :rtype: void
+        """
+        if autokill == self._autokill:
+            return
+
+        if autokill:
+            self._observable_jobs_update.subscribe(ProcessAgent.pa_check_autokill, 'autokill')
+        else:
+            self._observable_jobs_update.unsubscribe(callback=ProcessAgent.pa_check_autokill)
+        self._autokill = autokill
 
     def delete(self):
         """Delete process agent
@@ -161,7 +178,7 @@ class ProcessAgent():
         :rtype: List[Job]
         """
         jobs = []
-        for (job_id, j) in six.iteritems(self._process_agent_jobs):
+        for (_, j) in six.iteritems(self._process_agent_jobs):
             if j.state == state:
                 jobs.append(j)
         return copy.deepcopy(jobs)
@@ -247,6 +264,17 @@ class ProcessAgent():
         click.secho('   Warning vidange: Ignore following warning.', fg='red')
         app.app.run(port=Config.get('port'))
 
+    def stop(self):
+        """Stop server application
+
+        :rtype: void
+        """
+        func = request.environ.get('werkzeug.server.shutdown')
+        if func is None:
+            raise RuntimeError('Not running with the Werkzeug Server')
+        click.secho('   Server shutting down...', fg='red')
+        func()
+
     @staticmethod
     def get_server_app():
         """Get server application
@@ -304,3 +332,19 @@ class ProcessAgent():
         if job and isinstance(job, dict):
             result.update(job)
         return Job.from_dict(result)
+
+    @staticmethod
+    def pa_check_autokill(event):
+        """Check if we have to kill the server application
+
+        :rtype: void
+        """
+        if event.pa.is_shutdown():
+            jobs = event.pa.get_jobs()
+            jobs_running = dict(filter(lambda j: j[1].state in [
+                State.QUEUING.value,
+                State.QUEUED.value,
+                State.RUNNING.value
+            ], six.iteritems(jobs)))
+            if not jobs_running:
+                event.pa.stop()

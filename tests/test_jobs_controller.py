@@ -35,6 +35,7 @@ class TestJobsController(BaseTestCase):
         """Test case when multiple PA is not ready
         """
         pa2 = ProcessAgent()
+        pa2.set_autokill(False)
 
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 418, 'Should return 418. Response body is : ' + response.data.decode('utf-8'))

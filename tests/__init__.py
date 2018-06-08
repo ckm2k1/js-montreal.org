@@ -26,6 +26,7 @@ class BaseTestCase(TestCase):
         os.environ['BORGY_USER'] = 'guillaume_smaha'
         if not self._pa:
             self._pa = ProcessAgent()
+            self._pa.set_autokill(False)
 
     def tearDown(self):
         if self._pa:

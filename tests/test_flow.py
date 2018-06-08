@@ -13,6 +13,7 @@ from tests import BaseTestCase
 from tests.utils import MockJob
 from borgy_process_agent_api_server.models.job import Job
 from borgy_process_agent import JobEventState
+from borgy_process_agent.job import State
 
 
 class TestFlow(BaseTestCase):
@@ -79,7 +80,7 @@ class TestFlow(BaseTestCase):
         self.assertEqual('job-1', job.name)
 
         # Governor create job and call PUT /v1/jobs to update job state in PA
-        governor_jobs[0].state = 'QUEUED'
+        governor_jobs[0].state = State.QUEUED.value
         jobs_sent = governor_jobs
         response = self.client.open('/v1/jobs', method='PUT',
                                     content_type='application/json', data=json.dumps(jobs_sent))
@@ -93,10 +94,10 @@ class TestFlow(BaseTestCase):
         jobs_created = self._pa.get_jobs()
         self.assertEqual(len(jobs_created), 1)
         self.assertEqual('job-1', jobs_created[jobs_sent[0].id].name)
-        self.assertEqual('QUEUED', jobs_created[jobs_sent[0].id].state)
+        self.assertEqual(State.QUEUED.value, jobs_created[jobs_sent[0].id].state)
 
         # Governor update job and call PUT /v1/jobs to update state
-        governor_jobs[0].state = 'RUNNING'
+        governor_jobs[0].state = State.RUNNING.value
         jobs_sent = governor_jobs
         response = self.client.open('/v1/jobs', method='PUT',
                                     content_type='application/json', data=json.dumps(jobs_sent))
@@ -110,7 +111,7 @@ class TestFlow(BaseTestCase):
         jobs_created = self._pa.get_jobs()
         self.assertEqual(len(jobs_created), 1)
         self.assertEqual('job-1', jobs_created[jobs_sent[0].id].name)
-        self.assertEqual('RUNNING', jobs_created[jobs_sent[0].id].state)
+        self.assertEqual(State.RUNNING.value, jobs_created[jobs_sent[0].id].state)
 
         # Governor call to get jobs to schedule
         response = self.client.open('/v1/jobs', method='GET')
@@ -140,7 +141,7 @@ class TestFlow(BaseTestCase):
         self.assertEqual(callbacks['job-1']['states'], [JobEventState.CREATED, JobEventState.UPDATED])
 
     def test_flow_multiple_jobs_same_time(self):
-        """Simple flow test case
+        """Flow test case with multiple jobs at same time
         """
         callback_called = [0]
         callbacks = defaultdict(lambda: {'called': 0, 'states': []})
@@ -217,7 +218,7 @@ class TestFlow(BaseTestCase):
 
         # Governor create job and call PUT /v1/jobs to update job state in PA
         # Only for 'job-1'
-        governor_jobs[0].state = 'QUEUED'
+        governor_jobs[0].state = State.QUEUED.value
         jobs_sent = [governor_jobs[0]]
         response = self.client.open('/v1/jobs', method='PUT',
                                     content_type='application/json', data=json.dumps(jobs_sent))
@@ -234,10 +235,10 @@ class TestFlow(BaseTestCase):
         jobs_created = self._pa.get_jobs()
         self.assertEqual(len(jobs_created), 1)
         self.assertEqual('job-1', jobs_created[jobs_sent[0].id].name)
-        self.assertEqual('QUEUED', jobs_created[jobs_sent[0].id].state)
+        self.assertEqual(State.QUEUED.value, jobs_created[jobs_sent[0].id].state)
 
         # Governor update job and call PUT /v1/jobs to update state
-        governor_jobs[0].state = 'RUNNING'
+        governor_jobs[0].state = State.RUNNING.value
         jobs_sent = [governor_jobs[0]]
         response = self.client.open('/v1/jobs', method='PUT',
                                     content_type='application/json', data=json.dumps(jobs_sent))
@@ -254,7 +255,7 @@ class TestFlow(BaseTestCase):
         jobs_created = self._pa.get_jobs()
         self.assertEqual(len(jobs_created), 1)
         self.assertEqual('job-1', jobs_created[jobs_sent[0].id].name)
-        self.assertEqual('RUNNING', jobs_created[jobs_sent[0].id].state)
+        self.assertEqual(State.RUNNING.value, jobs_created[jobs_sent[0].id].state)
 
         # Governor call to get jobs to schedule
         response = self.client.open('/v1/jobs', method='GET')
@@ -283,11 +284,11 @@ class TestFlow(BaseTestCase):
         jobs_created = self._pa.get_jobs()
         self.assertEqual(len(jobs_created), 3)
         self.assertEqual('job-1', jobs_created[jobs_sent[0].id].name)
-        self.assertEqual('RUNNING', jobs_created[jobs_sent[0].id].state)
+        self.assertEqual(State.RUNNING.value, jobs_created[jobs_sent[0].id].state)
         self.assertEqual('job-2', jobs_created[jobs_sent[1].id].name)
-        self.assertEqual('QUEUING', jobs_created[jobs_sent[1].id].state)
+        self.assertEqual(State.QUEUING.value, jobs_created[jobs_sent[1].id].state)
         self.assertEqual('job-3', jobs_created[jobs_sent[2].id].name)
-        self.assertEqual('QUEUING', jobs_created[jobs_sent[2].id].state)
+        self.assertEqual(State.QUEUING.value, jobs_created[jobs_sent[2].id].state)
 
         # Governor call /v1/jobs to get jobs to schedule
         response = self.client.open('/v1/jobs', method='GET')
@@ -333,7 +334,7 @@ class TestFlow(BaseTestCase):
         jobs_created = self._pa.get_jobs()
         self.assertEqual(len(jobs_created), 4)
         self.assertEqual('job-X', jobs_created['33339999-0000-2222-8888-666655554444'].name)
-        self.assertEqual('QUEUING', jobs_created['33339999-0000-2222-8888-666655554444'].state)
+        self.assertEqual(State.QUEUING.value, jobs_created['33339999-0000-2222-8888-666655554444'].state)
 
         # Check callback calls
         self.assertEqual(callback_called[0], 4)
