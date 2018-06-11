@@ -5,7 +5,6 @@
 # Copyright (c) 2018 ElementAI. All rights reserved.
 #
 
-import six
 import uuid
 import copy
 
@@ -103,7 +102,7 @@ class Observable(object):
         results = []
         e = Event()
         e.source = self
-        for k, v in six.iteritems(attrs):
+        for k, v in attrs.items():
             setattr(e, k, v)
         for fn in self._callbacks:
             results.append(fn['callback'](e))
@@ -119,16 +118,16 @@ class Observable(object):
         results = []
         e = Event()
         e.source = self
-        for k, v in six.iteritems(attrs):
+        for k, v in attrs.items():
             setattr(e, k, v)
         for fn in self._callbacks:
             if results:
                 last = results[-1]
                 if last and isinstance(last, dict):
-                    for k, v in six.iteritems(last):
+                    for k, v in last.items():
                         setattr(e, k, v)
                 elif last and isinstance(last, Event):
-                    for k, v in six.iteritems(vars(last)):
+                    for k, v in vars(last).items():
                         setattr(e, k, v)
                 elif last is None:
                     return results

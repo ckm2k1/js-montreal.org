@@ -6,7 +6,6 @@
 #
 
 import os
-import six
 import copy
 import uuid
 import click
@@ -178,7 +177,7 @@ class ProcessAgent():
         :rtype: List[Job]
         """
         jobs = []
-        for (_, j) in six.iteritems(self._process_agent_jobs):
+        for (_, j) in self._process_agent_jobs.items():
             if j.state == state:
                 jobs.append(j)
         return copy.deepcopy(jobs)
@@ -345,6 +344,6 @@ class ProcessAgent():
                 State.QUEUING.value,
                 State.QUEUED.value,
                 State.RUNNING.value
-            ], six.iteritems(jobs)))
+            ], jobs.items()))
             if not jobs_running:
                 event.pa.stop()

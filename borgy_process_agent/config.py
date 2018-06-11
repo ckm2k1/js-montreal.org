@@ -6,7 +6,6 @@
 #
 
 import re
-import six
 import json
 import yaml
 import logging
@@ -120,7 +119,7 @@ class Config:
             raise ValueError("Config file {} have to contain JSON or YAML content".format(filename))
 
         if config_dict:
-            for (key, value) in six.iteritems(config_dict):
+            for (key, value) in config_dict.items():
                 Config.set(key, value)
 
     @staticmethod
@@ -165,7 +164,7 @@ class Config:
             del Config.configs_cached[property_name]
 
         prop_var = '%' + property_name + '%'
-        for (key, prop) in six.iteritems(configs):
+        for (key, prop) in configs.items():
             if key in Config.configs_cached:
                 prop_value = prop.get('value')
                 if prop_value is None:

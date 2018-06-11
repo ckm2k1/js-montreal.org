@@ -6,7 +6,6 @@
 #
 
 import types
-import six
 import sys
 import glob
 from os.path import dirname, basename, isfile
@@ -17,7 +16,7 @@ __all__ = [basename(f)[:-3] for f in modules if isfile(f)]
 
 def getfunctions(module):
     fcts = []
-    for _, fct in six.iteritems(module.__dict__):
+    for _, fct in module.__dict__.items():
         if isinstance(fct, types.FunctionType):
             fcts.append(fct)
     return fcts

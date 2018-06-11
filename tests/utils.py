@@ -5,7 +5,6 @@
 # Copyright (c) 2018 ElementAI. All rights reserved.
 #
 
-import six
 import uuid
 from borgy_process_agent.job import Restart
 from borgy_process_agent.utils import get_now_isoformat
@@ -42,7 +41,7 @@ class MockJob(object):
             'workdir': ""
         }
         if kwargs and isinstance(kwargs, dict):
-            for k, v in six.iteritems(kwargs):
+            for k, v in kwargs.items():
                 self._job[k] = v
 
     def get(self):

@@ -12,7 +12,6 @@ install_requires = [
     "borgy-job-service-client==1.6.1",
     "parsedatetime==2.4",
     "python-dateutil==2.7.3",
-    "six==1.11.0",
     "dictdiffer==0.7.1"
 ]
 
