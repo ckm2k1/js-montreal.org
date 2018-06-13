@@ -199,6 +199,15 @@ class TestProcessAgent(BaseTestCase):
         # Start should go to the next instruction
         self.assertEqual(count_call[0], 1)
 
+    def test_pa_set_autokill_twice(self):
+        """Test case for setting autokill multiple time
+        """
+        self.assertEqual(len(self._pa._observable_jobs_update._callbacks), 0)
+        self._pa.set_autokill(True)
+        self.assertEqual(len(self._pa._observable_jobs_update._callbacks), 1)
+        self._pa.set_autokill(True)
+        self.assertEqual(len(self._pa._observable_jobs_update._callbacks), 1)
+
     def test_pa_autokill(self):
         """Autokill test case
         """
