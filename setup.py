@@ -21,5 +21,8 @@ setup(
     description='',
     author='Borygy Team',
     packages=find_packages(exclude=('tests', 'docs')),
-    install_requires=install_requires
+    install_requires=install_requires,
+    extras_require={
+        'docker':  ["docker==3.3.0"],
+    }
 )

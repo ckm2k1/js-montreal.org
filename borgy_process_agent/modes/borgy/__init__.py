@@ -93,6 +93,7 @@ class ProcessAgent(ProcessAgentBase):
         """
         self._server_app = self.__class__.get_server_app()
         self._server_srv = make_server('0.0.0.0', Config.get('port'), self._server_app)
+        logging.info('Start Process Agent server')
         self._server_srv.serve_forever()
 
     def stop(self) -> NoReturn:
@@ -100,6 +101,7 @@ class ProcessAgent(ProcessAgentBase):
 
         :rtype: NoReturn
         """
+        logging.info('Shutdown Process Agent server')
         self._server_srv.shutdown()
 
     @staticmethod
