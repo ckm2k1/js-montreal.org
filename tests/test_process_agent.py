@@ -223,14 +223,16 @@ class TestProcessAgent(BaseTestCase):
         """
         count_call = [0, 0]
 
-        def mock_borgy_process_agent_start():
+        def mock_borgy_process_agent_start(s):
             count_call[0] += 1
 
-        def mock_borgy_process_agent_stop():
+        def mock_borgy_process_agent_stop(s):
             count_call[1] += 1
 
-        self._pa.start = mock_borgy_process_agent_start
-        self._pa.stop = mock_borgy_process_agent_stop
+        mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.start'
+        borgy_process_agent_start = patch(mock_method, mock_borgy_process_agent_start).start()
+        mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.stop'
+        borgy_process_agent_stop = patch(mock_method, mock_borgy_process_agent_stop).start()
 
         def get_stop_job(pa):
             return None
@@ -277,19 +279,24 @@ class TestProcessAgent(BaseTestCase):
         # self._pa.stop() should be call
         self.assertEqual(count_call, [1, 1])
 
+        del borgy_process_agent_start
+        del borgy_process_agent_stop
+
     def test_pa_autokill_after_finish(self):
         """Autokill test case after all job are finished
         """
         count_call = [0, 0]
 
-        def mock_borgy_process_agent_start():
+        def mock_borgy_process_agent_start(s):
             count_call[0] += 1
 
-        def mock_borgy_process_agent_stop():
+        def mock_borgy_process_agent_stop(s):
             count_call[1] += 1
 
-        self._pa.start = mock_borgy_process_agent_start
-        self._pa.stop = mock_borgy_process_agent_stop
+        mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.start'
+        borgy_process_agent_start = patch(mock_method, mock_borgy_process_agent_start).start()
+        mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.stop'
+        borgy_process_agent_stop = patch(mock_method, mock_borgy_process_agent_stop).start()
 
         def get_no_job(pa):
             return []
@@ -347,6 +354,9 @@ class TestProcessAgent(BaseTestCase):
         self.assertEqual(self._pa.is_shutdown(), True)
         # self._pa.stop() should be call
         self.assertEqual(count_call, [1, 1])
+
+        del borgy_process_agent_start
+        del borgy_process_agent_stop
 
 
 if __name__ == '__main__':
