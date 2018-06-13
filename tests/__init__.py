@@ -11,6 +11,7 @@ import logging
 
 from flask_testing import TestCase
 from borgy_process_agent import ProcessAgent
+from borgy_process_agent.modes import borgy
 
 
 class BaseTestCase(TestCase):
@@ -18,8 +19,8 @@ class BaseTestCase(TestCase):
         self._base_dir = os.path.dirname(os.path.realpath(__file__))
         self._pa = None
         logging.getLogger('connexion.operation').setLevel('ERROR')
-        app = ProcessAgent.get_server_app()
-        return app.app
+        self._app = borgy.ProcessAgent.get_server_app()
+        return self._app.app
 
     def setUp(self):
         os.environ['BORGY_JOB_ID'] = str(uuid.uuid4())

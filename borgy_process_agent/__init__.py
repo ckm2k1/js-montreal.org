@@ -8,25 +8,13 @@
 import os
 import copy
 import uuid
-import click
-import connexion
-import logging
 from enum import Enum
 from typing import List, Dict
-from flask import request
 from dictdiffer import diff
-from borgy_process_agent import controllers
 from borgy_process_agent.event import Observable
 from borgy_process_agent.job import Restart, State
 from borgy_process_agent.exceptions import NotReadyError, EnvironmentVarError
-from borgy_process_agent.config import Config
-import borgy_process_agent_api_server
-from borgy_process_agent_api_server import encoder
 from borgy_process_agent_api_server.models.job import Job
-import borgy_job_service_client
-
-
-process_agents = []
 
 
 class JobEventState(Enum):
@@ -41,58 +29,54 @@ class JobEventState(Enum):
     UPDATED = 'updated'
 
 
-class ProcessAgent():
-    """Process Agent
+class ProcessAgentMode(Enum):
+    """Process Agent Mode
+    List of diffents modes for process agent
     """
-    def __init__(self, autokill: bool = True):
+    # Borgy (default)
+    BORGY = 'borgy'
+    # Tasks will be launched in docker environnement
+    DOCKER = 'docker'
+    # Tasks will run one by one in the same thread
+    LOCAL = 'local'
+
+
+process_agents = []
+
+
+class ProcessAgent():
+    """Process Agent Generic
+    """
+    def __new__(cls, mode=ProcessAgentMode.BORGY, **kwargs):
+        pa_module = __import__(__name__ + '.modes.' + mode.value, fromlist=['ProcessAgent'])
+
+        methods_to_keep = {}
+        for (k, v) in cls.__dict__.items():
+            if k[0:2] == '__':
+                methods_to_keep[k] = v
+        methods = dict(cls.__dict__)
+        methods.update(dict(pa_module.ProcessAgent.__dict__))
+        methods.update(methods_to_keep)
+        methods['__init__'] = pa_module.ProcessAgent.__init__
+
+        pa_class = type(cls.__name__, (pa_module.ProcessAgent, cls,), methods)
+        obj = pa_module.ProcessAgent.__new__(pa_class, **kwargs)
+
+        return obj
+
+    def __init__(self, autokill: bool = True, **kwargs):
         """Contrustor
 
         :rtype: void
         """
+        process_agents.append(self)
         self._process_agent_jobs = {}
         self._process_agent_jobs_in_creation = []
         self._observable_jobs_update = Observable()
         self._callback_jobs_provider = None
         self._shutdown = False
         self._autokill = False
-        process_agents.append(self)
-        self._job_service = self._init_job_service()
         self.set_autokill(autokill)
-
-    def _init_job_service(self):
-        """Delete process agent
-
-        :rtype: JobsApi
-        """
-        config = borgy_job_service_client.Configuration()
-        config.host = Config.get('job_service_url')
-        config.ssl_ca_cert = Config.get('job_service_certificate')
-
-        api_client = borgy_job_service_client.ApiClient(config)
-
-        # create an instance of the API class
-        return borgy_job_service_client.JobsApi(api_client)
-
-    def set_autokill(self, autokill):
-        """Enable or disable autokill
-
-        :rtype: void
-        """
-        if autokill == self._autokill:
-            return
-
-        if autokill:
-            self._observable_jobs_update.subscribe(ProcessAgent.pa_check_autokill, 'autokill')
-        else:
-            self._observable_jobs_update.unsubscribe(callback=ProcessAgent.pa_check_autokill)
-        self._autokill = autokill
-
-    def delete(self):
-        """Delete process agent
-
-        :rtype: void
-        """
-        process_agents.remove(self)
 
     def _push_jobs(self, jobs: List[Job]):
         """Call when PUT API receives jobs
@@ -134,6 +118,13 @@ class ProcessAgent():
         if jobs_updated:
             self._observable_jobs_update.dispatch(pa=self, jobs=jobs_updated)
 
+    def delete(self):
+        """Delete process agent
+
+        :rtype: void
+        """
+        process_agents.remove(self)
+
     def is_shutdown(self) -> bool:
         """Return if process agent is shutdown or not
 
@@ -154,6 +145,56 @@ class ProcessAgent():
         :rtype: void
         """
         self._callback_jobs_provider = callback
+
+    def subscribe_jobs_update(self, callback):
+        """Subscribe to the event when one or more jobs are updated
+
+        :rtype: void
+        """
+        self._observable_jobs_update.subscribe(callback)
+
+    def set_autokill(self, autokill):
+        """Enable or disable autokill
+
+        :rtype: void
+        """
+        if autokill == self._autokill:
+            return
+
+        if autokill:
+            self._observable_jobs_update.subscribe(ProcessAgent.pa_check_autokill, 'autokill')
+        else:
+            self._observable_jobs_update.unsubscribe(callback=ProcessAgent.pa_check_autokill)
+        self._autokill = autokill
+
+    def kill_job(self, job_id: str) -> Job:
+        """Kill a job
+
+        :rtype: Job
+        """
+        if job_id in self._process_agent_jobs:
+            if self._process_agent_jobs[job_id].state in [State.QUEUING.value, State.QUEUED.value, State.RUNNING.value]:
+                self._process_agent_jobs[job_id].state = State.CANCELLING.value
+            return copy.deepcopy(self._process_agent_jobs[job_id])
+        return None
+
+    def rerun_job(self, job_id: str) -> Job:
+        """Rerun a job
+
+        :rtype: Job
+        """
+        if job_id in self._process_agent_jobs:
+            if self._process_agent_jobs[job_id].state in [State.FAILED.value, State.CANCELLED.value]:
+                self._process_agent_jobs[job_id].state = State.QUEUING.value
+            return copy.deepcopy(self._process_agent_jobs[job_id])
+        return None
+
+    def clear_jobs_in_creation(self):
+        """Clear all jobs in creation by the process agent
+
+        :rtype: void
+        """
+        self._process_agent_jobs_in_creation = []
 
     def get_jobs(self) -> Dict[str, Job]:
         """Get all jobs created by the process agent
@@ -181,31 +222,6 @@ class ProcessAgent():
             if j.state == state:
                 jobs.append(j)
         return copy.deepcopy(jobs)
-
-    def kill_job(self, job_id: str) -> Job:
-        """Kill a job
-
-        :rtype: Job
-        """
-        if job_id in self._process_agent_jobs:
-            if self._process_agent_jobs[job_id].state in [State.QUEUING.value, State.QUEUED.value, State.RUNNING.value]:
-                info = ProcessAgent.get_info()
-                self._job_service.v1_jobs_job_id_delete(job_id, info['createdBy'])
-                self._process_agent_jobs[job_id].state = State.CANCELLING.value
-            return copy.deepcopy(self._process_agent_jobs[job_id])
-        return None
-
-    def rerun_job(self, job_id: str) -> Job:
-        """Rerun a job
-
-        :rtype: Job
-        """
-        if job_id in self._process_agent_jobs:
-            if self._process_agent_jobs[job_id].state in [State.FAILED.value, State.CANCELLED.value]:
-                self._job_service.v1_jobs_job_id_rerun_put(job_id)
-                self._process_agent_jobs[job_id].state = State.QUEUING.value
-            return copy.deepcopy(self._process_agent_jobs[job_id])
-        return None
 
     def get_jobs_in_creation(self) -> List[Job]:
         """Get all jobs in creation by the process agent and waiting for a return of the governor
@@ -240,52 +256,19 @@ class ProcessAgent():
 
         return self.get_jobs_in_creation()
 
-    def clear_jobs_in_creation(self):
-        """Clear all jobs in creation by the process agent
-
-        :rtype: void
-        """
-        self._process_agent_jobs_in_creation = []
-
-    def subscribe_jobs_update(self, callback):
-        """Subscribe to the event when one or more jobs are updated
-
-        :rtype: void
-        """
-        self._observable_jobs_update.subscribe(callback)
-
     def start(self):
-        """Start server application
+        """Start process agent
 
         :rtype: void
         """
-        app = ProcessAgent.get_server_app()
-        click.secho('   Warning vidange: Ignore following warning.', fg='red')
-        app.app.run(port=Config.get('port'))
+        raise NotImplementedError
 
     def stop(self):
-        """Stop server application
+        """Stop process agent
 
         :rtype: void
         """
-        func = request.environ.get('werkzeug.server.shutdown')
-        if func is None:
-            raise RuntimeError('Not running with the Werkzeug Server')
-        click.secho('   Server shutting down...', fg='red')
-        func()
-
-    @staticmethod
-    def get_server_app():
-        """Get server application
-
-        :rtype: FlaskApp
-        """
-        logging.basicConfig(format=Config.get('logging_format'), level=Config.get('logging_level'))
-        controllers.overwrite_api_controllers()
-        app = connexion.App(__name__, specification_dir=borgy_process_agent_api_server.__path__[0]+'/swagger/')
-        app.app.json_encoder = encoder.JSONEncoder
-        app.add_api('swagger.yaml', arguments={'title': 'Borgy Process Agent'})
-        return app
+        raise NotImplementedError
 
     @staticmethod
     def get_info():

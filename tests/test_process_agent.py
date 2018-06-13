@@ -190,10 +190,12 @@ class TestProcessAgent(BaseTestCase):
         app = threading.Thread(name='Web App', target=start)
         app.setDaemon(True)
         app.start()
-        # wait 2s
+        # wait 1s
         time.sleep(1)
         # Stop server
         self._pa.stop()
+        # wait 1s
+        time.sleep(1)
         # Start should go to the next instruction
         self.assertEqual(count_call[0], 1)
 
@@ -202,16 +204,14 @@ class TestProcessAgent(BaseTestCase):
         """
         count_call = [0, 0]
 
-        def mock_borgy_process_agent_start(s):
+        def mock_borgy_process_agent_start():
             count_call[0] += 1
 
-        def mock_borgy_process_agent_stop(s):
+        def mock_borgy_process_agent_stop():
             count_call[1] += 1
 
-        mock_method = 'borgy_process_agent.ProcessAgent.start'
-        borgy_process_agent_start = patch(mock_method, mock_borgy_process_agent_start).start()
-        mock_method = 'borgy_process_agent.ProcessAgent.stop'
-        borgy_process_agent_stop = patch(mock_method, mock_borgy_process_agent_stop).start()
+        self._pa.start = mock_borgy_process_agent_start
+        self._pa.stop = mock_borgy_process_agent_stop
 
         def get_stop_job(pa):
             return None
@@ -255,9 +255,6 @@ class TestProcessAgent(BaseTestCase):
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
         # self._pa.stop() should be call
         self.assertEqual(count_call, [1, 1])
-
-        del borgy_process_agent_start
-        del borgy_process_agent_stop
 
 
 if __name__ == '__main__':
