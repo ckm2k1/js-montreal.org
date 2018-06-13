@@ -81,25 +81,30 @@ class TestProcessAgent(BaseTestCase):
         job_service_call_delete = patch(mock_method, mock_jobs_delete).start()
 
         # Should not call job_service
-        job = self._pa.kill_job('random')
+        job, is_updated = self._pa.kill_job('random')
         self.assertEqual(job, None)
+        self.assertEqual(is_updated, False)
         self.assertEqual(count_call[0], 0)
 
         # Should not call job_service
-        job = self._pa.kill_job(simple_job.id)
+        job, is_updated = self._pa.kill_job(simple_job.id)
         self.assertEqual(job, simple_job)
+        self.assertEqual(is_updated, False)
         self.assertEqual(count_call[0], 0)
 
-        job = self._pa.kill_job(simple_job2.id)
+        # Should call job_service
+        job, is_updated = self._pa.kill_job(simple_job2.id)
         self.assertEqual(job.id, simple_job2.id)
+        self.assertEqual(is_updated, True)
         # Test if state is directly updated to CANCELLING
         self.assertEqual(job.state, State.CANCELLING.value)
         job = self._pa.get_job_by_id(simple_job2.id)
         self.assertEqual(job.state, State.CANCELLING.value)
 
         # Call a second time should not call job service
-        job = self._pa.kill_job(simple_job2.id)
+        job, is_updated = self._pa.kill_job(simple_job2.id)
         self.assertEqual(job.id, simple_job2.id)
+        self.assertEqual(is_updated, False)
         self.assertEqual(job.state, State.CANCELLING.value)
         job = self._pa.get_job_by_id(simple_job2.id)
         self.assertEqual(job.state, State.CANCELLING.value)
@@ -129,25 +134,30 @@ class TestProcessAgent(BaseTestCase):
         job_service_call_rerun = patch(mock_method, mock_jobs_rerun).start()
 
         # Should not call job_service
-        job = self._pa.rerun_job('random')
+        job, is_updated = self._pa.rerun_job('random')
         self.assertEqual(job, None)
+        self.assertEqual(is_updated, False)
         self.assertEqual(count_call[0], 0)
 
         # Should not call job_service
-        job = self._pa.kill_job(simple_job.id)
+        job, is_updated = self._pa.kill_job(simple_job.id)
         self.assertEqual(job, simple_job)
+        self.assertEqual(is_updated, False)
         self.assertEqual(count_call[0], 0)
 
-        job = self._pa.rerun_job(simple_job2.id)
+        # Should call job_service
+        job, is_updated = self._pa.rerun_job(simple_job2.id)
         self.assertEqual(job.id, simple_job2.id)
+        self.assertEqual(is_updated, True)
         # Test if state is directly updated to QUEUING
         self.assertEqual(job.state, State.QUEUING.value)
         job = self._pa.get_job_by_id(simple_job2.id)
         self.assertEqual(job.state, State.QUEUING.value)
 
         # Call a second time should not call job service
-        job = self._pa.rerun_job(simple_job2.id)
+        job, is_updated = self._pa.rerun_job(simple_job2.id)
         self.assertEqual(job.id, simple_job2.id)
+        self.assertEqual(is_updated, False)
         self.assertEqual(job.state, State.QUEUING.value)
         job = self._pa.get_job_by_id(simple_job2.id)
         self.assertEqual(job.state, State.QUEUING.value)

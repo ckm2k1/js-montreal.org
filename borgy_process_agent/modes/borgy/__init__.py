@@ -8,6 +8,7 @@
 import copy
 import connexion
 import logging
+from typing import Tuple, NoReturn
 from werkzeug.serving import make_server
 from borgy_process_agent import controllers
 from borgy_process_agent.job import State
@@ -21,10 +22,10 @@ import borgy_job_service_client
 class ProcessAgent():
     """Process Agent for Borgy
     """
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> NoReturn:
         """Contrustor
 
-        :rtype: void
+        :rtype: NoReturn
         """
         super().__init__(**kwargs)
         self._job_service = self._init_job_service()
@@ -44,30 +45,34 @@ class ProcessAgent():
         # create an instance of the API class
         return borgy_job_service_client.JobsApi(api_client)
 
-    def kill_job(self, job_id: str) -> Job:
+    def kill_job(self, job_id: str) -> Tuple[Job, bool]:
         """Kill a job
 
-        :rtype: Job
+        :rtype: Tuple[Job, bool]
         """
         if job_id in self._process_agent_jobs:
+            is_updated = False
             if self._process_agent_jobs[job_id].state in [State.QUEUING.value, State.QUEUED.value, State.RUNNING.value]:
                 info = self.__class__.get_info()
                 self._job_service.v1_jobs_job_id_delete(job_id, info['createdBy'])
                 self._process_agent_jobs[job_id].state = State.CANCELLING.value
-            return copy.deepcopy(self._process_agent_jobs[job_id])
-        return None
+                is_updated = True
+            return (copy.deepcopy(self._process_agent_jobs[job_id]), is_updated)
+        return (None, False)
 
-    def rerun_job(self, job_id: str) -> Job:
+    def rerun_job(self, job_id: str) -> Tuple[Job, bool]:
         """Rerun a job
 
-        :rtype: Job
+        :rtype: Tuple[Job, bool]
         """
         if job_id in self._process_agent_jobs:
+            is_updated = False
             if self._process_agent_jobs[job_id].state in [State.FAILED.value, State.CANCELLED.value]:
                 self._job_service.v1_jobs_job_id_rerun_put(job_id)
                 self._process_agent_jobs[job_id].state = State.QUEUING.value
-            return copy.deepcopy(self._process_agent_jobs[job_id])
-        return None
+                is_updated = True
+            return (copy.deepcopy(self._process_agent_jobs[job_id]), is_updated)
+        return (None, False)
 
     def get_app(self):
         """Return current server application
@@ -76,19 +81,19 @@ class ProcessAgent():
         """
         return self._server_app
 
-    def start(self):
+    def start(self) -> NoReturn:
         """Start process agent - start server application
 
-        :rtype: void
+        :rtype: NoReturn
         """
         self._server_app = self.__class__.get_server_app()
         self._server_srv = make_server('0.0.0.0', Config.get('port'), self._server_app)
         self._server_srv.serve_forever()
 
-    def stop(self):
+    def stop(self) -> NoReturn:
         """Stop process agent - stop server application
 
-        :rtype: void
+        :rtype: NoReturn
         """
         self._server_srv.shutdown()
 

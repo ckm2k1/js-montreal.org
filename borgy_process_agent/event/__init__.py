@@ -7,6 +7,7 @@
 
 import uuid
 import copy
+from typing import List, Dict, NoReturn, Callable
 
 
 class Event(object):
@@ -35,29 +36,29 @@ class Event(object):
 class Observable(object):
     """Observable
     """
-    def __init__(self):
+    def __init__(self) -> NoReturn:
         """Contrustor
 
-        :rtype: void
+        :rtype: NoReturn
         """
         self._callbacks = []
 
-    def get_callbacks(self):
+    def get_callbacks(self) -> List[Dict[str, Callable]]:
         """Get all callbacks
 
-        :rtype: List[dict{name, callback}]
+        :rtype: List[Dict[str, Callable]]
         """
         return copy.deepcopy(self._callbacks)
 
-    def get_callbacks_by_name(self, name):
+    def get_callbacks_by_name(self, name: str) -> List[Dict[str, Callable]]:
         """Get all callback filtered by name
 
-        :rtype: List[dict{name, callback}]
+        :rtype: List[Dict[str, Callable]]
         """
         callbacks = [c for c in self._callbacks if c['name'] == name]
         return copy.deepcopy(callbacks)
 
-    def subscribe(self, callback, name=None):
+    def subscribe(self, callback: Callable, name: str = None):
         """Subscribe to the observable and return the name
 
         :rtype: str
@@ -72,10 +73,10 @@ class Observable(object):
         })
         return name
 
-    def unsubscribe(self, callback=None, name=None):
+    def unsubscribe(self, callback: Callable = None, name: str = None):
         """Unsubscribe to the observable
 
-        :rtype: List[dict{name, callback}]
+        :rtype: List[Dict[str, Callable]]
         """
         if not name and not callback:
             raise TypeError('name or callback can''t be null')
@@ -94,7 +95,7 @@ class Observable(object):
 
         return removed
 
-    def dispatch(self, **attrs):
+    def dispatch(self, **attrs) -> List[object]:
         """Dispatch an event to the subscribers
 
         :rtype: List[object]
@@ -108,7 +109,7 @@ class Observable(object):
             results.append(fn['callback'](e))
         return results
 
-    def dispatch_breakable(self, **attrs):
+    def dispatch_breakable(self, **attrs) -> List[object]:
         """Dispatch an event to the subscribers
         But inject the result of the previous subscriber in the next subscriber call.
         If a subscriber return None, the next subscribers will not be called

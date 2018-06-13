@@ -9,7 +9,7 @@ import os
 import copy
 import uuid
 from enum import Enum
-from typing import List, Dict
+from typing import List, Dict, Tuple, NoReturn
 from dictdiffer import diff
 from borgy_process_agent.event import Observable
 from borgy_process_agent.job import Restart, State
@@ -64,10 +64,10 @@ class ProcessAgent():
 
         return obj
 
-    def __init__(self, autokill: bool = True, **kwargs):
+    def __init__(self, autokill: bool = True, **kwargs) -> NoReturn:
         """Contrustor
 
-        :rtype: void
+        :rtype: NoReturn
         """
         process_agents.append(self)
         self._process_agent_jobs = {}
@@ -78,10 +78,10 @@ class ProcessAgent():
         self._autokill = False
         self.set_autokill(autokill)
 
-    def _push_jobs(self, jobs: List[Job]):
+    def _push_jobs(self, jobs: List[Job]) -> NoReturn:
         """Call when PUT API receives jobs
 
-        :rtype: void
+        :rtype: NoReturn
         """
         jobs_updated = []
         for j in jobs:
@@ -118,10 +118,10 @@ class ProcessAgent():
         if jobs_updated:
             self._observable_jobs_update.dispatch(pa=self, jobs=jobs_updated)
 
-    def delete(self):
+    def delete(self) -> NoReturn:
         """Delete process agent
 
-        :rtype: void
+        :rtype: NoReturn
         """
         process_agents.remove(self)
 
@@ -139,24 +139,24 @@ class ProcessAgent():
         """
         return not self._shutdown and self._callback_jobs_provider and callable(self._callback_jobs_provider)
 
-    def set_callback_jobs_provider(self, callback):
+    def set_callback_jobs_provider(self, callback) -> NoReturn:
         """Define the callback which returns the job to create by the process agent
 
-        :rtype: void
+        :rtype: NoReturn
         """
         self._callback_jobs_provider = callback
 
-    def subscribe_jobs_update(self, callback):
+    def subscribe_jobs_update(self, callback) -> NoReturn:
         """Subscribe to the event when one or more jobs are updated
 
-        :rtype: void
+        :rtype: NoReturn
         """
         self._observable_jobs_update.subscribe(callback)
 
-    def set_autokill(self, autokill):
+    def set_autokill(self, autokill) -> NoReturn:
         """Enable or disable autokill
 
-        :rtype: void
+        :rtype: NoReturn
         """
         if autokill == self._autokill:
             return
@@ -167,39 +167,43 @@ class ProcessAgent():
             self._observable_jobs_update.unsubscribe(callback=ProcessAgent.pa_check_autokill)
         self._autokill = autokill
 
-    def kill_job(self, job_id: str) -> Job:
+    def kill_job(self, job_id: str) -> Tuple[Job, bool]:
         """Kill a job
 
-        :rtype: Job
+        :rtype: Tuple[Job, bool]
         """
         if job_id in self._process_agent_jobs:
+            is_updated = False
             if self._process_agent_jobs[job_id].state in [State.QUEUING.value, State.QUEUED.value, State.RUNNING.value]:
                 self._process_agent_jobs[job_id].state = State.CANCELLING.value
-            return copy.deepcopy(self._process_agent_jobs[job_id])
-        return None
+                is_updated = True
+            return (copy.deepcopy(self._process_agent_jobs[job_id]), is_updated)
+        return (None, False)
 
-    def rerun_job(self, job_id: str) -> Job:
+    def rerun_job(self, job_id: str) -> Tuple[Job, bool]:
         """Rerun a job
 
-        :rtype: Job
+        :rtype: Tuple[Job, bool]
         """
         if job_id in self._process_agent_jobs:
+            is_updated = False
             if self._process_agent_jobs[job_id].state in [State.FAILED.value, State.CANCELLED.value]:
                 self._process_agent_jobs[job_id].state = State.QUEUING.value
-            return copy.deepcopy(self._process_agent_jobs[job_id])
-        return None
+                is_updated = True
+            return (copy.deepcopy(self._process_agent_jobs[job_id]), is_updated)
+        return (None, False)
 
-    def clear_jobs_in_creation(self):
+    def clear_jobs_in_creation(self) -> NoReturn:
         """Clear all jobs in creation by the process agent
 
-        :rtype: void
+        :rtype: NoReturn
         """
         self._process_agent_jobs_in_creation = []
 
     def get_jobs(self) -> Dict[str, Job]:
         """Get all jobs created by the process agent
 
-        :rtype: Dict[id => Job]
+        :rtype: Dict[str, Job]
         """
         return copy.deepcopy(self._process_agent_jobs)
 
@@ -258,17 +262,17 @@ class ProcessAgent():
 
         return self.get_jobs_in_creation()
 
-    def start(self):
+    def start(self) -> NoReturn:
         """Start process agent
 
-        :rtype: void
+        :rtype: NoReturn
         """
         raise NotImplementedError
 
-    def stop(self):
+    def stop(self) -> NoReturn:
         """Stop process agent
 
-        :rtype: void
+        :rtype: NoReturn
         """
         raise NotImplementedError
 
@@ -318,10 +322,10 @@ class ProcessAgent():
         return Job.from_dict(result)
 
     @staticmethod
-    def pa_check_autokill(event):
+    def pa_check_autokill(event) -> NoReturn:
         """Check if we have to kill the server application
 
-        :rtype: void
+        :rtype: NoReturn
         """
         if event.pa.is_shutdown():
             jobs = event.pa.get_jobs()
