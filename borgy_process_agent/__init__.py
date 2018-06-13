@@ -5,7 +5,6 @@
 # Copyright (c) 2018 ElementAI. All rights reserved.
 #
 
-import os
 import copy
 import uuid
 from enum import Enum
@@ -13,7 +12,7 @@ from typing import List, Dict, Tuple, NoReturn
 from dictdiffer import diff
 from borgy_process_agent.event import Observable
 from borgy_process_agent.job import Restart, State
-from borgy_process_agent.exceptions import NotReadyError, EnvironmentVarError
+from borgy_process_agent.exceptions import NotReadyError
 from borgy_process_agent_api_server.models.job import Job
 
 
@@ -44,26 +43,7 @@ class ProcessAgentMode(Enum):
 process_agents = []
 
 
-class ProcessAgent():
-    """Process Agent Generic
-    """
-    def __new__(cls, mode=ProcessAgentMode.BORGY, **kwargs):
-        pa_module = __import__(__name__ + '.modes.' + mode.value, fromlist=['ProcessAgent'])
-
-        methods_to_keep = {}
-        for (k, v) in cls.__dict__.items():
-            if k[0:2] == '__':
-                methods_to_keep[k] = v
-        methods = dict(cls.__dict__)
-        methods.update(dict(pa_module.ProcessAgent.__dict__))
-        methods.update(methods_to_keep)
-        methods['__init__'] = pa_module.ProcessAgent.__init__
-
-        pa_class = type(cls.__name__, (pa_module.ProcessAgent, cls,), methods)
-        obj = pa_module.ProcessAgent.__new__(pa_class, **kwargs)
-
-        return obj
-
+class ProcessAgentBase():
     def __init__(self, autokill: bool = True, **kwargs) -> NoReturn:
         """Contrustor
 
@@ -162,9 +142,9 @@ class ProcessAgent():
             return
 
         if autokill:
-            self._observable_jobs_update.subscribe(ProcessAgent.pa_check_autokill, 'autokill')
+            self._observable_jobs_update.subscribe(self.__class__.pa_check_autokill, 'autokill')
         else:
-            self._observable_jobs_update.unsubscribe(callback=ProcessAgent.pa_check_autokill)
+            self._observable_jobs_update.unsubscribe(callback=self.__class__.pa_check_autokill)
         self._autokill = autokill
 
     def kill_job(self, job_id: str) -> Tuple[Job, bool]:
@@ -258,7 +238,7 @@ class ProcessAgent():
                 raise TypeError("Dict expected in list elements from jobs_provider")
             elif isinstance(jobs, dict):
                 jobs = [jobs]
-            self._process_agent_jobs_in_creation = [ProcessAgent.get_default_job(j) for j in jobs]
+            self._process_agent_jobs_in_creation = [self.get_default_job(j) for j in jobs]
 
         return self.get_jobs_in_creation()
 
@@ -276,29 +256,22 @@ class ProcessAgent():
         """
         raise NotImplementedError
 
-    @staticmethod
-    def get_info():
+    def get_info(self):
         """Get information about the process agent
 
         :rtype: dict
         """
-        if 'BORGY_JOB_ID' not in os.environ or not os.environ['BORGY_JOB_ID']:
-            raise EnvironmentVarError('Env var BORGY_JOB_ID is not defined. Are you running in borgy ?')
-        elif 'BORGY_USER' not in os.environ or not os.environ['BORGY_USER']:
-            raise EnvironmentVarError('Env var BORGY_USER is not defined. Are you running in borgy ?')
-
         return {
-            'id': os.environ['BORGY_JOB_ID'],
-            'createdBy': os.environ['BORGY_USER'],
+            'id': '00000000-0000-0000-0000-000000000000',
+            'createdBy': 'MyUser',
         }
 
-    @staticmethod
-    def get_default_job(job=None) -> Job:
+    def get_default_job(self, job=None) -> Job:
         """Get default parameters for a  job
 
         :rtype: Job
         """
-        info = ProcessAgent.get_info()
+        info = self.get_info()
         result = {
             'command': [],
             'createdBy': info['createdBy'],
@@ -336,3 +309,12 @@ class ProcessAgent():
             ], jobs.items()))
             if not jobs_running:
                 event.pa.stop()
+
+
+class ProcessAgent(ProcessAgentBase):
+    """Process Agent Generic
+    """
+    def __new__(cls, mode=ProcessAgentMode.BORGY, **kwargs):
+        pa_module = __import__(__name__ + '.modes.' + mode.value, fromlist=['ProcessAgent'])
+
+        return pa_module.ProcessAgent(**kwargs)

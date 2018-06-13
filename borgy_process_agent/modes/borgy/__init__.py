@@ -5,21 +5,23 @@
 # Copyright (c) 2018 ElementAI. All rights reserved.
 #
 
+import os
 import copy
 import connexion
 import logging
 from typing import Tuple, NoReturn
 from werkzeug.serving import make_server
-from borgy_process_agent import controllers
+from borgy_process_agent import controllers, ProcessAgentBase
 from borgy_process_agent.job import State
 from borgy_process_agent.config import Config
 import borgy_process_agent_api_server
 from borgy_process_agent_api_server import encoder
 from borgy_process_agent_api_server.models.job import Job
+from borgy_process_agent.exceptions import EnvironmentVarError
 import borgy_job_service_client
 
 
-class ProcessAgent():
+class ProcessAgent(ProcessAgentBase):
     """Process Agent for Borgy
     """
     def __init__(self, **kwargs) -> NoReturn:
@@ -36,11 +38,14 @@ class ProcessAgent():
 
         :rtype: JobsApi
         """
+        info = self.get_info()
+
         config = borgy_job_service_client.Configuration()
         config.host = Config.get('job_service_url')
         config.ssl_ca_cert = Config.get('job_service_certificate')
 
         api_client = borgy_job_service_client.ApiClient(config)
+        api_client.set_default_header('X-User', info['createdBy'])
 
         # create an instance of the API class
         return borgy_job_service_client.JobsApi(api_client)
@@ -53,7 +58,7 @@ class ProcessAgent():
         if job_id in self._process_agent_jobs:
             is_updated = False
             if self._process_agent_jobs[job_id].state in [State.QUEUING.value, State.QUEUED.value, State.RUNNING.value]:
-                info = self.__class__.get_info()
+                info = self.get_info()
                 self._job_service.v1_jobs_job_id_delete(job_id, info['createdBy'])
                 self._process_agent_jobs[job_id].state = State.CANCELLING.value
                 is_updated = True
@@ -109,3 +114,18 @@ class ProcessAgent():
         app.app.json_encoder = encoder.JSONEncoder
         app.add_api('swagger.yaml', arguments={'title': 'Borgy Process Agent'})
         return app
+
+    def get_info(self):
+        """Get information about the process agent
+
+        :rtype: dict
+        """
+        if 'BORGY_JOB_ID' not in os.environ or not os.environ['BORGY_JOB_ID']:
+            raise EnvironmentVarError('Env var BORGY_JOB_ID is not defined. Are you running in borgy ?')
+        elif 'BORGY_USER' not in os.environ or not os.environ['BORGY_USER']:
+            raise EnvironmentVarError('Env var BORGY_USER is not defined. Are you running in borgy ?')
+
+        return {
+            'id': os.environ['BORGY_JOB_ID'],
+            'createdBy': os.environ['BORGY_USER'],
+        }
