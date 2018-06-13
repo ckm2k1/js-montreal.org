@@ -245,6 +245,8 @@ class ProcessAgent():
             jobs = self._callback_jobs_provider(self)
             if jobs is None:
                 self._shutdown = True
+                # Dispatch an empty event to eventually call autokill
+                self._observable_jobs_update.dispatch(pa=self, jobs=[])
                 return None
             if not isinstance(jobs, list) and not isinstance(jobs, dict):
                 raise TypeError("List or dict expected from jobs_provider")

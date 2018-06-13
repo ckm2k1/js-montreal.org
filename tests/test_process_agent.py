@@ -215,6 +215,7 @@ class TestProcessAgent(BaseTestCase):
 
         def get_stop_job(pa):
             return None
+
         self._pa.clear_jobs_in_creation()
         self._pa.set_callback_jobs_provider(get_stop_job)
 
@@ -246,6 +247,7 @@ class TestProcessAgent(BaseTestCase):
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 204, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
         self.assertEqual(self._pa.is_shutdown(), True)
+        self.assertEqual(count_call, [1, 0])
 
         # Update jobs in ProcessAgent
         simple_job.state = State.CANCELLED.value
@@ -253,6 +255,77 @@ class TestProcessAgent(BaseTestCase):
         jobs = [simple_job, simple_job2]
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        # self._pa.stop() should be call
+        self.assertEqual(count_call, [1, 1])
+
+    def test_pa_autokill_after_finish(self):
+        """Autokill test case after all job are finished
+        """
+        count_call = [0, 0]
+
+        def mock_borgy_process_agent_start():
+            count_call[0] += 1
+
+        def mock_borgy_process_agent_stop():
+            count_call[1] += 1
+
+        self._pa.start = mock_borgy_process_agent_start
+        self._pa.stop = mock_borgy_process_agent_stop
+
+        def get_no_job(pa):
+            return []
+
+        def get_stop_job(pa):
+            return None
+
+        self._pa.clear_jobs_in_creation()
+        self._pa.set_callback_jobs_provider(get_no_job)
+
+        self._pa.set_autokill(True)
+        self._pa.start()
+        self.assertEqual(count_call, [1, 0])
+
+        # Insert fake jobs in ProcessAgent
+        simple_job = MockJob(name='gsm1', state=State.QUEUED.value).get_job()
+        simple_job2 = MockJob(name='gsm1', state=State.QUEUED.value).get_job()
+        simple_job3 = MockJob(name='gsm3', state=State.RUNNING.value).get_job()
+        jobs = [simple_job, simple_job2, simple_job3]
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        self.assertEqual(count_call, [1, 0])
+        self.assertEqual(self._pa.is_shutdown(), False)
+
+        # Update jobs in ProcessAgent
+        simple_job.state = State.RUNNING.value
+        simple_job2.state = State.RUNNING.value
+        simple_job3.state = State.FAILED.value
+        jobs = [simple_job, simple_job2, simple_job3]
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        self.assertEqual(count_call, [1, 0])
+        self.assertEqual(self._pa.is_shutdown(), False)
+        self.assertEqual(count_call, [1, 0])
+
+        # Governor call /v1/jobs to get jobs to schedule.
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        self.assertEqual(self._pa.is_shutdown(), False)
+
+        # Update jobs in ProcessAgent
+        simple_job.state = State.CANCELLED.value
+        simple_job2.state = State.SUCCEEDED.value
+        jobs = [simple_job, simple_job2]
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        self.assertEqual(count_call, [1, 0])
+
+        # Update callback
+        self._pa.set_callback_jobs_provider(get_stop_job)
+
+        # Governor call /v1/jobs to get jobs to schedule.
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 204, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
+        self.assertEqual(self._pa.is_shutdown(), True)
         # self._pa.stop() should be call
         self.assertEqual(count_call, [1, 1])
 
