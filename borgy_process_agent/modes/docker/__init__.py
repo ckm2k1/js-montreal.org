@@ -8,6 +8,7 @@
 import time
 import uuid
 import docker
+import logging
 from typing import Tuple, NoReturn, List
 from borgy_process_agent import controllers, ProcessAgentBase, process_agents
 from borgy_process_agent.controllers import jobs_controller
@@ -146,7 +147,7 @@ class ProcessAgent(ProcessAgentBase):
 
     def _check_jobs_update(self) -> List[Job]:
         containers = self._docker.containers.list(all=True)
-        containers_succedded = self._docker.containers.list(all=True, filters={'exited': 0, 'status': 'exited'})
+        containers_succedded = self._docker.containers.list(all=True, filters={'exited': '0', 'status': 'exited'})
         job_ids_succedded = []
         for c in containers_succedded:
             job_ids_succedded.append(c.name)
@@ -181,6 +182,7 @@ class ProcessAgent(ProcessAgentBase):
         :rtype: NoReturn
         """
         self._running = True
+        logging.info('Start Process Agent server')
         while self._running:
             # Get job from PA
             jobs = jobs_controller.v1_jobs_get()
@@ -209,6 +211,7 @@ class ProcessAgent(ProcessAgentBase):
 
         :rtype: NoReturn
         """
+        logging.info('Shutdown Process Agent server')
         self._running = False
 
     def get_info(self):
