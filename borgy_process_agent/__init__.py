@@ -50,6 +50,7 @@ class ProcessAgentBase():
         :rtype: NoReturn
         """
         process_agents.append(self)
+        self._options = kwargs
         self._process_agent_jobs = {}
         self._process_agent_jobs_in_creation = []
         self._observable_jobs_update = Observable()

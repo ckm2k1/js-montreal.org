@@ -8,19 +8,19 @@
 
 import os
 import uuid
+import logging
 from borgy_process_agent import ProcessAgent
 from borgy_process_agent.config import Config
-
 
 i_pa = 0
 
 
 def main():
+    logging.basicConfig(level=logging.DEBUG)
     os.environ['BORGY_JOB_ID'] = str(uuid.uuid4())
     os.environ['BORGY_USER'] = 'gsm'
 
-    Config.set('port', 1234)
-    process_agent = ProcessAgent()
+    process_agent = ProcessAgent(port=1234)
 
     def return_new_jobs(pa):
         global i_pa

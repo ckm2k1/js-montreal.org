@@ -13,11 +13,12 @@ import docker
 import logging
 from typing import Tuple, List
 from borgy_process_agent import ProcessAgentBase, process_agents
-from borgy_process_agent.config import Config
 from borgy_process_agent.controllers import jobs_controller
 from borgy_process_agent.job import State, Restart
 from borgy_process_agent.utils import get_now_isoformat
 from borgy_process_agent_api_server.models.job import Job, JobRuns
+
+logger = logging.getLogger(__name__)
 
 
 class ProcessAgent(ProcessAgentBase):
@@ -31,7 +32,6 @@ class ProcessAgent(ProcessAgentBase):
         super().__init__(**kwargs)
         self._docker = docker.from_env()
         self._running = False
-        self._options = kwargs
         self._job_id = kwargs.get('job_id', str(uuid.uuid4()))
         self._poll_interval = kwargs.get('poll_interval', 10)
         self._governor_jobs = {}
@@ -61,7 +61,7 @@ class ProcessAgent(ProcessAgentBase):
 
         :rtype: NoReturn
         """
-        logging.info('\t\tStart container for job {} (name: {})'.format(job.id, job.name))
+        logger.debug('\t\tStart container for job {} (name: {})'.format(job.id, job.name))
         container = self._docker.containers.run(
             name=job.id,
             image=job.image,
@@ -80,7 +80,7 @@ class ProcessAgent(ProcessAgentBase):
 
     def _create_job(self, job: Job):
         job_id = str(uuid.uuid4())
-        logging.info('\t\tCreate new job {} (name: {})'.format(job_id, job.name))
+        logger.debug('\t\tCreate new job {} (name: {})'.format(job_id, job.name))
         job.id = job_id
         job.runs = []
         self._governor_jobs[job_id] = {
@@ -97,7 +97,7 @@ class ProcessAgent(ProcessAgentBase):
 
         job = self._governor_jobs[job_id]
         if job['job'].state != state.value:
-            logging.info('\t\tUpdate job {}: {} -> {}'.format(job_id, job['job'].state, state.value))
+            logger.debug('\t\tUpdate job {}: {} -> {}'.format(job_id, job['job'].state, state.value))
             job['job'].state = state.value
             if job['job'].runs:
                 job['job'].runs[-1].state = state.value
@@ -185,12 +185,11 @@ class ProcessAgent(ProcessAgentBase):
 
         :rtype: NoReturn
         """
-        logging.basicConfig(format=Config.get('logging_format'), level=Config.get('logging_level'))
         self._running = True
-        logging.info('Start Process Agent server')
+        logger.debug('Start Process Agent server')
         while self._running:
             # Get job from PA
-            logging.info(' - Get job from PA')
+            logger.debug(' - Get job from PA')
             jobs = jobs_controller.v1_jobs_get()
             if isinstance(jobs, set):
                 jobs, _ = jobs
@@ -200,20 +199,20 @@ class ProcessAgent(ProcessAgentBase):
                     self._create_job(j)
 
             # Start queuing jobs
-            logging.info(' - Start queuing jobs')
+            logger.debug(' - Start queuing jobs')
             self._start_jobs()
 
             # Check update from container
-            logging.info(' - Check update from container')
+            logger.debug(' - Check update from container')
             updated_jobs = self._check_jobs_update()
 
             # Push update to PA
-            logging.info(' - Push update to PA')
+            logger.debug(' - Push update to PA')
             for pa in process_agents:
                 pa._push_jobs(updated_jobs)
 
             # Wait
-            logging.info(' - Wait')
+            logger.debug(' - Wait')
             time.sleep(self._poll_interval)
 
     def stop(self):
@@ -221,7 +220,7 @@ class ProcessAgent(ProcessAgentBase):
 
         :rtype: NoReturn
         """
-        logging.info('Shutdown Process Agent server')
+        logger.debug('Shutdown Process Agent server')
         self._running = False
 
     def get_info(self):

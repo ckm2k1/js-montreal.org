@@ -20,6 +20,8 @@ from borgy_process_agent_api_server.models.job import Job
 from borgy_process_agent.exceptions import EnvironmentVarError
 import borgy_job_service_client
 
+logger = logging.getLogger(__name__)
+
 
 class ProcessAgent(ProcessAgentBase):
     """Process Agent for Borgy
@@ -92,8 +94,8 @@ class ProcessAgent(ProcessAgentBase):
         :rtype: NoReturn
         """
         self._server_app = self.__class__.get_server_app()
-        self._server_srv = make_server('0.0.0.0', Config.get('port'), self._server_app)
-        logging.info('Start Process Agent server')
+        self._server_srv = make_server('0.0.0.0', self._options.get('port', 8080), self._server_app)
+        logger.info('Start Process Agent server')
         self._server_srv.serve_forever()
 
     def stop(self):
@@ -101,7 +103,7 @@ class ProcessAgent(ProcessAgentBase):
 
         :rtype: NoReturn
         """
-        logging.info('Shutdown Process Agent server')
+        logger.info('Shutdown Process Agent server')
         self._server_srv.shutdown()
 
     @staticmethod
@@ -110,7 +112,6 @@ class ProcessAgent(ProcessAgentBase):
 
         :rtype: FlaskApp
         """
-        logging.basicConfig(format=Config.get('logging_format'), level=Config.get('logging_level'))
         controllers.overwrite_api_controllers()
         app = connexion.App(__name__, specification_dir=borgy_process_agent_api_server.__path__[0]+'/swagger/')
         app.app.json_encoder = encoder.JSONEncoder

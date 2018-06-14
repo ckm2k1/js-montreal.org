@@ -6,12 +6,14 @@
 # Copyright (c) 2018 ElementAI. All rights reserved.
 #
 
+import logging
 from borgy_process_agent import ProcessAgent, ProcessAgentMode
 
 i_pa = 0
 
 
 def main():
+    logging.basicConfig(level=logging.DEBUG)
     process_agent = ProcessAgent(mode=ProcessAgentMode.DOCKER, poll_interval=2)
 
     def return_new_jobs(pa):

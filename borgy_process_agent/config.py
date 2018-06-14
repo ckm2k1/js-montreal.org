@@ -26,22 +26,6 @@ def convert_duration(value):
 
 
 configs = {
-    'logging_format': {
-        'description': 'Logging format',
-        'default': '[%(levelname)s]%(message)s',
-        'type': str
-    },
-    'logging_level': {
-        'description': 'Debug level: DEBUG, INFO, WARNING, ERROR, CRITICAL',
-        'default': 'INFO',
-        'type': int,
-        'convert': logging.getLevelName
-    },
-    'port': {
-        'description': 'Process agent server port',
-        'default': 8080,
-        'type': int
-    },
     'job_service_url': {
         'description': 'Job service URL',
         'default': 'https://job-service.borgy.elementai.lan',
