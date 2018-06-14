@@ -8,7 +8,7 @@
 import copy
 import uuid
 from enum import Enum
-from typing import List, Dict, Tuple, NoReturn
+from typing import List, Dict, Tuple
 from dictdiffer import diff
 from borgy_process_agent.event import Observable
 from borgy_process_agent.job import Restart, State
@@ -44,7 +44,7 @@ process_agents = []
 
 
 class ProcessAgentBase():
-    def __init__(self, autokill: bool = True, **kwargs) -> NoReturn:
+    def __init__(self, autokill: bool = True, **kwargs):
         """Contrustor
 
         :rtype: NoReturn
@@ -58,7 +58,7 @@ class ProcessAgentBase():
         self._autokill = False
         self.set_autokill(autokill)
 
-    def _push_jobs(self, jobs: List[Job]) -> NoReturn:
+    def _push_jobs(self, jobs: List[Job]):
         """Call when PUT API receives jobs
 
         :rtype: NoReturn
@@ -97,7 +97,7 @@ class ProcessAgentBase():
         if jobs_updated:
             self._observable_jobs_update.dispatch(pa=self, jobs=jobs_updated)
 
-    def delete(self) -> NoReturn:
+    def delete(self):
         """Delete process agent
 
         :rtype: NoReturn
@@ -118,21 +118,21 @@ class ProcessAgentBase():
         """
         return not self._shutdown and self._callback_jobs_provider and callable(self._callback_jobs_provider)
 
-    def set_callback_jobs_provider(self, callback) -> NoReturn:
+    def set_callback_jobs_provider(self, callback):
         """Define the callback which returns the job to create by the process agent
 
         :rtype: NoReturn
         """
         self._callback_jobs_provider = callback
 
-    def subscribe_jobs_update(self, callback) -> NoReturn:
+    def subscribe_jobs_update(self, callback):
         """Subscribe to the event when one or more jobs are updated
 
         :rtype: NoReturn
         """
         self._observable_jobs_update.subscribe(callback)
 
-    def set_autokill(self, autokill) -> NoReturn:
+    def set_autokill(self, autokill):
         """Enable or disable autokill
 
         :rtype: NoReturn
@@ -172,7 +172,7 @@ class ProcessAgentBase():
             return (copy.deepcopy(self._process_agent_jobs[job_id]), is_updated)
         return (None, False)
 
-    def clear_jobs_in_creation(self) -> NoReturn:
+    def clear_jobs_in_creation(self):
         """Clear all jobs in creation by the process agent
 
         :rtype: NoReturn
@@ -241,14 +241,14 @@ class ProcessAgentBase():
 
         return self.get_jobs_in_creation()
 
-    def start(self) -> NoReturn:
+    def start(self):
         """Start process agent
 
         :rtype: NoReturn
         """
         raise NotImplementedError
 
-    def stop(self) -> NoReturn:
+    def stop(self):
         """Stop process agent
 
         :rtype: NoReturn
@@ -294,7 +294,7 @@ class ProcessAgentBase():
         return Job.from_dict(result)
 
     @staticmethod
-    def pa_check_autokill(event) -> NoReturn:
+    def pa_check_autokill(event):
         """Check if we have to kill the server application
 
         :rtype: NoReturn

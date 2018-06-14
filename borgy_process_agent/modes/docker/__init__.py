@@ -11,7 +11,7 @@ import time
 import uuid
 import docker
 import logging
-from typing import Tuple, NoReturn, List
+from typing import Tuple, List
 from borgy_process_agent import ProcessAgentBase, process_agents
 from borgy_process_agent.config import Config
 from borgy_process_agent.controllers import jobs_controller
@@ -23,7 +23,7 @@ from borgy_process_agent_api_server.models.job import Job, JobRuns
 class ProcessAgent(ProcessAgentBase):
     """Process Agent for Docker
     """
-    def __init__(self, **kwargs) -> NoReturn:
+    def __init__(self, **kwargs):
         """Contrustor
 
         :rtype: NoReturn
@@ -56,7 +56,7 @@ class ProcessAgent(ProcessAgentBase):
             self._update_job_state(job_id, State.QUEUING)
         return result
 
-    def _run_job(self, job: Job) -> NoReturn:
+    def _run_job(self, job: Job):
         """Run a job in docker
 
         :rtype: NoReturn
@@ -78,7 +78,7 @@ class ProcessAgent(ProcessAgentBase):
 
         return container
 
-    def _create_job(self, job: Job) -> NoReturn:
+    def _create_job(self, job: Job):
         job_id = str(uuid.uuid4())
         logging.info('\t\tCreate new job {} (name: {})'.format(job_id, job.name))
         job.id = job_id
@@ -146,7 +146,7 @@ class ProcessAgent(ProcessAgentBase):
                     job['job'].state = State.QUEUING.value
         return job
 
-    def _start_jobs(self) -> NoReturn:
+    def _start_jobs(self):
         for job_id, job in self._governor_jobs.items():
             if job['job'].state == State.QUEUING.value:
                 self._update_job_state(job_id, State.QUEUED)
@@ -180,7 +180,7 @@ class ProcessAgent(ProcessAgentBase):
 
         return list(updates.values())
 
-    def start(self) -> NoReturn:
+    def start(self):
         """Start process agent
 
         :rtype: NoReturn
@@ -216,7 +216,7 @@ class ProcessAgent(ProcessAgentBase):
             logging.info(' - Wait')
             time.sleep(self._poll_interval)
 
-    def stop(self) -> NoReturn:
+    def stop(self):
         """Stop process agent
 
         :rtype: NoReturn

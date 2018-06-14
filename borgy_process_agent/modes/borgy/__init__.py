@@ -9,7 +9,7 @@ import os
 import copy
 import connexion
 import logging
-from typing import Tuple, NoReturn
+from typing import Tuple
 from werkzeug.serving import make_server
 from borgy_process_agent import controllers, ProcessAgentBase
 from borgy_process_agent.job import State
@@ -24,7 +24,7 @@ import borgy_job_service_client
 class ProcessAgent(ProcessAgentBase):
     """Process Agent for Borgy
     """
-    def __init__(self, **kwargs) -> NoReturn:
+    def __init__(self, **kwargs):
         """Contrustor
 
         :rtype: NoReturn
@@ -86,7 +86,7 @@ class ProcessAgent(ProcessAgentBase):
         """
         return self._server_app
 
-    def start(self) -> NoReturn:
+    def start(self):
         """Start process agent - start server application
 
         :rtype: NoReturn
@@ -96,7 +96,7 @@ class ProcessAgent(ProcessAgentBase):
         logging.info('Start Process Agent server')
         self._server_srv.serve_forever()
 
-    def stop(self) -> NoReturn:
+    def stop(self):
         """Stop process agent - stop server application
 
         :rtype: NoReturn

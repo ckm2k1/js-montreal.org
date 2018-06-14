@@ -7,7 +7,7 @@
 
 import uuid
 import copy
-from typing import List, Dict, NoReturn, Callable
+from typing import List, Dict, Callable
 
 
 class Event(object):
@@ -36,7 +36,7 @@ class Event(object):
 class Observable(object):
     """Observable
     """
-    def __init__(self) -> NoReturn:
+    def __init__(self):
         """Contrustor
 
         :rtype: NoReturn
