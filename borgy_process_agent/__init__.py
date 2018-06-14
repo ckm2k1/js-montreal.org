@@ -92,7 +92,6 @@ class ProcessAgentBase():
                         'update': list(diff({}, j.to_dict())),
                         'state': JobEventState.ADDED
                     })
-
             self._process_agent_jobs[j.id] = j
 
         if jobs_updated:

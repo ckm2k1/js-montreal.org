@@ -5,6 +5,7 @@
 # Copyright (c) 2018 ElementAI. All rights reserved.
 #
 
+import copy
 import math
 import time
 import uuid
@@ -175,7 +176,7 @@ class ProcessAgent(ProcessAgentBase):
                 job['status'] = c.status
 
                 if job['job'].state != current_state:
-                    updates[job_id] = job
+                    updates[job_id] = copy.deepcopy(job['job'])
 
         return list(updates.values())
 
@@ -204,12 +205,12 @@ class ProcessAgent(ProcessAgentBase):
 
             # Check update from container
             logging.info(' - Check update from container')
-            update_jobs = self._check_jobs_update()
+            updated_jobs = self._check_jobs_update()
 
             # Push update to PA
             logging.info(' - Push update to PA')
             for pa in process_agents:
-                pa._push_jobs([Job.from_dict(j) for j in update_jobs])
+                pa._push_jobs(updated_jobs)
 
             # Wait
             logging.info(' - Wait')
