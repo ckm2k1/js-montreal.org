@@ -5,12 +5,14 @@
 # Copyright (c) 2018 ElementAI. All rights reserved.
 #
 
+import math
 import time
 import uuid
 import docker
 import logging
 from typing import Tuple, NoReturn, List
 from borgy_process_agent import ProcessAgentBase, process_agents
+from borgy_process_agent.config import Config
 from borgy_process_agent.controllers import jobs_controller
 from borgy_process_agent.job import State, Restart
 from borgy_process_agent.utils import get_now_isoformat
@@ -29,7 +31,7 @@ class ProcessAgent(ProcessAgentBase):
         self._docker = docker.from_env()
         self._running = False
         self._options = kwargs
-        self._job_id = kwargs.get('job_id', uuid.uuid4())
+        self._job_id = kwargs.get('job_id', str(uuid.uuid4()))
         self._poll_interval = kwargs.get('poll_interval', 10)
         self._governor_jobs = {}
 
@@ -58,14 +60,15 @@ class ProcessAgent(ProcessAgentBase):
 
         :rtype: NoReturn
         """
+        logging.info('\t\tStart container for job {} (name: {})'.format(job.id, job.name))
         container = self._docker.containers.run(
             name=job.id,
             image=job.image,
             command=job.command,
             environment=job.environment_vars,
             labels=job.labels,
-            cpu_count=job.req_cores,
-            mem_limit=job.req_ram_gbytes,
+            cpu_count=math.ceil(job.req_cores),
+            # mem_limit=job.req_ram_gbytes,
             volumes=job.volumes,
             working_dir=job.workdir,
             detach=self._options.get('docker_detach', True),
@@ -78,7 +81,7 @@ class ProcessAgent(ProcessAgentBase):
         job_id = str(uuid.uuid4())
         logging.info('\t\tCreate new job {} (name: {})'.format(job_id, job.name))
         job.id = job_id
-        job.state = ''
+        job.runs = []
         self._governor_jobs[job_id] = {
             'job_id': job_id,
             'job': job,
@@ -95,17 +98,17 @@ class ProcessAgent(ProcessAgentBase):
         if job['job'].state != state.value:
             logging.info('\t\tUpdate job {}: {} -> {}'.format(job_id, job['job'].state, state.value))
             job['job'].state = state.value
-            if job.runs:
+            if job['job'].runs:
                 job['job'].runs[-1].state = state.value
 
             if state == State.QUEUING:
                 run = {
                     'created_on': get_now_isoformat(),
-                    'id': uuid.uuid4(),
+                    'id': str(uuid.uuid4()),
                     'job_id': job_id,
                     'state': State.QUEUING.value
                 }
-                job.runs.append(JobRuns.from_dict(run))
+                job['job'].runs.append(JobRuns.from_dict(run))
             elif state == State.QUEUED:
                 job['job'].runs[-1].queued_on = get_now_isoformat()
                 job['container'] = self._run_job(job['job'])
@@ -134,18 +137,18 @@ class ProcessAgent(ProcessAgentBase):
                     job['job'].runs[-1].result = job['container'].logs(stdout=True, stderr=True)
                     new_run = {
                         'created_on': get_now_isoformat(),
-                        'id': uuid.uuid4(),
+                        'id': str(uuid.uuid4()),
                         'job_id': job_id,
                         'state': State.QUEUING.value
                     }
-                    job.runs.append(JobRuns.from_dict(new_run))
-                    state.value = State.QUEUING.value
+                    job['job'].runs.append(JobRuns.from_dict(new_run))
+                    job['job'].state = State.QUEUING.value
         return job
 
     def _start_jobs(self) -> NoReturn:
-        for j in self._governor_jobs:
-            if j['job'].state == State.QUEUING.value:
-                self._update_job_state(j['job_id'], State.QUEUED)
+        for job_id, job in self._governor_jobs.items():
+            if job['job'].state == State.QUEUING.value:
+                self._update_job_state(job_id, State.QUEUED)
 
     def _check_jobs_update(self) -> List[Job]:
         containers = self._docker.containers.list(all=True)
@@ -183,6 +186,7 @@ class ProcessAgent(ProcessAgentBase):
 
         :rtype: NoReturn
         """
+        logging.basicConfig(format=Config.get('logging_format'), level=Config.get('logging_level'))
         self._running = True
         logging.info('Start Process Agent server')
         while self._running:
@@ -196,8 +200,8 @@ class ProcessAgent(ProcessAgentBase):
                 for j in jobs:
                     self._create_job(j)
 
-            # Start queing jobs
-            logging.info(' - Start queing jobs')
+            # Start queuing jobs
+            logging.info(' - Start queuing jobs')
             self._start_jobs()
 
             # Check update from container
