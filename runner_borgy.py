@@ -25,7 +25,10 @@ def main():
     def return_new_jobs(pa):
         global i_pa
         i_pa = i_pa + 1
-        res = [{'command': ['bash', str(i_pa)]}]
+        res = {
+            'command': ['bash', str(i_pa)],
+            'image': 'ubuntu:16.04'
+        }
         return res
 
     process_agent.set_callback_jobs_provider(return_new_jobs)
