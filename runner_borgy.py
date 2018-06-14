@@ -26,7 +26,7 @@ def main():
         global i_pa
         i_pa = i_pa + 1
         res = {
-            'command': ['bash', str(i_pa)],
+            'command': ['bash', '-c', 'echo', str(i_pa), ';', 'sleep', str(i_pa)],
             'image': 'ubuntu:16.04'
         }
         return res

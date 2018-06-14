@@ -153,9 +153,7 @@ class ProcessAgent(ProcessAgentBase):
     def _check_jobs_update(self) -> List[Job]:
         containers = self._docker.containers.list(all=True)
         containers_succedded = self._docker.containers.list(all=True, filters={'exited': '0', 'status': 'exited'})
-        job_ids_succedded = []
-        for c in containers_succedded:
-            job_ids_succedded.append(c.name)
+        job_ids_succedded = [c.name for c in containers_succedded]
 
         updates = {}
         for c in containers:
@@ -170,9 +168,9 @@ class ProcessAgent(ProcessAgentBase):
                     elif c.status == 'exited':
                         if job['job'].state == State.CANCELLING:
                             self._update_job_state(job_id, State.CANCELLED)
-                        elif job_id in containers_succedded:
+                        elif job_id in job_ids_succedded:
                             self._update_job_state(job_id, State.SUCCEEDED)
-                        elif job_id in containers_succedded:
+                        else:
                             self._update_job_state(job_id, State.FAILED)
                 job['status'] = c.status
 
