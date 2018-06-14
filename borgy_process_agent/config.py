@@ -8,7 +8,6 @@
 import re
 import json
 import yaml
-import logging
 from datetime import datetime
 import parsedatetime
 

@@ -10,7 +10,6 @@ import os
 import uuid
 import logging
 from borgy_process_agent import ProcessAgent
-from borgy_process_agent.config import Config
 
 i_pa = 0
 
