@@ -211,9 +211,11 @@ class ProcessAgent(ProcessAgentBase):
             for pa in process_agents:
                 pa._push_jobs(updated_jobs)
 
-            # Wait
-            logger.debug(' - Wait')
-            time.sleep(self._poll_interval)
+            # Check if self._running was updated after push update
+            if self._running:
+                # Wait
+                logger.debug(' - Wait')
+                time.sleep(self._poll_interval)
 
     def stop(self):
         """Stop process agent
