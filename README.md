@@ -118,7 +118,7 @@ make test.full
 ### Releasing
 
 ```sh
-make VERSION_TAG_LAST=[new_version]
+vim setup.py
 git commit -a -m "Upgrade to [new_version]"
 git tag [new_version]
 ```
