@@ -6,8 +6,6 @@
 # Copyright (c) 2018 ElementAI. All rights reserved.
 #
 
-import os
-import uuid
 from borgy_process_agent import ProcessAgent, ProcessAgentMode
 
 i_pa = 0

@@ -10,7 +10,7 @@ import uuid
 import docker
 import logging
 from typing import Tuple, NoReturn, List
-from borgy_process_agent import controllers, ProcessAgentBase, process_agents
+from borgy_process_agent import ProcessAgentBase, process_agents
 from borgy_process_agent.controllers import jobs_controller
 from borgy_process_agent.job import State, Restart
 from borgy_process_agent.utils import get_now_isoformat
@@ -76,6 +76,7 @@ class ProcessAgent(ProcessAgentBase):
 
     def _create_job(self, job: Job) -> NoReturn:
         job_id = str(uuid.uuid4())
+        logging.info('\t\tCreate new job {} (name: {})'.format(job_id, job.name))
         job.id = job_id
         job.state = ''
         self._governor_jobs[job_id] = {
@@ -92,6 +93,7 @@ class ProcessAgent(ProcessAgentBase):
 
         job = self._governor_jobs[job_id]
         if job['job'].state != state.value:
+            logging.info('\t\tUpdate job {}: {} -> {}'.format(job_id, job['job'].state, state.value))
             job['job'].state = state.value
             if job.runs:
                 job['job'].runs[-1].state = state.value
@@ -185,6 +187,7 @@ class ProcessAgent(ProcessAgentBase):
         logging.info('Start Process Agent server')
         while self._running:
             # Get job from PA
+            logging.info(' - Get job from PA')
             jobs = jobs_controller.v1_jobs_get()
             if isinstance(jobs, set):
                 jobs, _ = jobs
@@ -194,16 +197,20 @@ class ProcessAgent(ProcessAgentBase):
                     self._create_job(j)
 
             # Start queing jobs
+            logging.info(' - Start queing jobs')
             self._start_jobs()
 
             # Check update from container
+            logging.info(' - Check update from container')
             update_jobs = self._check_jobs_update()
 
             # Push update to PA
+            logging.info(' - Push update to PA')
             for pa in process_agents:
                 pa._push_jobs([Job.from_dict(j) for j in update_jobs])
 
             # Wait
+            logging.info(' - Wait')
             time.sleep(self._poll_interval)
 
     def stop(self) -> NoReturn:
