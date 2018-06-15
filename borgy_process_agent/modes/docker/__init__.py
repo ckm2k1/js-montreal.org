@@ -78,18 +78,18 @@ class ProcessAgent(ProcessAgentBase):
 
         return container
 
-    def _create_job(self, job: Job):
+    def _create_job(self, job: Job) -> Job:
         job_id = str(uuid.uuid4())
         logger.debug('\t\tCreate new job {} (name: {})'.format(job_id, job.name))
         job.id = job_id
         job.runs = []
         self._governor_jobs[job_id] = {
-            'job_id': job_id,
             'job': job,
             'container': None,
             'status': ''
         }
         self._update_job_state(job_id, State.QUEUING)
+        return job
 
     def _update_job_state(self, job_id, state: State) -> Job:
         if job_id not in self._governor_jobs:
@@ -99,14 +99,10 @@ class ProcessAgent(ProcessAgentBase):
         if job['job'].state != state.value:
             logger.debug('\t\tUpdate job {}: {} -> {}'.format(job_id, job['job'].state, state.value))
             job['job'].state = state.value
-            if job['job'].runs:
-                job['job'].runs[-1].state = state.value
-
             if state == State.QUEUING:
                 run = {
-                    'created_on': get_now_isoformat(),
+                    'createdOn': get_now_isoformat(),
                     'id': str(uuid.uuid4()),
-                    'job_id': job_id,
                     'state': State.QUEUING.value
                 }
                 job['job'].runs.append(JobRuns.from_dict(run))
@@ -117,7 +113,8 @@ class ProcessAgent(ProcessAgentBase):
                 job['job'].runs[-1].started_on = get_now_isoformat()
             elif state == State.CANCELLING:
                 job['job'].runs[-1].cancel_requested_on = get_now_isoformat()
-                job['container'].stop(timeout=self._options.get('docker_stop_timeout', 10))
+                if job['container']:
+                    job['container'].stop(timeout=self._options.get('docker_stop_timeout', 10))
             elif state == State.CANCELLED:
                 cancelled_on = get_now_isoformat()
                 job['job'].runs[-1].cancelled_on = cancelled_on
@@ -125,25 +122,32 @@ class ProcessAgent(ProcessAgentBase):
             elif state == State.FAILED:
                 job['job'].runs[-1].ended_on = get_now_isoformat()
                 job['job'].runs[-1].exit_code = 255
-                job['job'].runs[-1].result = job['container'].logs(stdout=True, stderr=True)
-                job['container'].remove()
+                if job['container']:
+                    job['job'].runs[-1].result = job['container'].logs(stdout=True, stderr=True)
+                    job['container'].remove()
             elif state == State.SUCCEEDED:
                 job['job'].runs[-1].ended_on = get_now_isoformat()
                 job['job'].runs[-1].exit_code = 0
-                job['job'].runs[-1].result = job['container'].logs(stdout=True, stderr=True)
-                job['container'].remove()
-            elif state == State.INTERRUPTED:
-                if job.restart == Restart.ON_INTERRUPTION.value:
-                    job['job'].runs[-1].ended_on = get_now_isoformat()
+                if job['container']:
                     job['job'].runs[-1].result = job['container'].logs(stdout=True, stderr=True)
+                    job['container'].remove()
+            elif state == State.INTERRUPTED:
+                if job['job'].restart == Restart.ON_INTERRUPTION.value:
+                    job['job'].runs[-1].state = State.INTERRUPTED.value
+                    job['job'].runs[-1].ended_on = get_now_isoformat()
+                    if job['container']:
+                        job['job'].runs[-1].result = job['container'].logs(stdout=True, stderr=True)
                     new_run = {
-                        'created_on': get_now_isoformat(),
+                        'createdOn': get_now_isoformat(),
                         'id': str(uuid.uuid4()),
-                        'job_id': job_id,
                         'state': State.QUEUING.value
                     }
                     job['job'].runs.append(JobRuns.from_dict(new_run))
                     job['job'].state = State.QUEUING.value
+
+            if job['job'].runs:
+                job['job'].runs[-1].state = job['job'].state
+
         return job
 
     def _start_jobs(self):
@@ -167,7 +171,7 @@ class ProcessAgent(ProcessAgentBase):
                     if c.status == 'running':
                         self._update_job_state(job_id, State.RUNNING)
                     elif c.status == 'exited':
-                        if job['job'].state == State.CANCELLING:
+                        if job['job'].state == State.CANCELLING.value:
                             self._update_job_state(job_id, State.CANCELLED)
                         elif job_id in job_ids_succedded:
                             self._update_job_state(job_id, State.SUCCEEDED)
@@ -191,10 +195,13 @@ class ProcessAgent(ProcessAgentBase):
             # Get job from PA
             logger.debug(' - Get job from PA')
             jobs = jobs_controller.v1_jobs_get()
+            code = 200
             if isinstance(jobs, set):
-                jobs, _ = jobs
+                jobs, code = jobs
 
-            if isinstance(jobs, list):
+            if code != 200:
+                logger.warning('Error to get jobs, got: {}'.format(jobs))
+            elif isinstance(jobs, list):
                 for j in jobs:
                     self._create_job(j)
 

@@ -10,7 +10,7 @@ import uuid
 import logging
 
 from flask_testing import TestCase
-from borgy_process_agent import ProcessAgent
+from borgy_process_agent import ProcessAgent, ProcessAgentMode
 from borgy_process_agent.modes import borgy
 
 
@@ -31,5 +31,25 @@ class BaseTestCase(TestCase):
 
     def tearDown(self):
         if self._pa:
+            self._pa.delete()
+        self._pa = None
+
+
+class BaseTestCaseDocker(BaseTestCase):
+
+    def setUp(self):
+        if not self._pa:
+            self._pa = ProcessAgent(mode=ProcessAgentMode.DOCKER, poll_interval=1)
+            self._pa.set_autokill(False)
+
+            # Mock
+            def mock_run(j):
+                return None
+            self._run_job_fct = self._pa._run_job
+            self._pa._run_job = mock_run
+
+    def tearDown(self):
+        if self._pa:
+            self._pa._run_job = self._run_job_fct
             self._pa.delete()
         self._pa = None

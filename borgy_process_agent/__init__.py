@@ -196,7 +196,7 @@ class ProcessAgentBase():
             return copy.deepcopy(self._process_agent_jobs[job_id])
         return None
 
-    def get_job_by_state(self, state: str) -> List[Job]:
+    def get_jobs_by_state(self, state: str) -> List[Job]:
         """Get all jobs in state
 
         :rtype: List[Job]
@@ -204,6 +204,17 @@ class ProcessAgentBase():
         jobs = []
         for (_, j) in self._process_agent_jobs.items():
             if j.state == state:
+                jobs.append(j)
+        return copy.deepcopy(jobs)
+
+    def get_jobs_by_name(self, name: str) -> List[Job]:
+        """Get jobs by name
+
+        :rtype: List[Job]
+        """
+        jobs = []
+        for (_, j) in self._process_agent_jobs.items():
+            if j.name == name:
                 jobs.append(j)
         return copy.deepcopy(jobs)
 

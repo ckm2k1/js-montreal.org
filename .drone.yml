@@ -17,6 +17,8 @@ pipeline:
       - coveralls --verbose
       - deactivate
       - rm -fr venv
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     when:
       event: [ push, tag ]
       ref:

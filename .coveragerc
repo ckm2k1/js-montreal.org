@@ -7,7 +7,7 @@ omit=
     .tox/*
     tests/*
     setup.py
-    runner.py
+    runner*.py
 [report]
 # Regexes for lines to exclude from consideration
 exclude_lines =
