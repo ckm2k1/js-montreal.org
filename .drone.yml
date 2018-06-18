@@ -8,7 +8,7 @@ pipeline:
     image: images.borgy.elementai.lan/borgy/plugin-pythons-testenv:latest
     secrets: [ COVERALLS_REPO_TOKEN, TWINE_USERNAME, TWINE_PASSWORD ]
     commands:
-      - export PIP_EXTRA_INDEX_URL="https://$TWINE_USERNAME:$TWINE_PASSWORD@pypi.elmt.io/repo/eai-ai-enablement"
+      - export PIP_EXTRA_INDEX_URL="https://$TWINE_USERNAME:$TWINE_PASSWORD@pypi.elmt.io/repo/eai-core"
       - python3.6 -m venv venv
       - . venv/bin/activate
       - pip install -r requirements.txt
@@ -32,7 +32,7 @@ pipeline:
       - /var/run/docker.sock:/var/run/docker.sock
       - /home/drone/cache:/var/lib/docker
     commands:
-      - export PIP_EXTRA_INDEX_URL="https://$TWINE_USERNAME:$TWINE_PASSWORD@pypi.elmt.io/repo/eai-ai-enablement"
+      - export PIP_EXTRA_INDEX_URL="https://$TWINE_USERNAME:$TWINE_PASSWORD@pypi.elmt.io/repo/eai-core"
       - make image.scan.process-agent
     when:
       event: [ push, tag ]
@@ -52,7 +52,7 @@ pipeline:
     - echo "Install using:" >> /tmp/notes.txt
     - echo "pip install $(make package.distrib.process-agent.path)" | sed -e 's|/distrib|http://distrib.borgy.elementai.lan|' >> /tmp/notes.txt
     - echo "OR" >> /tmp/notes.txt
-    - echo "pip install --extra-index-url https://pypi.elmt.io/repo/eai-ai-enablement  borgy-process-agent-api-server" >> /tmp/notes.txt
+    - echo "pip install --extra-index-url https://pypi.elmt.io/repo/eai-core  borgy-process-agent-api-server" >> /tmp/notes.txt
     - echo "" >> /tmp/notes.txt
     - echo "Changes:" >> /tmp/notes.txt
     - git log `git describe --tags HEAD^1 --abbrev=0`..HEAD --oneline >> /tmp/notes.txt
@@ -75,7 +75,7 @@ pipeline:
     commands:
     # Upload to pypi
     - export DEPLOYZOR_DISTRIB_BASE=/distrib/python
-    - twine upload --repository-url https://pypi.elmt.io/repo/eai-ai-enablement $(make package.distrib.process-agent.path)
+    - twine upload --repository-url https://pypi.elmt.io/repo/eai-core $(make package.distrib.process-agent.path)
     volumes:
       - /mnt/borgy/distrib:/distrib
     when:

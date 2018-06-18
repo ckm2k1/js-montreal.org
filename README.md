@@ -23,7 +23,7 @@ pip install http://distrib.borgy.elementai.lan/python/borgy-process-agent/borgy-
 Finally, it is also possible to install from our private pypi repository:
 
 ```sh
-pip install --extra-index-url https://pypi.elmt.io/repo/eai-ai-enablement borgy-process-agent==[version]
+pip install --extra-index-url https://pypi.elmt.io/repo/eai-core borgy-process-agent==[version]
 ```
 
 ### Setuptools
@@ -70,7 +70,7 @@ process_agent.start()
 Update `~/.pip/pip.conf` with extra index url:
 ```sh
 [global]
-extra-index-url = https://username:password@pypi.elmt.io/repo/eai-ai-enablement
+extra-index-url = https://username:password@pypi.elmt.io/repo/eai-core
 ```
 and call pip to install requirements
 ```sh
@@ -80,7 +80,7 @@ pip install -r ./requirements.txt
 OR call directly pip with extra index url in parameter:
 
 ```sh
-pip install --extra-index-url https://username:password@pypi.elmt.io/repo/eai-ai-enablement -r ./requirements.txt
+pip install --extra-index-url https://username:password@pypi.elmt.io/repo/eai-core -r ./requirements.txt
 ```
 
 ## Build
