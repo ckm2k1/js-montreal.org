@@ -128,7 +128,7 @@ class TestFlowDocker(BaseTestCase):
                 'image': 'ubuntu:16.04',
                 'reqRamGbytes': 2,
                 'reqCores': cpu,
-                'reqGpus': 4
+                'reqGpus': 4,
             }
             return res
 
@@ -154,6 +154,54 @@ class TestFlowDocker(BaseTestCase):
             'OMP_NUM_THREADS': cpu,
             'HOME': '/home/MyUser',
             'NVIDIA_VISIBLE_DEVICES': '0,1,2,3',
+        }
+        result = str(job.runs[-1].result)
+        for k, v in envs.items():
+            e = str(k) + '=' + str(v)
+            self.assertIn(e, result)
+
+    def test_borgy_env_var_overwrite(self):
+        """Test case to overwrite environment variables injected in docker
+        """
+        idx_job = [0]
+        commands = [
+            ['bash', '-c', 'env|sort']
+        ]
+
+        cpu = 2
+        memory_bytes = memory_str_to_nbytes('2Gi')
+
+        def return_new_jobs(pa):
+            idx_job[0] += 1
+            if idx_job[0] > len(commands):
+                return None
+            res = {
+                'command': commands[idx_job[0] - 1],
+                'name': 'job-'+str(idx_job[0]),
+                'image': 'ubuntu:16.04',
+                'reqRamGbytes': 2,
+                'reqCores': cpu,
+                'reqGpus': 4,
+                'environmentVars': [
+                    'BORGY_JOB_ID=aaaaaa', # Should be NOT overwrite
+                    'NVIDIA_VISIBLE_DEVICES=5', # Should be overwrite
+                ]
+            }
+            return res
+
+        self._pa.set_callback_jobs_provider(return_new_jobs)
+
+        self._pa.start()
+
+        jobs = self._pa.get_jobs()
+        self.assertEqual(len(jobs), 1)
+
+        job = list(jobs.values())[0]
+        self.assertEqual(job.state, State.SUCCEEDED.value)
+
+        envs = {
+            'BORGY_JOB_ID': job.id,
+            'NVIDIA_VISIBLE_DEVICES': '5',
         }
         result = str(job.runs[-1].result)
         for k, v in envs.items():
