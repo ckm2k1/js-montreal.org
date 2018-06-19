@@ -126,6 +126,30 @@ class TestProcessAgentDocker(BaseTestCaseDocker):
         with self.assertRaises(ValueError):
             self._pa._update_job_state('unknow', State.QUEUED)
 
+    def test_node_name(self):
+        """Test case for node_name
+        """
+        # Insert fak jobs in ProcessAgent
+        job = MockJob(name='gsm1', state=State.INTERRUPTED.value).get_job()
+
+        job = self._pa._create_job(job)
+        self.assertEqual(job.state, State.QUEUING.value)
+        self.assertEqual(len(job.runs), 1)
+        self.assertEqual(job.runs[-1].state, State.QUEUING.value)
+        self.assertEqual(job.runs[-1].node_name, 'docker')
+
+    def test_ip(self):
+        """Test case for ip
+        """
+        # Insert fak jobs in ProcessAgent
+        job = MockJob(name='gsm1', state=State.INTERRUPTED.value).get_job()
+
+        job = self._pa._create_job(job)
+        self.assertEqual(job.state, State.QUEUING.value)
+        self.assertEqual(len(job.runs), 1)
+        self.assertEqual(job.runs[-1].state, State.QUEUING.value)
+        self.assertEqual(job.runs[-1].ip, '127.0.0.1')
+
     def test_update_job_state(self):
         """Test case for update job state
         """
