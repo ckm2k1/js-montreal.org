@@ -23,6 +23,6 @@ setup(
     packages=find_packages(exclude=('tests', 'docs')),
     install_requires=install_requires,
     extras_require={
-        'docker':  ["docker==3.3.0"],
+        'docker':  ["docker==3.4.0"],
     }
 )
