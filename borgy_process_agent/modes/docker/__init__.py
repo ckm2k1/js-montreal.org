@@ -132,7 +132,7 @@ class ProcessAgent(ProcessAgentBase):
                     'jobId': job_id,
                     'id': str(uuid.uuid4()),
                     'ip': '127.0.0.1',
-                    'node_name': 'docker',
+                    'nodeName': 'docker',
                     'state': State.QUEUING.value
                 }
                 job['job'].runs.append(JobRuns.from_dict(run))
@@ -183,7 +183,7 @@ class ProcessAgent(ProcessAgentBase):
                         'jobId': job_id,
                         'id': str(uuid.uuid4()),
                         'ip': '127.0.0.1',
-                        'node_name': 'docker',
+                        'nodeName': 'docker',
                         'state': State.QUEUING.value
                     }
                     job['job'].runs.append(JobRuns.from_dict(new_run))
