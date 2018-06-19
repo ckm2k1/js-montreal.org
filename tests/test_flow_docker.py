@@ -99,6 +99,77 @@ class TestFlowDocker(BaseTestCase):
                     events.append({'name': j['job'].name, 'state': j['job'].state})
                     if j['job'].name == 'job-4' and j['job'].state == State.RUNNING.value:
                         jobs = event.pa.get_jobs_by_name('job-3')
+                        print("\tKill job {}".format(jobs[0].name))
+                        event.pa.kill_job(jobs[0].id)
+                self.assertCountEqual(job_events[idx_job_events[0]], events)
+                idx_job_events[0] += 1
+
+        self._pa.subscribe_jobs_update(jobs_update)
+
+        self._pa.start()
+
+    def test_docker_flow_rerun(self):
+        """Test case for rerun with docker
+        """
+
+        idx_job = [0]
+        commands = [
+            'sleep 5 ; exit $(( 1 - $BORGY_RUN_INDEX ))',
+            'sleep 15'
+        ]
+
+        def return_new_jobs(pa):
+            idx_job[0] += 1
+            if idx_job[0] > len(commands):
+                return None
+            time.sleep(idx_job[0])
+            res = {
+                'command': [
+                    'bash',
+                    '-c',
+                    commands[idx_job[0] - 1]
+                ],
+                'name': 'job-'+str(idx_job[0]),
+                'image': 'ubuntu:16.04'
+            }
+            return res
+
+        self._pa.set_callback_jobs_provider(return_new_jobs)
+
+        job_events = [
+            [
+                {'name': 'job-1', 'state': State.RUNNING.value},
+            ],
+            [
+                {'name': 'job-2', 'state': State.RUNNING.value},
+            ],
+            [
+                {'name': 'job-1', 'state': State.FAILED.value},
+            ],
+            [
+                {'name': 'job-1', 'state': State.RUNNING.value},
+            ],
+            [
+                {'name': 'job-1', 'state': State.SUCCEEDED.value},
+            ],
+            [
+                {'name': 'job-2', 'state': State.SUCCEEDED.value},
+            ]
+        ]
+        idx_job_events = [0]
+
+        def jobs_update(event):
+            if event.jobs:
+                events = []
+                print('Event '+str(idx_job_events[0])+':')
+                for j in event.jobs:
+                    print("\tMy job {} updated to {}".format(j['job'].name, j['job'].state))
+                    if j['job'].name == 'job-1' and j['job'].state == State.FAILED.value:
+                        print("\tRerun job {}".format(j['job'].name))
+                        event.pa.rerun_job(j['job'].id)
+                    events.append({'name': j['job'].name, 'state': j['job'].state})
+                    if j['job'].name == 'job-4' and j['job'].state == State.RUNNING.value:
+                        jobs = event.pa.get_jobs_by_name('job-3')
                         event.pa.kill_job(jobs[0].id)
                 self.assertCountEqual(job_events[idx_job_events[0]], events)
                 idx_job_events[0] += 1
