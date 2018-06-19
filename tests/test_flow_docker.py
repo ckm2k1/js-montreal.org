@@ -239,9 +239,6 @@ class TestFlowDocker(BaseTestCase):
             ['bash', '-c', 'env|sort']
         ]
 
-        cpu = 2
-        memory_bytes = memory_str_to_nbytes('2Gi')
-
         def return_new_jobs(pa):
             idx_job[0] += 1
             if idx_job[0] > len(commands):
@@ -251,11 +248,11 @@ class TestFlowDocker(BaseTestCase):
                 'name': 'job-'+str(idx_job[0]),
                 'image': 'ubuntu:16.04',
                 'reqRamGbytes': 2,
-                'reqCores': cpu,
+                'reqCores': 2,
                 'reqGpus': 4,
                 'environmentVars': [
-                    'BORGY_JOB_ID=aaaaaa', # Should be NOT overwrite
-                    'NVIDIA_VISIBLE_DEVICES=5', # Should be overwrite
+                    'BORGY_JOB_ID=aaaaaa',  # Should be NOT overwrite
+                    'NVIDIA_VISIBLE_DEVICES=5',  # Should be overwrite
                 ]
             }
             return res
