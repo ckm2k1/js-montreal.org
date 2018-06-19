@@ -102,7 +102,10 @@ class ProcessAgent(ProcessAgentBase):
             if state == State.QUEUING:
                 run = {
                     'createdOn': get_now_isoformat(),
+                    'jobId': job_id,
                     'id': str(uuid.uuid4()),
+                    'ip': '127.0.0.1',
+                    'node_name': 'docker',
                     'state': State.QUEUING.value
                 }
                 job['job'].runs.append(JobRuns.from_dict(run))
@@ -110,23 +113,34 @@ class ProcessAgent(ProcessAgentBase):
                 job['job'].runs[-1].queued_on = get_now_isoformat()
                 job['container'] = self._run_job(job['job'])
             elif state == State.RUNNING:
-                job['job'].runs[-1].started_on = get_now_isoformat()
+                if job['container']:
+                    job['job'].runs[-1].started_on = job['container'].attrs['State']['StartedAt']
+                else:
+                    job['job'].runs[-1].started_on = get_now_isoformat()
             elif state == State.CANCELLING:
                 job['job'].runs[-1].cancel_requested_on = get_now_isoformat()
                 if job['container']:
                     job['container'].stop(timeout=self._options.get('docker_stop_timeout', 10))
             elif state == State.CANCELLED:
-                cancelled_on = get_now_isoformat()
-                job['job'].runs[-1].cancelled_on = cancelled_on
-                job['job'].runs[-1].ended_on = cancelled_on
+                ended_on = get_now_isoformat()
+                if job['container']:
+                    ended_on = job['container'].attrs['State']['FinishedAt']
+                job['job'].runs[-1].cancelled_on = ended_on
+                job['job'].runs[-1].ended_on = ended_on
             elif state == State.FAILED:
-                job['job'].runs[-1].ended_on = get_now_isoformat()
+                ended_on = get_now_isoformat()
+                if job['container']:
+                    ended_on = job['container'].attrs['State']['FinishedAt']
+                job['job'].runs[-1].ended_on = ended_on
                 job['job'].runs[-1].exit_code = 255
                 if job['container']:
                     job['job'].runs[-1].result = job['container'].logs(stdout=True, stderr=True)
                     job['container'].remove()
             elif state == State.SUCCEEDED:
-                job['job'].runs[-1].ended_on = get_now_isoformat()
+                ended_on = get_now_isoformat()
+                if job['container']:
+                    ended_on = job['container'].attrs['State']['FinishedAt']
+                job['job'].runs[-1].ended_on = ended_on
                 job['job'].runs[-1].exit_code = 0
                 if job['container']:
                     job['job'].runs[-1].result = job['container'].logs(stdout=True, stderr=True)
@@ -139,7 +153,10 @@ class ProcessAgent(ProcessAgentBase):
                         job['job'].runs[-1].result = job['container'].logs(stdout=True, stderr=True)
                     new_run = {
                         'createdOn': get_now_isoformat(),
+                        'jobId': job_id,
                         'id': str(uuid.uuid4()),
+                        'ip': '127.0.0.1',
+                        'node_name': 'docker',
                         'state': State.QUEUING.value
                     }
                     job['job'].runs.append(JobRuns.from_dict(new_run))
@@ -157,14 +174,17 @@ class ProcessAgent(ProcessAgentBase):
 
     def _check_jobs_update(self) -> List[Job]:
         containers = self._docker.containers.list(all=True)
-        containers_succedded = self._docker.containers.list(all=True, filters={'exited': '0', 'status': 'exited'})
-        job_ids_succedded = [c.name for c in containers_succedded]
+        job_ids_succedded = [
+            c.name for c in containers
+            if c.attrs['State']['ExitCode'] == 0 and not c.attrs['State']['Running'] and not c.attrs['State']['Dead']
+        ]
 
         updates = {}
         for c in containers:
             job_id = c.name
             if job_id in self._governor_jobs:
                 job = self._governor_jobs[job_id]
+                job['container'] = c
                 current_state = job['job'].state
 
                 if job['status'] != c.status:
@@ -185,6 +205,7 @@ class ProcessAgent(ProcessAgentBase):
         return list(updates.values())
 
     def start(self):
+        from timeit import default_timer as timer
         """Start process agent
 
         :rtype: NoReturn
@@ -192,6 +213,7 @@ class ProcessAgent(ProcessAgentBase):
         self._running = True
         logger.debug('Start Process Agent server')
         while self._running:
+            start_time = timer()
             # Get job from PA
             logger.debug(' - Get job from PA')
             jobs = jobs_controller.v1_jobs_get()
@@ -218,6 +240,7 @@ class ProcessAgent(ProcessAgentBase):
             for pa in process_agents:
                 pa._push_jobs(updated_jobs)
 
+            logger.debug("--- run loop: %s seconds ---" % (timer() - start_time))
             # Check if self._running was updated after push update
             if self._running:
                 # Wait
