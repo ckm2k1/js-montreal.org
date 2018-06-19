@@ -13,6 +13,7 @@ from dictdiffer import diff
 from borgy_process_agent.event import Observable
 from borgy_process_agent.job import Restart, State
 from borgy_process_agent.exceptions import NotReadyError
+from borgy_process_agent.utils import memory_str_to_nbytes
 from borgy_process_agent_api_server.models.job import Job
 
 
@@ -295,7 +296,7 @@ class ProcessAgentBase():
             'options': {},
             'reqCores': 1,
             'reqGpus': 0,
-            'reqRamGbytes': 1,
+            'reqRamGbytes': memory_str_to_nbytes('10Mi'),
             'restart': Restart.NO.value,
             'stdin': False,
             'volumes': [],

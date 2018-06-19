@@ -15,7 +15,7 @@ from typing import Tuple, List
 from borgy_process_agent import ProcessAgentBase, process_agents
 from borgy_process_agent.controllers import jobs_controller
 from borgy_process_agent.job import State, Restart
-from borgy_process_agent.utils import get_now_isoformat
+from borgy_process_agent.utils import get_now_isoformat, cpu_str_to_ncpu, memory_str_to_nbytes
 from borgy_process_agent_api_server.models.job import Job, JobRuns
 
 logger = logging.getLogger(__name__)
@@ -61,15 +61,33 @@ class ProcessAgent(ProcessAgentBase):
 
         :rtype: NoReturn
         """
+        cpu_count = math.ceil(cpu_str_to_ncpu(job.req_cores))
+        mem = memory_str_to_nbytes(str(job.req_ram_gbytes) + 'Gi')
+        envs = copy.copy(job.environment_vars)
+        envs_injected = {
+            'BORGY_CPU_LIMIT': cpu_count,
+            'BORGY_JOB_ID': job.id,
+            'BORGY_MEMORY_LIMIT': mem,
+            'BORGY_RUN_INDEX': (len(job.runs) - 1),
+            'BORGY_TARGET_NODE': 'docker',
+            'BORGY_USER': job.created_by,
+            'PRETEND_CPUS': cpu_count,
+            'PRETEND_MEM': mem,
+            'OMP_NUM_THREADS': cpu_count,
+            'HOME': '/home/' + job.created_by,
+        }
+        for k, v in envs_injected.items():
+            envs.append(str(k) + '=' + str(v))
+
         logger.debug('\t\tStart container for job {} (name: {})'.format(job.id, job.name))
         container = self._docker.containers.run(
             name=job.id,
             image=job.image,
             command=job.command,
-            environment=job.environment_vars,
+            environment=envs,
             labels=job.labels,
-            cpu_count=math.ceil(job.req_cores),
-            # mem_limit=job.req_ram_gbytes,
+            cpu_count=cpu_count,
+            mem_limit=mem,
             volumes=job.volumes,
             working_dir=job.workdir,
             detach=self._options.get('docker_detach', True),

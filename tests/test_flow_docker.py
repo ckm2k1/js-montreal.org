@@ -10,6 +10,7 @@ from __future__ import absolute_import
 import time
 from tests import BaseTestCase
 from borgy_process_agent import ProcessAgent, ProcessAgentMode
+from borgy_process_agent.utils import memory_str_to_nbytes
 from borgy_process_agent.job import State
 
 
@@ -41,7 +42,7 @@ class TestFlowDocker(BaseTestCase):
 
         def return_new_jobs(pa):
             idx_job[0] += 1
-            if idx_job[0] > 5:
+            if idx_job[0] > len(commands):
                 return None
             time.sleep(idx_job[0])
             res = {
@@ -105,6 +106,57 @@ class TestFlowDocker(BaseTestCase):
         self._pa.subscribe_jobs_update(jobs_update)
 
         self._pa.start()
+
+    def test_borgy_env_var(self):
+        """Test case for injection of environment variables in docker
+        """
+        idx_job = [0]
+        commands = [
+            ['bash', '-c', 'env|sort']
+        ]
+
+        cpu = 2
+        memory_bytes = memory_str_to_nbytes('2Gi')
+
+        def return_new_jobs(pa):
+            idx_job[0] += 1
+            if idx_job[0] > len(commands):
+                return None
+            res = {
+                'command': commands[idx_job[0] - 1],
+                'name': 'job-'+str(idx_job[0]),
+                'image': 'ubuntu:16.04',
+                'reqRamGbytes': 2,
+                'reqCores': cpu
+            }
+            return res
+
+        self._pa.set_callback_jobs_provider(return_new_jobs)
+
+        self._pa.start()
+
+        jobs = self._pa.get_jobs()
+        self.assertEqual(len(jobs), 1)
+
+        job = list(jobs.values())[0]
+        self.assertEqual(job.state, State.SUCCEEDED.value)
+
+        envs = {
+            'BORGY_CPU_LIMIT': cpu,
+            'BORGY_JOB_ID': job.id,
+            'BORGY_MEMORY_LIMIT': memory_bytes,
+            'BORGY_RUN_INDEX': 0,
+            'BORGY_TARGET_NODE': 'docker',
+            'BORGY_USER': 'MyUser',
+            'PRETEND_CPUS': cpu,
+            'PRETEND_MEM': memory_bytes,
+            'OMP_NUM_THREADS': cpu,
+            'HOME': '/home/MyUser',
+        }
+        result = str(job.runs[-1].result)
+        for k, v in envs.items():
+            e = str(k) + '=' + str(v)
+            self.assertIn(e, result)
 
 
 if __name__ == '__main__':
