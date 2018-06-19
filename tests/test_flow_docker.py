@@ -127,7 +127,8 @@ class TestFlowDocker(BaseTestCase):
                 'name': 'job-'+str(idx_job[0]),
                 'image': 'ubuntu:16.04',
                 'reqRamGbytes': 2,
-                'reqCores': cpu
+                'reqCores': cpu,
+                'reqGpus': 4
             }
             return res
 
@@ -152,6 +153,7 @@ class TestFlowDocker(BaseTestCase):
             'PRETEND_MEM': memory_bytes,
             'OMP_NUM_THREADS': cpu,
             'HOME': '/home/MyUser',
+            'NVIDIA_VISIBLE_DEVICES': '0,1,2,3',
         }
         result = str(job.runs[-1].result)
         for k, v in envs.items():

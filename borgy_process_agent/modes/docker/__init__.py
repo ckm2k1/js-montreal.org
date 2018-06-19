@@ -63,7 +63,7 @@ class ProcessAgent(ProcessAgentBase):
         """
         cpu_count = math.ceil(cpu_str_to_ncpu(job.req_cores))
         mem = memory_str_to_nbytes(str(job.req_ram_gbytes) + 'Gi')
-        envs = copy.copy(job.environment_vars)
+        gpus_list = ','.join([str(i) for i in range(job.req_gpus)])
         envs_injected = {
             'BORGY_CPU_LIMIT': cpu_count,
             'BORGY_JOB_ID': job.id,
@@ -75,7 +75,9 @@ class ProcessAgent(ProcessAgentBase):
             'PRETEND_MEM': mem,
             'OMP_NUM_THREADS': cpu_count,
             'HOME': '/home/' + job.created_by,
+            'NVIDIA_VISIBLE_DEVICES': gpus_list,
         }
+        envs = []
         for k, v in envs_injected.items():
             envs.append(str(k) + '=' + str(v))
 
@@ -84,13 +86,14 @@ class ProcessAgent(ProcessAgentBase):
             name=job.id,
             image=job.image,
             command=job.command,
-            environment=envs,
+            environment=envs + job.environment_vars,
             labels=job.labels,
             cpu_count=cpu_count,
             mem_limit=mem,
             volumes=job.volumes,
             working_dir=job.workdir,
             detach=self._options.get('docker_detach', True),
+            runtime=self._options.get('docker_runtime'),
             auto_remove=False
         )
 
