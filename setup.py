@@ -12,7 +12,8 @@ install_requires = [
     "borgy-job-service-client==1.6.3",
     "parsedatetime==2.4",
     "python-dateutil==2.7.3",
-    "dictdiffer==0.7.1"
+    "dictdiffer==0.7.1",
+    "docker==3.4.0"
 ]
 
 setup(
@@ -21,8 +22,5 @@ setup(
     description='',
     author='Borygy Team',
     packages=find_packages(exclude=('tests', 'docs')),
-    install_requires=install_requires,
-    extras_require={
-        'docker':  ["docker==3.4.0"],
-    }
+    install_requires=install_requires
 )
