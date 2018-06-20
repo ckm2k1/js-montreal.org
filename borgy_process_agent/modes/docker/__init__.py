@@ -162,7 +162,8 @@ class ProcessAgent(ProcessAgentBase):
                 job['job'].runs[-1].exit_code = 255
                 if job['container']:
                     job['job'].runs[-1].result = job['container'].logs(stdout=True, stderr=True)
-                    job['container'].remove()
+                    if self._options.get('docker_remove', True):
+                        job['container'].remove()
             elif state == State.SUCCEEDED:
                 ended_on = get_now_isoformat()
                 if job['container']:
@@ -171,7 +172,8 @@ class ProcessAgent(ProcessAgentBase):
                 job['job'].runs[-1].exit_code = 0
                 if job['container']:
                     job['job'].runs[-1].result = job['container'].logs(stdout=True, stderr=True)
-                    job['container'].remove()
+                    if self._options.get('docker_remove', True):
+                        job['container'].remove()
             elif state == State.INTERRUPTED:
                 if job['job'].restart == Restart.ON_INTERRUPTION.value:
                     job['job'].runs[-1].state = State.INTERRUPTED.value
