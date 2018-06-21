@@ -7,8 +7,6 @@
 
 from __future__ import absolute_import
 
-import time
-import docker
 from tests import BaseTestCase
 from borgy_process_agent import ProcessAgent, ProcessAgentMode
 from borgy_process_agent.utils import memory_str_to_nbytes
@@ -69,7 +67,6 @@ class TestFlowDocker(BaseTestCase):
             if jobs:
                 for job in jobs:
                     self._pa.kill_job(job.id)
-
 
         job_events = [
             {
@@ -164,8 +161,8 @@ class TestFlowDocker(BaseTestCase):
 
         idx_job = [0]
         commands = [
-            'echo "step 1";trap "echo trap ; exit $(( 1 - $BORGY_RUN_INDEX ))" SIGUSR1;echo "wait";read -t 120;echo done',
-            'echo "step 2";trap "echo trap ; exit" SIGUSR1;echo "wait";read -t 15;echo done',
+            'echo "step 1";trap "echo trap ; exit $(( 1 - $BORGY_RUN_INDEX ))" SIGUSR1;echo "wait";read -t 120',
+            'echo "step 2";trap "echo trap ; exit" SIGUSR1;echo "wait";read -t 120',
         ]
 
         def return_new_jobs(pa):

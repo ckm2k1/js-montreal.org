@@ -7,6 +7,7 @@
 
 from __future__ import absolute_import
 
+
 import time
 import threading
 from tests import BaseTestCaseDocker
@@ -115,8 +116,8 @@ class TestProcessAgentDocker(BaseTestCaseDocker):
         time.sleep(2)
         # Stop server
         self._pa.stop()
-        # wait 1s
-        time.sleep(1)
+        # wait 3s
+        time.sleep(3)
         # Start should go to the next instruction
         self.assertEqual(count_call[0], 1)
 
