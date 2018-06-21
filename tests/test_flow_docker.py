@@ -8,6 +8,7 @@
 from __future__ import absolute_import
 
 import time
+import docker
 from tests import BaseTestCase
 from borgy_process_agent import ProcessAgent, ProcessAgentMode
 from borgy_process_agent.utils import memory_str_to_nbytes
@@ -20,7 +21,7 @@ class TestFlowDocker(BaseTestCase):
     def setUp(self):
         if self._pa:
             self.tearDown()
-        self._pa = ProcessAgent(mode=ProcessAgentMode.DOCKER, poll_interval=0.01, docker_stop_timeout=1)
+        self._pa = ProcessAgent(mode=ProcessAgentMode.DOCKER, poll_interval=0.01, docker_tty=True)
 
     def tearDown(self):
         if self._pa:
@@ -33,18 +34,17 @@ class TestFlowDocker(BaseTestCase):
 
         idx_job = [0]
         commands = [
-            'echo "step 1";for i in $(seq 1 1);do echo $i;sleep 30;done;echo done',
-            'echo "step 2";for i in $(seq 1 1);do echo $i;sleep 30;done;echo done',
-            'echo "step 3";for i in $(seq 1 1);do echo $i;sleep 60;done;echo done',
-            'echo "step 4";for i in $(seq 1 1);do echo $i;sleep 25;done;echo done',
-            'echo "step 5";for i in $(seq 1 1);do echo $i;sleep 20;done;echo done;exit 1',
+            'echo "step 1";trap "echo trap ; exit" SIGUSR1;echo "wait";read -t 120;echo done',
+            'echo "step 2";trap "echo trap ; exit" SIGUSR1;echo "wait";read -t 120;echo done',
+            'echo "step 3";trap "echo trap ; exit" SIGUSR1;echo "wait";read -t 120;echo done',
+            'echo "step 4";trap "echo trap ; exit" SIGUSR1;echo "wait";read -t 120;echo done',
+            'echo "step 5";trap "echo trap ; exit 1" SIGUSR1;echo "wait";read -t 120;echo done',
         ]
 
         def return_new_jobs(pa):
             idx_job[0] += 1
             if idx_job[0] > len(commands):
                 return None
-            time.sleep(idx_job[0])
             res = {
                 'command': [
                     'bash',
@@ -58,35 +58,85 @@ class TestFlowDocker(BaseTestCase):
 
         self._pa.set_callback_jobs_provider(return_new_jobs)
 
+        def stop_job(job_name):
+            jobs = self._pa.get_jobs_by_name(job_name)
+            if jobs:
+                for job in jobs:
+                    self._pa._governor_jobs[job.id]['container'].kill('SIGUSR1')
+
+        def kill_job(job_name):
+            jobs = self._pa.get_jobs_by_name(job_name)
+            if jobs:
+                for job in jobs:
+                    self._pa.kill_job(job.id)
+
+
         job_events = [
-            [
-                {'name': 'job-1', 'state': State.RUNNING.value},
-            ],
-            [
-                {'name': 'job-2', 'state': State.RUNNING.value},
-            ],
-            [
-                {'name': 'job-3', 'state': State.RUNNING.value},
-            ],
-            [
-                {'name': 'job-4', 'state': State.RUNNING.value},
-            ],
-            [
-                {'name': 'job-5', 'state': State.RUNNING.value},
-                {'name': 'job-3', 'state': State.CANCELLED.value},
-            ],
-            [
-                {'name': 'job-1', 'state': State.SUCCEEDED.value},
-            ],
-            [
-                {'name': 'job-2', 'state': State.SUCCEEDED.value},
-            ],
-            [
-                {'name': 'job-4', 'state': State.SUCCEEDED.value},
-            ],
-            [
-                {'name': 'job-5', 'state': State.FAILED.value},
-            ],
+            {
+                'events': [
+                    {'name': 'job-1', 'state': State.RUNNING.value},
+                ],
+                'actions': []
+            },
+            {
+                'events': [
+                    {'name': 'job-2', 'state': State.RUNNING.value},
+                ],
+                'actions': []
+            },
+            {
+                'events': [
+                    {'name': 'job-3', 'state': State.RUNNING.value},
+                ],
+                'actions': []
+            },
+            {
+                'events': [
+                    {'name': 'job-4', 'state': State.RUNNING.value},
+                ],
+                'actions': [
+                    [kill_job, 'job-3']
+                ]
+            },
+            {
+                'events': [
+                    {'name': 'job-3', 'state': State.CANCELLED.value},
+                    {'name': 'job-5', 'state': State.RUNNING.value},
+                ],
+                'actions': [
+                    [stop_job, 'job-1']
+                ]
+            },
+            {
+                'events': [
+                    {'name': 'job-1', 'state': State.SUCCEEDED.value},
+                ],
+                'actions': [
+                    [stop_job, 'job-2']
+                ]
+            },
+            {
+                'events': [
+                    {'name': 'job-2', 'state': State.SUCCEEDED.value},
+                ],
+                'actions': [
+                    [stop_job, 'job-4']
+                ]
+            },
+            {
+                'events': [
+                    {'name': 'job-4', 'state': State.SUCCEEDED.value},
+                ],
+                'actions': [
+                    [stop_job, 'job-5']
+                ]
+            },
+            {
+                'events': [
+                    {'name': 'job-5', 'state': State.FAILED.value},
+                ],
+                'actions': []
+            }
         ]
         idx_job_events = [0]
 
@@ -97,11 +147,11 @@ class TestFlowDocker(BaseTestCase):
                 for j in event.jobs:
                     print("\tMy job {} updated to {}".format(j['job'].name, j['job'].state))
                     events.append({'name': j['job'].name, 'state': j['job'].state})
-                    if j['job'].name == 'job-4' and j['job'].state == State.RUNNING.value:
-                        jobs = event.pa.get_jobs_by_name('job-3')
-                        print("\tKill job {}".format(jobs[0].name))
-                        event.pa.kill_job(jobs[0].id)
-                self.assertCountEqual(job_events[idx_job_events[0]], events)
+                self.assertCountEqual(job_events[idx_job_events[0]]['events'], events)
+
+                for a in job_events[idx_job_events[0]]['actions']:
+                    print("\tAction {} on job {}".format(a[0].__name__, a[1]))
+                    a[0](a[1])
                 idx_job_events[0] += 1
 
         self._pa.subscribe_jobs_update(jobs_update)
@@ -114,15 +164,14 @@ class TestFlowDocker(BaseTestCase):
 
         idx_job = [0]
         commands = [
-            'sleep 5 ; exit $(( 1 - $BORGY_RUN_INDEX ))',
-            'sleep 15'
+            'echo "step 1";trap "echo trap ; exit $(( 1 - $BORGY_RUN_INDEX ))" SIGUSR1;echo "wait";read -t 120;echo done',
+            'echo "step 2";trap "echo trap ; exit" SIGUSR1;echo "wait";read -t 15;echo done',
         ]
 
         def return_new_jobs(pa):
             idx_job[0] += 1
             if idx_job[0] > len(commands):
                 return None
-            time.sleep(idx_job[0])
             res = {
                 'command': [
                     'bash',
@@ -136,25 +185,69 @@ class TestFlowDocker(BaseTestCase):
 
         self._pa.set_callback_jobs_provider(return_new_jobs)
 
+        def stop_job(job_name):
+            jobs = self._pa.get_jobs_by_name(job_name)
+            if jobs:
+                for job in jobs:
+                    self._pa._governor_jobs[job.id]['container'].kill('SIGUSR1')
+
+        def rerun_job(job_name):
+            jobs = self._pa.get_jobs_by_name(job_name)
+            if jobs:
+                for job in jobs:
+                    self._pa.rerun_job(job.id)
+
+        def kill_job(job_name):
+            jobs = self._pa.get_jobs_by_name(job_name)
+            if jobs:
+                for job in jobs:
+                    self._pa.kill_job(job.id)
+
         job_events = [
-            [
-                {'name': 'job-1', 'state': State.RUNNING.value},
-            ],
-            [
-                {'name': 'job-2', 'state': State.RUNNING.value},
-            ],
-            [
-                {'name': 'job-1', 'state': State.FAILED.value},
-            ],
-            [
-                {'name': 'job-1', 'state': State.RUNNING.value},
-            ],
-            [
-                {'name': 'job-1', 'state': State.SUCCEEDED.value},
-            ],
-            [
-                {'name': 'job-2', 'state': State.SUCCEEDED.value},
-            ]
+            {
+                'events': [
+                    {'name': 'job-1', 'state': State.RUNNING.value},
+                ],
+                'actions': []
+            },
+            {
+                'events': [
+                    {'name': 'job-2', 'state': State.RUNNING.value},
+                ],
+                'actions': [
+                    [stop_job, 'job-1']
+                ]
+            },
+            {
+                'events': [
+                    {'name': 'job-1', 'state': State.FAILED.value},
+                ],
+                'actions': [
+                    [rerun_job, 'job-1']
+                ]
+            },
+            {
+                'events': [
+                    {'name': 'job-1', 'state': State.RUNNING.value},
+                ],
+                'actions': [
+                    [stop_job, 'job-1']
+                ]
+            },
+            {
+                'events': [
+                    {'name': 'job-1', 'state': State.SUCCEEDED.value},
+                ],
+                'actions': [
+                    [stop_job, 'job-2']
+                ]
+            },
+            {
+                'events': [
+                    {'name': 'job-2', 'state': State.SUCCEEDED.value},
+                ],
+                'actions': []
+            }
         ]
         idx_job_events = [0]
 
@@ -164,14 +257,12 @@ class TestFlowDocker(BaseTestCase):
                 print('Event '+str(idx_job_events[0])+':')
                 for j in event.jobs:
                     print("\tMy job {} updated to {}".format(j['job'].name, j['job'].state))
-                    if j['job'].name == 'job-1' and j['job'].state == State.FAILED.value:
-                        print("\tRerun job {}".format(j['job'].name))
-                        event.pa.rerun_job(j['job'].id)
                     events.append({'name': j['job'].name, 'state': j['job'].state})
-                    if j['job'].name == 'job-4' and j['job'].state == State.RUNNING.value:
-                        jobs = event.pa.get_jobs_by_name('job-3')
-                        event.pa.kill_job(jobs[0].id)
-                self.assertCountEqual(job_events[idx_job_events[0]], events)
+                self.assertCountEqual(job_events[idx_job_events[0]]['events'], events)
+
+                for a in job_events[idx_job_events[0]]['actions']:
+                    print("\tAction {} on job {}".format(a[0].__name__, a[1]))
+                    a[0](a[1])
                 idx_job_events[0] += 1
 
         self._pa.subscribe_jobs_update(jobs_update)

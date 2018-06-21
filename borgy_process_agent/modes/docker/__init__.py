@@ -100,6 +100,7 @@ class ProcessAgent(ProcessAgentBase):
             working_dir=job.workdir,
             detach=self._options.get('docker_detach', True),
             runtime=self._options.get('docker_runtime'),
+            tty=self._options.get('docker_tty'),
             auto_remove=False
         )
 
