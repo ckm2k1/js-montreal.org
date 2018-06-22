@@ -203,7 +203,7 @@ class ProcessAgent(ProcessAgentBase):
                 self._update_job_state(job_id, State.QUEUED)
 
     def _check_jobs_update(self) -> List[Job]:
-        containers = self._docker.containers.list(all=True)
+        containers = self._docker.containers.list(all=True, ignore_removed=True)
         job_ids_succedded = [
             c.name for c in containers
             if c.attrs['State']['ExitCode'] == 0 and not c.attrs['State']['Running'] and not c.attrs['State']['Dead']
