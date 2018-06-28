@@ -15,7 +15,7 @@ from borgy_process_agent_api_server.models.job import Job
 def v1_jobs_get():
     """Get a new job, will return 204 if there is nothing to submit for the time being
 
-    :rtype: List[JobSpec]
+    :rtype: JobsOps
     """
     jobs = []
     pa_state = []
@@ -37,7 +37,11 @@ def v1_jobs_get():
     if all(v is None for v in pa_state):
         return 'No more jobs', 204
 
-    return jobs
+    return {
+        'submit': jobs,
+        'rerun': [],
+        'kill': [],
+    }
 
 
 def v1_jobs_put(body):

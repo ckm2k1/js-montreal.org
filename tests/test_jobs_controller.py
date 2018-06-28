@@ -127,7 +127,9 @@ class TestJobsController(BaseTestCase):
         self._pa.set_callback_jobs_provider(lambda pa: job_spec)
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
-        jobs = response.get_json()
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs = jobs_ops['submit']
         self.assertEqual(len(jobs), 1)
         job = Job.from_dict(jobs[0])
         self.assertEqual(job_spec['command'], job.command)
@@ -141,7 +143,10 @@ class TestJobsController(BaseTestCase):
             'command': ['killall', 'sleep']
         }
         self._pa.set_callback_jobs_provider(lambda pa: new_job_spec)
-        jobs = response.get_json()
+        response = self.client.open('/v1/jobs', method='GET')
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs = jobs_ops['submit']
         self.assertEqual(len(jobs), 1)
         job = Job.from_dict(jobs[0])
         self.assertNotEqual(new_job_spec['command'], job.command)
@@ -272,7 +277,9 @@ class TestJobsController(BaseTestCase):
         # Governor call /v1/jobs to get jobs to schedule
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
-        jobs_to_create = response.get_json()
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs_to_create = jobs_ops['submit']
         # Should return job 'my-job'
         self.assertEqual(len(jobs_to_create), 1)
         self.assertEqual('my-job', jobs_to_create[0]['name'])

@@ -11,7 +11,7 @@ from collections import defaultdict
 from flask import json
 from tests import BaseTestCase
 from tests.utils import MockJob
-from borgy_process_agent_api_server.models.job import Job
+from borgy_process_agent_api_server.models.job_spec import JobSpec
 from borgy_process_agent import JobEventState
 from borgy_process_agent.job import State
 
@@ -52,10 +52,12 @@ class TestFlow(BaseTestCase):
         # Governor call /v1/jobs to get jobs to schedule
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
-        jobs_to_create = response.get_json()
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs_to_create = jobs_ops['submit']
         # Should return job 'job-1'
         self.assertEqual(len(jobs_to_create), 1)
-        job = Job.from_dict(jobs_to_create[0])
+        job = JobSpec.from_dict(jobs_to_create[0])
         self.assertEqual('job-1', job.name)
 
         # Add job to governor
@@ -73,10 +75,12 @@ class TestFlow(BaseTestCase):
         # Governor call again to get jobs to schedule
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
-        jobs_to_create = response.get_json()
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs_to_create = jobs_ops['submit']
         # Should always return job 'job-1'
         self.assertEqual(len(jobs_to_create), 1)
-        job = Job.from_dict(jobs_to_create[0])
+        job = JobSpec.from_dict(jobs_to_create[0])
         self.assertEqual('job-1', job.name)
 
         # Governor create job and call PUT /v1/jobs to update job state in PA
@@ -116,10 +120,12 @@ class TestFlow(BaseTestCase):
         # Governor call to get jobs to schedule
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
-        jobs_to_create = response.get_json()
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs_to_create = jobs_ops['submit']
         # Should return job 'job-2'
         self.assertEqual(len(jobs_to_create), 1)
-        job = Job.from_dict(jobs_to_create[0])
+        job = JobSpec.from_dict(jobs_to_create[0])
         self.assertEqual('job-2', job.name)
 
         # Add job to governor
@@ -177,12 +183,14 @@ class TestFlow(BaseTestCase):
         # Governor call /v1/jobs to get jobs to schedule
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
-        jobs_to_create = response.get_json()
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs_to_create = jobs_ops['submit']
         # Should return job 'job-1', 'job-2' and 'job-3'
         self.assertEqual(len(jobs_to_create), 3)
-        job1 = Job.from_dict(jobs_to_create[0])
-        job2 = Job.from_dict(jobs_to_create[1])
-        job3 = Job.from_dict(jobs_to_create[2])
+        job1 = JobSpec.from_dict(jobs_to_create[0])
+        job2 = JobSpec.from_dict(jobs_to_create[1])
+        job3 = JobSpec.from_dict(jobs_to_create[2])
         self.assertEqual('job-1', job1.name)
         self.assertEqual('job-2', job2.name)
         self.assertEqual('job-3', job3.name)
@@ -206,12 +214,14 @@ class TestFlow(BaseTestCase):
         # Governor call again to get jobs to schedule
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
-        jobs_to_create = response.get_json()
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs_to_create = jobs_ops['submit']
         # Should always return job 'job-1', 'job-2' and 'job-3'
         self.assertEqual(len(jobs_to_create), 3)
-        job1 = Job.from_dict(jobs_to_create[0])
-        job2 = Job.from_dict(jobs_to_create[1])
-        job3 = Job.from_dict(jobs_to_create[2])
+        job1 = JobSpec.from_dict(jobs_to_create[0])
+        job2 = JobSpec.from_dict(jobs_to_create[1])
+        job3 = JobSpec.from_dict(jobs_to_create[2])
         self.assertEqual('job-1', job1.name)
         self.assertEqual('job-2', job2.name)
         self.assertEqual('job-3', job3.name)
@@ -260,11 +270,13 @@ class TestFlow(BaseTestCase):
         # Governor call to get jobs to schedule
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
-        jobs_to_create = response.get_json()
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs_to_create = jobs_ops['submit']
         # Should return job the 2 remaining job in creation: 'job-2' and 'job-3'
         self.assertEqual(len(jobs_to_create), 2)
-        job2 = Job.from_dict(jobs_to_create[0])
-        job3 = Job.from_dict(jobs_to_create[1])
+        job2 = JobSpec.from_dict(jobs_to_create[0])
+        job3 = JobSpec.from_dict(jobs_to_create[1])
         self.assertEqual('job-2', job2.name)
         self.assertEqual('job-3', job3.name)
 
@@ -293,12 +305,14 @@ class TestFlow(BaseTestCase):
         # Governor call /v1/jobs to get jobs to schedule
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
-        jobs_to_create = response.get_json()
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs_to_create = jobs_ops['submit']
         # Should return job 'job-4', 'job-5' and 'job-6'
         self.assertEqual(len(jobs_to_create), 3)
-        job1 = Job.from_dict(jobs_to_create[0])
-        job2 = Job.from_dict(jobs_to_create[1])
-        job3 = Job.from_dict(jobs_to_create[2])
+        job1 = JobSpec.from_dict(jobs_to_create[0])
+        job2 = JobSpec.from_dict(jobs_to_create[1])
+        job3 = JobSpec.from_dict(jobs_to_create[2])
         self.assertEqual('job-4', job1.name)
         self.assertEqual('job-5', job2.name)
         self.assertEqual('job-6', job3.name)

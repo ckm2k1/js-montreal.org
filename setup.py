@@ -8,7 +8,7 @@
 from setuptools import setup, find_packages
 
 install_requires = [
-    "borgy-process-agent-api-server==0.1.3",
+    "borgy-process-agent-api-server==1.0.0",
     "borgy-job-service-client==1.6.3",
     "parsedatetime==2.4",
     "python-dateutil==2.7.3",

@@ -255,8 +255,8 @@ class ProcessAgent(ProcessAgentBase):
 
             if code != 200:
                 logger.warning('Error to get jobs, got: {}'.format(jobs))
-            elif isinstance(jobs, list):
-                for j in jobs:
+            elif isinstance(jobs, dict) and isinstance(jobs['submit'], list):
+                for j in jobs['submit']:
                     self._create_job(j)
 
             # Start queuing jobs
