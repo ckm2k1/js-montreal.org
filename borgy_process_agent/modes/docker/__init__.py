@@ -17,6 +17,7 @@ from borgy_process_agent.controllers import jobs_controller
 from borgy_process_agent.job import State, Restart
 from borgy_process_agent.utils import get_now_isoformat, cpu_str_to_ncpu, memory_str_to_nbytes
 from borgy_process_agent_api_server.models.job import Job, JobRuns
+from borgy_process_agent_api_server.models.job_spec import JobSpec
 
 logger = logging.getLogger(__name__)
 
@@ -106,8 +107,9 @@ class ProcessAgent(ProcessAgentBase):
 
         return container
 
-    def _create_job(self, job: Job) -> Job:
+    def _create_job(self, job_spec: JobSpec) -> Job:
         job_id = str(uuid.uuid4())
+        job = Job(**job_spec.to_dict())
         logger.debug('\t\tCreate new job {} (name: {})'.format(job_id, job.name))
         job.id = job_id
         job.runs = []

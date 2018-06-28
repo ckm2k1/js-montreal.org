@@ -15,7 +15,7 @@ from borgy_process_agent_api_server.models.job import Job
 def v1_jobs_get():
     """Get a new job, will return 204 if there is nothing to submit for the time being
 
-    :rtype: List[Job]
+    :rtype: List[JobSpec]
     """
     jobs = []
     pa_state = []

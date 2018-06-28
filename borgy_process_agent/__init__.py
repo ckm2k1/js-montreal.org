@@ -15,6 +15,7 @@ from borgy_process_agent.job import Restart, State
 from borgy_process_agent.exceptions import NotReadyError
 from borgy_process_agent.utils import memory_str_to_nbytes
 from borgy_process_agent_api_server.models.job import Job
+from borgy_process_agent_api_server.models.job_spec import JobSpec
 
 
 class JobEventState(Enum):
@@ -219,17 +220,17 @@ class ProcessAgentBase():
                 jobs.append(j)
         return copy.deepcopy(jobs)
 
-    def get_jobs_in_creation(self) -> List[Job]:
+    def get_jobs_in_creation(self) -> List[JobSpec]:
         """Get all jobs in creation by the process agent and waiting for a return of the governor
 
-        :rtype: List[Job]
+        :rtype: List[JobSpec]
         """
         return copy.deepcopy(self._process_agent_jobs_in_creation)
 
-    def get_job_to_create(self) -> List[Job]:
+    def get_job_to_create(self) -> List[JobSpec]:
         """Return the list of jobs to create. Returns job in creation if the list is not empty.
 
-        :rtype: List[Job]
+        :rtype: List[JobSpec]
         """
         if self._shutdown:
             return None
@@ -278,10 +279,10 @@ class ProcessAgentBase():
             'createdBy': 'MyUser',
         }
 
-    def get_default_job(self, job=None) -> Job:
-        """Get default parameters for a  job
+    def get_default_job(self, job=None) -> JobSpec:
+        """Get default parameters for a job
 
-        :rtype: Job
+        :rtype: JobSpec
         """
         info = self.get_info()
         result = {
@@ -304,7 +305,7 @@ class ProcessAgentBase():
         }
         if job and isinstance(job, dict):
             result.update(job)
-        return Job.from_dict(result)
+        return JobSpec.from_dict(result)
 
     @staticmethod
     def pa_check_autokill(event):
