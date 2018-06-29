@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# __init__.py
+# borgy.py
 # Guillaume Smaha, 2018-05-01
 # Copyright (c) 2018 ElementAI. All rights reserved.
 #
