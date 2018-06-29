@@ -36,6 +36,10 @@ class ProcessAgent(ProcessAgentBase):
         self._poll_interval = kwargs.get('poll_interval', 10)
 
     def reset(self):
+        """Reset Process Agent.
+
+        :rtype: NoReturn
+        """
         super().reset()
         self._running = False
         self._governor_jobs = {}
