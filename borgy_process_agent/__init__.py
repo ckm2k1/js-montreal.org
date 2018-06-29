@@ -52,6 +52,7 @@ class ProcessAgentBase():
         :rtype: NoReturn
         """
         self._options = kwargs
+        self._observable_jobs_update = Observable()
         self._callback_jobs_provider = None
         self.reset()
         self.set_autokill(autokill)
@@ -118,7 +119,6 @@ class ProcessAgentBase():
         """
         self._process_agent_jobs = {}
         self._process_agent_jobs_in_creation = []
-        self._observable_jobs_update = Observable()
         self._shutdown = False
         self._autokill = False
 
