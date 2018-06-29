@@ -12,10 +12,11 @@ import uuid
 import docker
 import logging
 from typing import Tuple, List
+from dateutil.parser import parse
 from borgy_process_agent import ProcessAgentBase, process_agents
 from borgy_process_agent.controllers import jobs_controller
 from borgy_process_agent.job import State, Restart
-from borgy_process_agent.utils import get_now_isoformat, cpu_str_to_ncpu, memory_str_to_nbytes
+from borgy_process_agent.utils import get_now, get_now_isoformat, cpu_str_to_ncpu, memory_str_to_nbytes
 from borgy_process_agent_api_server.models.job import Job, JobRuns
 from borgy_process_agent_api_server.models.job_spec import JobSpec
 
@@ -211,6 +212,17 @@ class ProcessAgent(ProcessAgentBase):
             if job['job'].state == State.QUEUING.value:
                 self._update_job_state(job_id, State.QUEUED)
 
+    def _check_max_run_time(self):
+        for job_id, job in self._governor_jobs.items():
+            if job['job'].state == State.RUNNING.value and job['job'].max_run_time_secs > 0:
+                run = job['job'].runs[-1]
+                started_on = parse(run.started_on)
+                if (get_now() - started_on).total_seconds() > job['job'].max_run_time_secs:
+                    logger.debug('\t\tStop job {}: max run time exceed ({} seconds)'
+                                 .format(job_id, job['job'].max_run_time_secs))
+                    if job['container']:
+                        job['container'].stop(timeout=self._options.get('docker_stop_timeout', 10))
+
     def _check_jobs_update(self) -> List[Job]:
         containers = self._docker.containers.list(all=True, ignore_removed=True)
         job_ids_succedded = [
@@ -270,6 +282,10 @@ class ProcessAgent(ProcessAgentBase):
             # Start queuing jobs
             logger.debug(' - Start queuing jobs')
             self._start_jobs()
+
+            # Check running container with max run time
+            logger.debug(' - Check running container with max run time')
+            self._check_max_run_time()
 
             # Check update from container
             logger.debug(' - Check update from container')

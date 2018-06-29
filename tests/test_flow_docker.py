@@ -364,6 +364,36 @@ class TestFlowDocker(BaseTestCase):
             e = str(k) + '=' + str(v)
             self.assertIn(e, result)
 
+    def test_container_with_max_run_time(self):
+        """Test case to check container with max run time
+        """
+        idx_job = [0]
+        commands = [
+            ['bash', '-c', 'sleep 60']
+        ]
+
+        def return_new_jobs(pa):
+            idx_job[0] += 1
+            if idx_job[0] > len(commands):
+                return None
+            res = {
+                'command': commands[idx_job[0] - 1],
+                'name': 'job-'+str(idx_job[0]),
+                'image': 'ubuntu:16.04',
+                'maxRunTimeSecs': 3
+            }
+            return res
+
+        self._pa.set_callback_jobs_provider(return_new_jobs)
+
+        self._pa.start()
+
+        jobs = self._pa.get_jobs()
+        self.assertEqual(len(jobs), 1)
+
+        job = list(jobs.values())[0]
+        self.assertEqual(job.state, State.FAILED.value)
+
 
 if __name__ == '__main__':
     import unittest
