@@ -28,10 +28,11 @@ class BaseTestCase(TestCase):
         if not self._pa:
             self._pa = ProcessAgent()
             self._pa.set_autokill(False)
+            self._pa._insert()
 
     def tearDown(self):
         if self._pa:
-            self._pa.delete()
+            self._pa._remove()
         self._pa = None
 
 
@@ -41,6 +42,7 @@ class BaseTestCaseDocker(BaseTestCase):
         if not self._pa:
             self._pa = ProcessAgent(mode=ProcessAgentMode.DOCKER, poll_interval=1)
             self._pa.set_autokill(False)
+            self._pa._insert()
 
             # Mock
             def mock_run(j):
@@ -51,5 +53,5 @@ class BaseTestCaseDocker(BaseTestCase):
     def tearDown(self):
         if self._pa:
             self._pa._run_job = self._run_job_fct
-            self._pa.delete()
+            self._pa._remove()
         self._pa = None

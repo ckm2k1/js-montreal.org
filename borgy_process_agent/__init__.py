@@ -51,14 +51,9 @@ class ProcessAgentBase():
 
         :rtype: NoReturn
         """
-        process_agents.append(self)
         self._options = kwargs
-        self._process_agent_jobs = {}
-        self._process_agent_jobs_in_creation = []
-        self._observable_jobs_update = Observable()
         self._callback_jobs_provider = None
-        self._shutdown = False
-        self._autokill = False
+        self.reset()
         self.set_autokill(autokill)
 
     def _push_jobs(self, jobs: List[Job]):
@@ -100,12 +95,32 @@ class ProcessAgentBase():
         if jobs_updated:
             self._observable_jobs_update.dispatch(pa=self, jobs=jobs_updated)
 
-    def delete(self):
-        """Delete process agent
+    def _insert(self):
+        """Insert process agent in PA list
 
         :rtype: NoReturn
         """
-        process_agents.remove(self)
+        if self not in process_agents:
+            process_agents.append(self)
+
+    def _remove(self):
+        """Remove process agent from PA list
+
+        :rtype: NoReturn
+        """
+        if self in process_agents:
+            process_agents.remove(self)
+
+    def reset(self):
+        """Reset Process Agent.
+
+        :rtype: NoReturn
+        """
+        self._process_agent_jobs = {}
+        self._process_agent_jobs_in_creation = []
+        self._observable_jobs_update = Observable()
+        self._shutdown = False
+        self._autokill = False
 
     def is_shutdown(self) -> bool:
         """Return if process agent is shutdown or not

@@ -32,9 +32,12 @@ class ProcessAgent(ProcessAgentBase):
         """
         super().__init__(**kwargs)
         self._docker = docker.from_env()
-        self._running = False
         self._job_id = kwargs.get('job_id', str(uuid.uuid4()))
         self._poll_interval = kwargs.get('poll_interval', 10)
+
+    def reset(self):
+        super().reset()
+        self._running = False
         self._governor_jobs = {}
 
     def kill_job(self, job_id: str) -> Tuple[Job, bool]:
@@ -242,6 +245,7 @@ class ProcessAgent(ProcessAgentBase):
 
         :rtype: NoReturn
         """
+        self._insert()
         self._running = True
         logger.debug('Start Process Agent server')
         while self._running:
@@ -278,6 +282,7 @@ class ProcessAgent(ProcessAgentBase):
                 # Wait
                 logger.debug(' - Wait')
                 time.sleep(self._poll_interval)
+        self._remove()
 
     def stop(self):
         """Stop process agent

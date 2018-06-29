@@ -372,6 +372,54 @@ class TestProcessAgent(BaseTestCase):
         del borgy_process_agent_start
         del borgy_process_agent_stop
 
+    def test_pa_reset_is_ready(self):
+        """Reset test case: always ready
+        """
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 418, 'Should return 418. Response body is : ' + response.data.decode('utf-8'))
+
+        # Define callback for PA. Should be ready.
+        self._pa.set_callback_jobs_provider(lambda pa: [])
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Reset PA
+        self._pa.reset()
+
+        # Define callback for PA. Should be always ready.
+        self._pa.set_callback_jobs_provider(lambda pa: [])
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+    def test_pa_reset(self):
+        """Reset test case
+        """
+        def get_stop_job(pa):
+            return None
+
+        self._pa.clear_jobs_in_creation()
+        # Shutdown PA on next call
+        self._pa.set_callback_jobs_provider(get_stop_job)
+
+        # Insert fake jobs in ProcessAgent
+        simple_job = MockJob(name='gsm1', state=State.QUEUED.value).get_job()
+        jobs = [simple_job]
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        self.assertEqual(self._pa.is_shutdown(), False)
+        self.assertEqual(len(self._pa.get_jobs()), 1)
+
+        # Shutdown PA
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 204, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
+        self.assertEqual(self._pa.is_shutdown(), True)
+        self.assertEqual(len(self._pa.get_jobs()), 1)
+
+        # Reset PA
+        self._pa.reset()
+        self.assertEqual(self._pa.is_shutdown(), False)
+        self.assertEqual(len(self._pa.get_jobs()), 0)
+
 
 if __name__ == '__main__':
     import unittest

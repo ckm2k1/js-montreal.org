@@ -23,7 +23,7 @@ class TestFlowDocker(BaseTestCase):
 
     def tearDown(self):
         if self._pa:
-            self._pa.delete()
+            self._pa._remove()
         self._pa = None
 
     def test_docker_flow(self):

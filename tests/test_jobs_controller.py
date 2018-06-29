@@ -26,7 +26,7 @@ class TestJobsController(BaseTestCase):
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 418, 'Should return 418. Response body is : ' + response.data.decode('utf-8'))
 
-        # Define callback for first PA. Should be ready.
+        # Define callback for PA. Should be ready.
         self._pa.set_callback_jobs_provider(lambda pa: [])
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
@@ -36,6 +36,7 @@ class TestJobsController(BaseTestCase):
         """
         pa2 = ProcessAgent()
         pa2.set_autokill(False)
+        pa2._insert()
 
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 418, 'Should return 418. Response body is : ' + response.data.decode('utf-8'))
@@ -50,7 +51,7 @@ class TestJobsController(BaseTestCase):
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
 
-        pa2.delete()
+        pa2._remove()
 
     def test_v1_jobs_get_check_environment_vars(self):
         """Test case for undefined environment variables

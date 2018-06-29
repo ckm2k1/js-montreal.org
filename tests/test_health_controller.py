@@ -47,6 +47,7 @@ class TestHealthController(BaseTestCase):
         """
         pa2 = ProcessAgent()
         pa2.set_autokill(False)
+        pa2._insert()
 
         response = self.client.open('/v1/health', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
@@ -90,7 +91,7 @@ class TestHealthController(BaseTestCase):
         self.assertEqual(health.is_ready, False, "Should be not ready.")
         self.assertEqual(health.is_shutdown, True, "Should be shutdown.")
 
-        pa2.delete()
+        pa2._remove()
 
 
 if __name__ == '__main__':
