@@ -61,8 +61,9 @@ class ProcessAgent(ProcessAgentBase):
             is_updated = False
             if self._process_agent_jobs[job_id].state in [State.QUEUING.value, State.QUEUED.value, State.RUNNING.value]:
                 info = self.get_info()
-                self._job_service.v1_jobs_job_id_delete(job_id, info['createdBy'])
-                self._process_agent_jobs[job_id].state = State.CANCELLING.value
+                job = self._job_service.v1_jobs_job_id_delete(job_id, info['createdBy'])
+                # Push job event
+                self._push_jobs([job])
                 is_updated = True
             return (copy.deepcopy(self._process_agent_jobs[job_id]), is_updated)
         return (None, False)
@@ -75,8 +76,9 @@ class ProcessAgent(ProcessAgentBase):
         if job_id in self._process_agent_jobs:
             is_updated = False
             if self._process_agent_jobs[job_id].state in [State.FAILED.value, State.CANCELLED.value]:
-                self._job_service.v1_jobs_job_id_rerun_put(job_id)
-                self._process_agent_jobs[job_id].state = State.QUEUING.value
+                job = self._job_service.v1_jobs_job_id_rerun_put(job_id)
+                # Push job event
+                self._push_jobs([job])
                 is_updated = True
             return (copy.deepcopy(self._process_agent_jobs[job_id]), is_updated)
         return (None, False)

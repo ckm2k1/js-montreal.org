@@ -90,7 +90,8 @@ class TestProcessAgent(BaseTestCase):
 
         def mock_jobs_delete(s, job_id, user):
             count_call[0] += 1
-            return simple_job2.to_dict()
+            simple_job2.state = State.CANCELLING.value
+            return simple_job2
 
         mock_method = 'borgy_job_service_client.api.jobs_api.JobsApi.v1_jobs_job_id_delete'
         job_service_call_delete = patch(mock_method, mock_jobs_delete).start()
@@ -143,7 +144,10 @@ class TestProcessAgent(BaseTestCase):
 
         def mock_jobs_rerun(s, job_id):
             count_call[0] += 1
-            return simple_job2.to_dict()
+            simple_job2.state = State.QUEUING.value
+            print(simple_job2)
+            print(simple_job2.to_dict())
+            return simple_job2
 
         mock_method = 'borgy_job_service_client.api.jobs_api.JobsApi.v1_jobs_job_id_rerun_put'
         job_service_call_rerun = patch(mock_method, mock_jobs_rerun).start()

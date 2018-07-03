@@ -169,26 +169,14 @@ class ProcessAgentBase():
 
         :rtype: Tuple[Job, bool]
         """
-        if job_id in self._process_agent_jobs:
-            is_updated = False
-            if self._process_agent_jobs[job_id].state in [State.QUEUING.value, State.QUEUED.value, State.RUNNING.value]:
-                self._process_agent_jobs[job_id].state = State.CANCELLING.value
-                is_updated = True
-            return (copy.deepcopy(self._process_agent_jobs[job_id]), is_updated)
-        return (None, False)
+        raise NotImplementedError
 
     def rerun_job(self, job_id: str) -> Tuple[Job, bool]:
         """Rerun a job
 
         :rtype: Tuple[Job, bool]
         """
-        if job_id in self._process_agent_jobs:
-            is_updated = False
-            if self._process_agent_jobs[job_id].state in [State.FAILED.value, State.CANCELLED.value]:
-                self._process_agent_jobs[job_id].state = State.QUEUING.value
-                is_updated = True
-            return (copy.deepcopy(self._process_agent_jobs[job_id]), is_updated)
-        return (None, False)
+        raise NotImplementedError
 
     def clear_jobs_in_creation(self):
         """Clear all jobs in creation by the process agent

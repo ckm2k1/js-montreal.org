@@ -50,20 +50,26 @@ class ProcessAgent(ProcessAgentBase):
 
         :rtype: Tuple[Job, bool]
         """
-        result = super().kill_job(job_id)
-        if result[1]:
-            self._update_job_state(job_id, State.CANCELLING)
-        return result
+        if job_id in self._process_agent_jobs:
+            is_updated = False
+            if self._process_agent_jobs[job_id].state in [State.QUEUING.value, State.QUEUED.value, State.RUNNING.value]:
+                self._update_job_state(job_id, State.CANCELLING)
+                is_updated = True
+            return (copy.deepcopy(self._process_agent_jobs[job_id]), is_updated)
+        return (None, False)
 
     def rerun_job(self, job_id: str) -> Tuple[Job, bool]:
         """Rerun a job
 
         :rtype: Tuple[Job, bool]
         """
-        result = super().rerun_job(job_id)
-        if result[1]:
-            self._update_job_state(job_id, State.QUEUING)
-        return result
+        if job_id in self._process_agent_jobs:
+            is_updated = False
+            if self._process_agent_jobs[job_id].state in [State.FAILED.value, State.CANCELLED.value]:
+                self._update_job_state(job_id, State.QUEUING)
+                is_updated = True
+            return (copy.deepcopy(self._process_agent_jobs[job_id]), is_updated)
+        return (None, False)
 
     def _run_job(self, job: Job):
         """Run a job in docker
