@@ -65,7 +65,7 @@ class ProcessAgent(ProcessAgentBase):
         """
         if job_id in self._process_agent_jobs:
             is_updated = False
-            if self._process_agent_jobs[job_id].state in [State.FAILED.value, State.CANCELLED.value]:
+            if self._process_agent_jobs[job_id].state in [State.FAILED.value, State.CANCELLED.value, State.INTERRUPTED.value]:
                 self._update_job_state(job_id, State.QUEUING)
                 is_updated = True
             return (copy.deepcopy(self._process_agent_jobs[job_id]), is_updated)

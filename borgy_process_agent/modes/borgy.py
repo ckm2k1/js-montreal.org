@@ -75,7 +75,7 @@ class ProcessAgent(ProcessAgentBase):
         """
         if job_id in self._process_agent_jobs:
             is_updated = False
-            if self._process_agent_jobs[job_id].state in [State.FAILED.value, State.CANCELLED.value]:
+            if self._process_agent_jobs[job_id].state in [State.FAILED.value, State.CANCELLED.value, State.INTERRUPTED.value]:
                 job = self._job_service.v1_jobs_job_id_rerun_put(job_id)
                 # Push job event
                 self._push_jobs([job])
