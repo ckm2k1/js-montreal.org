@@ -150,7 +150,7 @@ class ProcessAgentBase():
         """
         self._observable_jobs_update.subscribe(callback)
 
-    def set_autokill(self, autokill):
+    def set_autokill(self, autokill: bool):
         """Enable or disable autokill
 
         :rtype: NoReturn
