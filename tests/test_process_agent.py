@@ -7,13 +7,16 @@
 
 from __future__ import absolute_import
 
+import uuid
 import time
 import threading
 from flask import json
 from mock import patch
 from tests import BaseTestCase
 from tests.utils import MockJob
+from borgy_process_agent import ProcessAgent
 from borgy_process_agent.job import State
+from borgy_process_agent.utils import get_now_isoformat
 
 
 class TestProcessAgent(BaseTestCase):
@@ -139,50 +142,68 @@ class TestProcessAgent(BaseTestCase):
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
 
-        # Mock
-        count_call = [0]
-
-        def mock_jobs_rerun(s, job_id):
-            count_call[0] += 1
-            simple_job2.state = State.QUEUING.value
-            print(simple_job2)
-            print(simple_job2.to_dict())
-            return simple_job2
-
-        mock_method = 'borgy_job_service_client.api.jobs_api.JobsApi.v1_jobs_job_id_rerun_put'
-        job_service_call_rerun = patch(mock_method, mock_jobs_rerun).start()
-
-        # Should not call job_service
+        # Should not add job_id in rerun list
         job, is_updated = self._pa.rerun_job('random')
         self.assertEqual(job, None)
         self.assertEqual(is_updated, False)
-        self.assertEqual(count_call[0], 0)
 
-        # Should not call job_service
+        # Should not add job_id in rerun list
         job, is_updated = self._pa.rerun_job(simple_job.id)
         self.assertEqual(job, simple_job)
         self.assertEqual(is_updated, False)
-        self.assertEqual(count_call[0], 0)
 
-        # Should call job_service
+        # Should add job_id in rerun list
         job, is_updated = self._pa.rerun_job(simple_job2.id)
         self.assertEqual(job.id, simple_job2.id)
         self.assertEqual(is_updated, True)
-        # Test if state is directly updated to QUEUING
-        self.assertEqual(job.state, State.QUEUING.value)
+        # Test if job is added in job list to rerun
+        self.assertEqual(self._pa.get_jobs_to_rerun(), [simple_job2.id])
+        self.assertEqual(job.state, State.FAILED.value)
+        job = self._pa.get_job_by_id(simple_job2.id)
+        self.assertEqual(job.state, State.FAILED.value)
+
+        # Call a second time should add job_id in rerun list
+        job, is_updated = self._pa.rerun_job(simple_job2.id)
+        self.assertEqual(job.id, simple_job2.id)
+        self.assertEqual(is_updated, False)
+        self.assertEqual(self._pa.get_jobs_to_rerun(), [simple_job2.id])
+
+        # Check rerun list provided by PA
+        self._pa.set_callback_jobs_provider(lambda pa: [])
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('rerun', jobs_ops)
+        jobs_to_rerun = jobs_ops['rerun']
+        self.assertEqual(jobs_to_rerun, [simple_job2.id])
+
+        # Governor push job updated
+        simple_job2.state = State.QUEUING.value
+        simple_job2.runs.append({
+            'id': str(uuid.uuid4()),
+            'jobId': simple_job2.id,
+            'createdOn': get_now_isoformat(),
+            'state': State.QUEUING.value,
+            'info': {},
+            'ip': '127.0.0.1',
+            'nodeName': 'local',
+        })
+        jobs = [simple_job2]
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Test if job is removed from job list to rerun
+        self.assertEqual(self._pa.get_jobs_to_rerun(), [])
         job = self._pa.get_job_by_id(simple_job2.id)
         self.assertEqual(job.state, State.QUEUING.value)
 
-        # Call a second time should not call job service
+        # Call a second time should not add job in rerun list
         job, is_updated = self._pa.rerun_job(simple_job2.id)
         self.assertEqual(job.id, simple_job2.id)
         self.assertEqual(is_updated, False)
         self.assertEqual(job.state, State.QUEUING.value)
         job = self._pa.get_job_by_id(simple_job2.id)
         self.assertEqual(job.state, State.QUEUING.value)
-        # Test if job service was called only one time
-        self.assertEqual(count_call[0], 1)
-        del job_service_call_rerun
 
     def test_pa_check_callback_contains_process_agent(self):
         """Test case for get_jobs_by_state
@@ -230,11 +251,17 @@ class TestProcessAgent(BaseTestCase):
     def test_pa_set_autokill_twice(self):
         """Test case for setting autokill multiple time
         """
-        self.assertEqual(len(self._pa._observable_jobs_update._callbacks), 0)
+        list_autokill = [c for c in self._pa._observable_jobs_update._callbacks
+                         if c['callback'] == ProcessAgent.pa_check_autokill]
+        self.assertEqual(len(list_autokill), 0)
         self._pa.set_autokill(True)
-        self.assertEqual(len(self._pa._observable_jobs_update._callbacks), 1)
+        list_autokill = [c for c in self._pa._observable_jobs_update._callbacks
+                         if c['callback'] == ProcessAgent.pa_check_autokill]
+        self.assertEqual(len(list_autokill), 1)
         self._pa.set_autokill(True)
-        self.assertEqual(len(self._pa._observable_jobs_update._callbacks), 1)
+        list_autokill = [c for c in self._pa._observable_jobs_update._callbacks
+                         if c['callback'] == ProcessAgent.pa_check_autokill]
+        self.assertEqual(len(list_autokill), 1)
 
     def test_pa_autokill(self):
         """Autokill test case
@@ -423,6 +450,162 @@ class TestProcessAgent(BaseTestCase):
         self._pa.reset()
         self.assertEqual(self._pa.is_shutdown(), False)
         self.assertEqual(len(self._pa.get_jobs()), 0)
+
+    def test_pa_autorerun_interrupted_jobs_off(self):
+        """Test case when autorerun for interrupted jobs is disabled
+        """
+
+        def get_stop_job(pa):
+            return []
+
+        self._pa.clear_jobs_in_creation()
+        self._pa.set_callback_jobs_provider(get_stop_job)
+
+        self._pa.set_autorerun_interrupted_jobs(False)
+
+        # Insert fake jobs in ProcessAgent
+        simple_job = MockJob(name='gsm1', state=State.QUEUED.value).get_job()
+        simple_job2 = MockJob(name='gsm1', state=State.QUEUED.value).get_job()
+        simple_job3 = MockJob(name='gsm3', state=State.RUNNING.value).get_job()
+        jobs = [simple_job, simple_job2, simple_job3]
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        job = self._pa.get_jobs_by_name(simple_job3.name)[0]
+        self.assertEqual(job.state, State.RUNNING.value)
+
+        # Update jobs in ProcessAgent
+        simple_job.state = State.RUNNING.value
+        simple_job2.state = State.RUNNING.value
+        simple_job3.state = State.INTERRUPTED.value
+        jobs = [simple_job, simple_job2, simple_job3]
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        job = self._pa.get_jobs_by_name(simple_job3.name)[0]
+        self.assertEqual(job.state, State.INTERRUPTED.value)
+
+        # Governor call /v1/jobs to get jobs to schedule and to rerun.
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('rerun', jobs_ops)
+        jobs_to_rerun = jobs_ops['rerun']
+        self.assertEqual(jobs_to_rerun, [])
+
+    def test_pa_autorerun_interrupted_jobs_on(self):
+        """Test case when autorerun for interrupted jobs is enabled
+        """
+
+        def get_stop_job(pa):
+            return []
+
+        self._pa.clear_jobs_in_creation()
+        self._pa.set_callback_jobs_provider(get_stop_job)
+
+        self._pa.set_autorerun_interrupted_jobs(True)
+
+        # Insert fake jobs in ProcessAgent
+        simple_job = MockJob(name='gsm1', state=State.QUEUED.value).get_job()
+        simple_job2 = MockJob(name='gsm1', state=State.QUEUED.value).get_job()
+        simple_job3 = MockJob(name='gsm3', state=State.RUNNING.value).get_job()
+        jobs = [simple_job, simple_job2, simple_job3]
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        job = self._pa.get_jobs_by_name(simple_job3.name)[0]
+        self.assertEqual(job.state, State.RUNNING.value)
+
+        # Update jobs in ProcessAgent
+        simple_job.state = State.RUNNING.value
+        simple_job2.state = State.RUNNING.value
+        simple_job3.state = State.INTERRUPTED.value
+        jobs = [simple_job, simple_job2, simple_job3]
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        job = self._pa.get_jobs_by_name(simple_job3.name)[0]
+        self.assertEqual(job.state, State.INTERRUPTED.value)
+
+        # Governor call /v1/jobs to get jobs to schedule and to rerun.
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('rerun', jobs_ops)
+        jobs_to_rerun = jobs_ops['rerun']
+        self.assertEqual(jobs_to_rerun, [job.id])
+
+    def test_pa_autorerun_interrupted_jobs_off_with_shutdown(self):
+        """Test case when autorerun for interrupted jobs is disabled and PA is shutting down
+        """
+
+        def get_stop_job(pa):
+            return None
+
+        self._pa.clear_jobs_in_creation()
+        self._pa.set_callback_jobs_provider(get_stop_job)
+
+        self._pa.set_autorerun_interrupted_jobs(False)
+
+        # Insert fake jobs in ProcessAgent
+        simple_job = MockJob(name='gsm1', state=State.QUEUED.value).get_job()
+        simple_job2 = MockJob(name='gsm1', state=State.QUEUED.value).get_job()
+        simple_job3 = MockJob(name='gsm3', state=State.RUNNING.value).get_job()
+        jobs = [simple_job, simple_job2, simple_job3]
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        job = self._pa.get_jobs_by_name(simple_job3.name)[0]
+        self.assertEqual(job.state, State.RUNNING.value)
+
+        # Update jobs in ProcessAgent
+        simple_job.state = State.RUNNING.value
+        simple_job2.state = State.RUNNING.value
+        simple_job3.state = State.INTERRUPTED.value
+        jobs = [simple_job, simple_job2, simple_job3]
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        job = self._pa.get_jobs_by_name(simple_job3.name)[0]
+        self.assertEqual(job.state, State.INTERRUPTED.value)
+
+        # Governor call /v1/jobs to get jobs to schedule and to rerun.
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 204, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
+
+    def test_pa_autorerun_interrupted_jobs_on_with_shutdown(self):
+        """Test case when autorerun for interrupted jobs is enabled and PA is shutting down
+        """
+
+        def get_stop_job(pa):
+            return None
+
+        self._pa.clear_jobs_in_creation()
+        self._pa.set_callback_jobs_provider(get_stop_job)
+
+        self._pa.set_autorerun_interrupted_jobs(True)
+
+        # Insert fake jobs in ProcessAgent
+        simple_job = MockJob(name='gsm1', state=State.QUEUED.value).get_job()
+        simple_job2 = MockJob(name='gsm1', state=State.QUEUED.value).get_job()
+        simple_job3 = MockJob(name='gsm3', state=State.RUNNING.value).get_job()
+        jobs = [simple_job, simple_job2, simple_job3]
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        job = self._pa.get_jobs_by_name(simple_job3.name)[0]
+        self.assertEqual(job.state, State.RUNNING.value)
+
+        # Update jobs in ProcessAgent
+        simple_job.state = State.RUNNING.value
+        simple_job2.state = State.RUNNING.value
+        simple_job3.state = State.INTERRUPTED.value
+        jobs = [simple_job, simple_job2, simple_job3]
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        job = self._pa.get_jobs_by_name(simple_job3.name)[0]
+        self.assertEqual(job.state, State.INTERRUPTED.value)
+
+        # Governor call /v1/jobs to get jobs to schedule and to rerun.
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('rerun', jobs_ops)
+        jobs_to_rerun = jobs_ops['rerun']
+        self.assertEqual(jobs_to_rerun, [job.id])
 
 
 if __name__ == '__main__':

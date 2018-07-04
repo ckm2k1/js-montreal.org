@@ -68,21 +68,6 @@ class ProcessAgent(ProcessAgentBase):
             return (copy.deepcopy(self._process_agent_jobs[job_id]), is_updated)
         return (None, False)
 
-    def rerun_job(self, job_id: str) -> Tuple[Job, bool]:
-        """Rerun a job
-
-        :rtype: Tuple[Job, bool]
-        """
-        if job_id in self._process_agent_jobs:
-            is_updated = False
-            if self._process_agent_jobs[job_id].state in [State.FAILED.value, State.CANCELLED.value, State.INTERRUPTED.value]:
-                job = self._job_service.v1_jobs_job_id_rerun_put(job_id)
-                # Push job event
-                self._push_jobs([job])
-                is_updated = True
-            return (copy.deepcopy(self._process_agent_jobs[job_id]), is_updated)
-        return (None, False)
-
     def get_app(self):
         """Return current server application
 

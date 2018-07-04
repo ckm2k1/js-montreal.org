@@ -34,12 +34,27 @@ class MockJob(object):
             'reqGpus': 0,
             'reqRamGbytes': 1,
             'restart': Restart.NO.value,
+            'runs': [
+                {
+                    'id': str(uuid.uuid4()),
+                    'jobId': job_id,
+                    'createdOn': get_now_isoformat(),
+                    'state': 'QUEUING',
+                    'info': {},
+                    'ip': '127.0.0.1',
+                    'nodeName': 'local',
+                }
+            ],
             'state': 'QUEUING',
             'stateInfo': '',
             'stdin': False,
             'volumes': [],
             'workdir': ""
         }
+
+        if 'state' in kwargs:
+            self._job['runs'][0]['state'] = kwargs['state']
+
         if kwargs and isinstance(kwargs, dict):
             for k, v in kwargs.items():
                 self._job[k] = v

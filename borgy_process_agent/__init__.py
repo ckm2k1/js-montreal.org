@@ -46,26 +46,37 @@ process_agents = []
 
 
 class ProcessAgentBase():
-    def __init__(self, autokill: bool = True, **kwargs):
+    def __init__(self, autokill: bool = True, autorerun_interrupted_jobs: bool = True, **kwargs):
         """Contrustor
 
         :rtype: NoReturn
         """
+        self._autokill = False
+        self._autorerun_interrupted_jobs = False
         self._options = kwargs
         self._observable_jobs_update = Observable()
         self._callback_jobs_provider = None
         self.reset()
         self.set_autokill(autokill)
+        self.set_autorerun_interrupted_jobs(autorerun_interrupted_jobs)
 
     def _push_jobs(self, jobs: List[Job]):
         """Call when PUT API receives jobs
 
         :rtype: NoReturn
         """
+        # Check for jobs update
         jobs_updated = []
         for j in jobs:
             jcopy = copy.deepcopy(j)
             if j.id in self._process_agent_jobs:
+                # Check for rerun
+                if j.id in self._process_agent_jobs_to_rerun:
+                    nb_runs = len(self._process_agent_jobs[j.id].runs) + 1
+                    # There is a new run
+                    if len(j.runs) == nb_runs:
+                        self._process_agent_jobs_to_rerun.remove(j.id)
+
                 ddiff = list(diff(self._process_agent_jobs[j.id].to_dict(), j.to_dict()))
                 if ddiff:
                     jobs_updated.append({
@@ -119,8 +130,8 @@ class ProcessAgentBase():
         """
         self._process_agent_jobs = {}
         self._process_agent_jobs_in_creation = []
+        self._process_agent_jobs_to_rerun = []
         self._shutdown = False
-        self._autokill = False
 
     def is_shutdown(self) -> bool:
         """Return if process agent is shutdown or not
@@ -164,6 +175,20 @@ class ProcessAgentBase():
             self._observable_jobs_update.unsubscribe(callback=self.__class__.pa_check_autokill)
         self._autokill = autokill
 
+    def set_autorerun_interrupted_jobs(self, autorerun_interrupted_jobs: bool):
+        """Enable or disable autokill
+
+        :rtype: NoReturn
+        """
+        if autorerun_interrupted_jobs == self._autorerun_interrupted_jobs:
+            return
+
+        if autorerun_interrupted_jobs:
+            self._observable_jobs_update.subscribe(self.__class__.pa_autorerun_interrupted_jobs, 'autokill')
+        else:
+            self._observable_jobs_update.unsubscribe(callback=self.__class__.pa_autorerun_interrupted_jobs)
+        self._autorerun_interrupted_jobs = autorerun_interrupted_jobs
+
     def kill_job(self, job_id: str) -> Tuple[Job, bool]:
         """Kill a job
 
@@ -176,7 +201,15 @@ class ProcessAgentBase():
 
         :rtype: Tuple[Job, bool]
         """
-        raise NotImplementedError
+        if job_id in self._process_agent_jobs:
+            is_updated = False
+            if (job_id not in self._process_agent_jobs_to_rerun
+               and self._process_agent_jobs[job_id].state in [State.FAILED.value, State.CANCELLED.value,
+                                                              State.INTERRUPTED.value]):
+                self._process_agent_jobs_to_rerun.append(job_id)
+                is_updated = True
+            return (copy.deepcopy(self._process_agent_jobs[job_id]), is_updated)
+        return (None, False)
 
     def clear_jobs_in_creation(self):
         """Clear all jobs in creation by the process agent
@@ -222,6 +255,13 @@ class ProcessAgentBase():
             if j.name == name:
                 jobs.append(j)
         return copy.deepcopy(jobs)
+
+    def get_jobs_to_rerun(self) -> List[str]:
+        """Get all jobs to rerun by the process agent and waiting for a return of the governor
+
+        :rtype: List[str]
+        """
+        return copy.deepcopy(self._process_agent_jobs_to_rerun)
 
     def get_jobs_in_creation(self) -> List[JobSpec]:
         """Get all jobs in creation by the process agent and waiting for a return of the governor
@@ -325,6 +365,16 @@ class ProcessAgentBase():
             ], jobs.items()))
             if not jobs_running:
                 event.pa.stop()
+
+    @staticmethod
+    def pa_autorerun_interrupted_jobs(event):
+        """Rerun automatically all INTERRUPTED jobs
+
+        :rtype: NoReturn
+        """
+        for j in event.jobs:
+            if j['job'].state == State.INTERRUPTED.value:
+                event.pa.rerun_job(j['job'].id)
 
 
 class ProcessAgent(ProcessAgentBase):

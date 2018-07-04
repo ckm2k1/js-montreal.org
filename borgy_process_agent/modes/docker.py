@@ -58,19 +58,6 @@ class ProcessAgent(ProcessAgentBase):
             return (copy.deepcopy(self._process_agent_jobs[job_id]), is_updated)
         return (None, False)
 
-    def rerun_job(self, job_id: str) -> Tuple[Job, bool]:
-        """Rerun a job
-
-        :rtype: Tuple[Job, bool]
-        """
-        if job_id in self._process_agent_jobs:
-            is_updated = False
-            if self._process_agent_jobs[job_id].state in [State.FAILED.value, State.CANCELLED.value, State.INTERRUPTED.value]:
-                self._update_job_state(job_id, State.QUEUING)
-                is_updated = True
-            return (copy.deepcopy(self._process_agent_jobs[job_id]), is_updated)
-        return (None, False)
-
     def _run_job(self, job: Job):
         """Run a job in docker
 
@@ -120,6 +107,11 @@ class ProcessAgent(ProcessAgentBase):
         )
 
         return container
+
+    def _rerun_job(self, job_id: str) -> Job:
+        job = self._update_job_state(job_id, State.QUEUING)
+        logger.debug('\t\tRerun job {} (name: {})'.format(job_id, job['job'].name))
+        return job
 
     def _create_job(self, job_spec: JobSpec) -> Job:
         job_id = str(uuid.uuid4())
@@ -281,9 +273,13 @@ class ProcessAgent(ProcessAgentBase):
 
             if code != 200:
                 logger.warning('Error to get jobs, got: {}'.format(jobs))
-            elif isinstance(jobs, dict) and isinstance(jobs['submit'], list):
-                for j in jobs['submit']:
-                    self._create_job(j)
+            elif isinstance(jobs, dict):
+                if isinstance(jobs['submit'], list):
+                    for j in jobs['submit']:
+                        self._create_job(j)
+                if isinstance(jobs['rerun'], list):
+                    for j in jobs['rerun']:
+                        self._rerun_job(j)
 
             # Start queuing jobs
             logger.debug(' - Start queuing jobs')

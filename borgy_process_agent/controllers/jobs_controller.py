@@ -18,8 +18,10 @@ def v1_jobs_get():
     :rtype: JobsOps
     """
     jobs = []
+    jobs_rerun = []
     pa_state = []
     for pa in process_agents:
+        jobs_rerun += pa.get_jobs_to_rerun()
         try:
             j = pa.get_job_to_create()
         except NotReadyError as e:
@@ -34,12 +36,12 @@ def v1_jobs_get():
         pa_state.append(True)
         jobs += j
 
-    if all(v is None for v in pa_state):
+    if all(v is None for v in pa_state) and not jobs_rerun:
         return 'No more jobs', 204
 
     return {
         'submit': jobs,
-        'rerun': [],
+        'rerun': jobs_rerun,
         'kill': [],
     }
 
