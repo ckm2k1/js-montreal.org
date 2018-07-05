@@ -30,6 +30,7 @@ class MockJob(object):
             'maxRunTimeSecs': 0,
             'name': job_id + "-" + str(uuid.uuid4()),
             'options': {},
+            'preemptable': True,
             'reqCores': 1,
             'reqGpus': 0,
             'reqRamGbytes': 1,

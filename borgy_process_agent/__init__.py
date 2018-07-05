@@ -338,6 +338,7 @@ class ProcessAgentBase():
             'maxRunTimeSecs': 0,
             'name': info['id'] + "-" + str(uuid.uuid4()),
             'options': {},
+            'preemptable': True,
             'reqCores': 1,
             'reqGpus': 0,
             'reqRamGbytes': memory_str_to_nbytes('10Mi'),
@@ -348,6 +349,10 @@ class ProcessAgentBase():
         }
         if job and isinstance(job, dict):
             result.update(job)
+
+        if result['restart'] == Restart.ON_INTERRUPTION.value:
+            raise ValueError('Process agent job can\'t have automatic restart. Use autorerun_interrupted_jobs parameter or handle rerun on job udpate by yourself.')  # noqa: E501
+
         return JobSpec.from_dict(result)
 
     @staticmethod

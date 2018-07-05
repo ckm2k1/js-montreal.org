@@ -15,7 +15,7 @@ from mock import patch
 from tests import BaseTestCase
 from tests.utils import MockJob
 from borgy_process_agent import ProcessAgent
-from borgy_process_agent.job import State
+from borgy_process_agent.job import State, Restart
 from borgy_process_agent.utils import get_now_isoformat
 
 
@@ -606,6 +606,22 @@ class TestProcessAgent(BaseTestCase):
         self.assertIn('rerun', jobs_ops)
         jobs_to_rerun = jobs_ops['rerun']
         self.assertEqual(jobs_to_rerun, [job.id])
+
+    def test_raise_jobspec_restartable(self):
+        """Test case when jobspec is restartable
+        """
+
+        def get_restartable_job(pa):
+            return {
+                'restart': Restart.ON_INTERRUPTION.value
+            }
+
+        self._pa.set_callback_jobs_provider(get_restartable_job)
+
+        # Governor call /v1/jobs to get jobs to schedule and to rerun.
+        response = self.client.open('/v1/jobs', method='GET')
+        # Should return 400 due to restartable job
+        self.assertStatus(response, 400, 'Should return 400. Response body is : ' + response.data.decode('utf-8'))
 
 
 if __name__ == '__main__':
