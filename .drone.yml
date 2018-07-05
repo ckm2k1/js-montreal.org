@@ -40,9 +40,38 @@ pipeline:
       ref:
         exclude: [ refs/tags/latest, refs/tags/latest_test ]
 
+  publish_image:
+    image: images.borgy.elementai.lan/borgy/plugin-k8s-deploy:latest
+    secrets: [ TWINE_USERNAME, TWINE_PASSWORD ]
+    commands:
+    # Publish docker image
+    - export PIP_EXTRA_INDEX_URL="https://$TWINE_USERNAME:$TWINE_PASSWORD@pypi.elmt.io/repo/eai-core"
+    - make image.publish.process-agent
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /home/drone/cache:/var/lib/docker
+    when:
+      event: tag
+      ref:
+        exclude: [ refs/tags/latest, refs/tags/latest_test ]
+
+  publish_image_latest:
+    image: images.borgy.elementai.lan/borgy/plugin-k8s-deploy:latest
+    secrets: [ TWINE_USERNAME, TWINE_PASSWORD ]
+    commands:
+    # Publish docker image latest
+    - export PIP_EXTRA_INDEX_URL="https://$TWINE_USERNAME:$TWINE_PASSWORD@pypi.elmt.io/repo/eai-core"
+    - make image.latest.process-agent
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /home/drone/cache:/var/lib/docker
+    when:
+      event: tag
+      ref: [ refs/tags/latest, refs/tags/latest_test ]
+
   publish:
     image: images.borgy.elementai.lan/borgy/plugin-python-release:latest
-    secrets: [ github_token, TWINE_USERNAME, TWINE_PASSWORD ]
+    secrets: [ github_token ]
     environment:
     - GITHUB_REPO=${DRONE_REPO_NAME}
     - GITHUB_USER=${DRONE_REPO_OWNER}
@@ -63,13 +92,8 @@ pipeline:
     - /go/bin/github-release delete --tag ${DRONE_TAG} || true
     # Upload release to github
     - /go/bin/github-release release --tag ${DRONE_TAG} --name ${DRONE_TAG} --description "`cat /tmp/notes.txt`"
-    # Publish docker image
-    - export PIP_EXTRA_INDEX_URL="https://$TWINE_USERNAME:$TWINE_PASSWORD@pypi.elmt.io/repo/eai-core"
-    - make image.publish.process-agent
     volumes:
       - /mnt/borgy/distrib:/distrib
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /home/drone/cache:/var/lib/docker
     when:
       event: tag
       ref:
@@ -91,16 +115,11 @@ pipeline:
 
   update_latest:
     image: images.borgy.elementai.lan/borgy/plugin-python-release:latest
-    secrets: [ TWINE_USERNAME, TWINE_PASSWORD ]
     commands:
     - export DEPLOYZOR_DISTRIB_BASE=/distrib/python
     - make DEPLOYZOR_RELEASE=1 VERSION=${DRONE_TAG} package.distrib.process-agent.latest
-    - export PIP_EXTRA_INDEX_URL="https://$TWINE_USERNAME:$TWINE_PASSWORD@pypi.elmt.io/repo/eai-core"
-    - make image.latest.process-agent
     volumes:
       - /mnt/borgy/distrib:/distrib
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /home/drone/cache:/var/lib/docker
     when:
       event: tag
       ref: [ refs/tags/latest, refs/tags/latest_test ]
