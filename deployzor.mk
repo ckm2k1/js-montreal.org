@@ -151,6 +151,7 @@ image.publish.%:
 
 image.latest.%: COMPONENT=$*
 image.latest.%: image.publish.%
+	docker pull $(DOCKER_FULL_IMAGE_NAME)
 	docker tag $(DOCKER_FULL_IMAGE_NAME) $(DOCKER_IMAGE_NAME):latest
 	docker push $(DOCKER_IMAGE_NAME):latest
 
