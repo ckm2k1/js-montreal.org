@@ -16,9 +16,6 @@ i_pa = 0
 
 def main():
     logging.basicConfig(level=logging.DEBUG)
-    os.environ['BORGY_JOB_ID'] = str(uuid.uuid4())
-    os.environ['BORGY_USER'] = 'gsm'
-
     process_agent = ProcessAgent(port=1234)
 
     def return_new_jobs(pa):
