@@ -368,7 +368,7 @@ class ProcessAgentBase():
                 State.QUEUED.value,
                 State.RUNNING.value
             ], jobs.items()))
-            if not jobs_running:
+            if not jobs_running and not event.pa.get_jobs_to_rerun():
                 event.pa.stop()
 
     @staticmethod

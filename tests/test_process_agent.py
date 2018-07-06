@@ -7,6 +7,7 @@
 
 from __future__ import absolute_import
 
+import copy
 import uuid
 import time
 import threading
@@ -390,7 +391,6 @@ class TestProcessAgent(BaseTestCase):
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
         self.assertEqual(count_call, [1, 0])
         self.assertEqual(self._pa.is_shutdown(), False)
-        self.assertEqual(count_call, [1, 0])
 
         # Governor call /v1/jobs to get jobs to schedule.
         response = self.client.open('/v1/jobs', method='GET')
@@ -413,6 +413,103 @@ class TestProcessAgent(BaseTestCase):
         self.assertStatus(response, 204, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
         self.assertEqual(self._pa.is_shutdown(), True)
         # self._pa.stop() should be call
+        self.assertEqual(count_call, [1, 1])
+
+        del borgy_process_agent_start
+        del borgy_process_agent_stop
+
+    def test_pa_autokill_with_jobs_to_rerun(self):
+        """Autokill test case when there are jobs to rerun
+        """
+        count_call = [0, 0]
+
+        def mock_borgy_process_agent_start(s):
+            count_call[0] += 1
+
+        def mock_borgy_process_agent_stop(s):
+            count_call[1] += 1
+
+        mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.start'
+        borgy_process_agent_start = patch(mock_method, mock_borgy_process_agent_start).start()
+        mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.stop'
+        borgy_process_agent_stop = patch(mock_method, mock_borgy_process_agent_stop).start()
+
+        def get_stop_job(pa):
+            return None
+
+        self._pa.clear_jobs_in_creation()
+        self._pa.set_callback_jobs_provider(get_stop_job)
+
+        self._pa.set_autokill(True)
+        self._pa.start()
+        self.assertEqual(count_call, [1, 0])
+
+        # Insert fake jobs in ProcessAgent
+        simple_job = MockJob(name='gsm1', state=State.SUCCEEDED.value).get_job()
+        simple_job2 = MockJob(name='gsm1', state=State.SUCCEEDED.value).get_job()
+        simple_job3 = MockJob(name='gsm3', state=State.QUEUED.value).get_job()
+        jobs = copy.deepcopy([simple_job, simple_job2, simple_job3])
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        self.assertEqual(count_call, [1, 0])
+        self.assertEqual(self._pa.is_shutdown(), False)
+
+        # Update jobs in ProcessAgent
+        simple_job.state = State.SUCCEEDED.value
+        simple_job2.state = State.SUCCEEDED.value
+        simple_job3.state = State.FAILED.value
+        jobs = copy.deepcopy([simple_job, simple_job2, simple_job3])
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        self.assertEqual(count_call, [1, 0])
+        self.assertEqual(self._pa.is_shutdown(), False)
+
+        # Rerun last job
+        j, updated = self._pa.rerun_job(simple_job3.id)
+        self.assertEqual(updated, True)
+
+        # Governor call /v1/jobs to get jobs to schedule.
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        self.assertEqual(self._pa.is_shutdown(), True)
+        self.assertEqual(count_call, [1, 0])
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        self.assertIn('rerun', jobs_ops)
+        self.assertEqual(len(jobs_ops['submit']), 0)
+        self.assertEqual(len(jobs_ops['rerun']), 1)
+
+        # Update jobs in ProcessAgent
+        simple_job3.state = State.RUNNING.value
+        simple_job3.runs.append(
+            {
+                'id': str(uuid.uuid4()),
+                'jobId': simple_job3.id,
+                'createdOn': get_now_isoformat(),
+                'state': State.RUNNING.value,
+                'info': {},
+                'ip': '127.0.0.1',
+                'nodeName': 'local',
+            }
+        )
+        jobs = copy.deepcopy([simple_job3])
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        self.assertEqual(self._pa.is_shutdown(), True)
+        self.assertEqual(count_call, [1, 0])
+
+        # Governor call /v1/jobs to get jobs to schedule.
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 204, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
+        self.assertEqual(self._pa.is_shutdown(), True)
+        self.assertEqual(count_call, [1, 0])
+
+        # Update jobs in ProcessAgent
+        simple_job3.state = State.SUCCEEDED.value
+        jobs = copy.deepcopy([simple_job3])
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        self.assertEqual(self._pa.is_shutdown(), True)
         self.assertEqual(count_call, [1, 1])
 
         del borgy_process_agent_start
