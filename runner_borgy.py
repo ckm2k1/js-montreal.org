@@ -6,8 +6,6 @@
 # Copyright (c) 2018 ElementAI. All rights reserved.
 #
 
-import os
-import uuid
 import logging
 from borgy_process_agent import ProcessAgent
 
