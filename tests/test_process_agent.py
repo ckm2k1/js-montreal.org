@@ -263,6 +263,21 @@ class TestProcessAgent(BaseTestCase):
                          if c['callback'] == ProcessAgent.pa_check_autokill]
         self.assertEqual(len(list_autokill), 1)
 
+    def test_pa_disable_autokill(self):
+        """Test case to disable autokill
+        """
+        list_autokill = [c for c in self._pa._observable_jobs_update._callbacks
+                         if c['callback'] == ProcessAgent.pa_check_autokill]
+        self.assertEqual(len(list_autokill), 0)
+        self._pa.set_autokill(True)
+        list_autokill = [c for c in self._pa._observable_jobs_update._callbacks
+                         if c['callback'] == ProcessAgent.pa_check_autokill]
+        self.assertEqual(len(list_autokill), 1)
+        self._pa.set_autokill(False)
+        list_autokill = [c for c in self._pa._observable_jobs_update._callbacks
+                         if c['callback'] == ProcessAgent.pa_check_autokill]
+        self.assertEqual(len(list_autokill), 0)
+
     def test_pa_autokill(self):
         """Autokill test case
         """
