@@ -92,6 +92,7 @@ RUN pip install --no-cache-dir "pip<10" # work only with pip<10
 RUN pip freeze > /requirements.txt # need a requirements.txt to work
 
 RUN /hub-detect/hub-detect.sh \\
+    --logging.level.com.blackducksoftware.integration=DEBUG \\
     --detect.pip.requirements.path=/requirements.txt \\
     --detect.project.version.name=$${PROJECT_VERSION} \\
     --detect.project.version.phase=$${PROJECT_PHASE} \\
