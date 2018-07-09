@@ -5,6 +5,7 @@
 # Copyright (c) 2018 ElementAI. All rights reserved.
 #
 
+import os
 import copy
 import uuid
 from enum import Enum
@@ -34,12 +35,12 @@ class ProcessAgentMode(Enum):
     """Process Agent Mode
     List of diffents modes for process agent
     """
+    # Choose automatically the "good" mode
+    AUTO = 'auto'
     # Borgy (default)
     BORGY = 'borgy'
     # Tasks will be launched in docker environnement
     DOCKER = 'docker'
-    # Tasks will run one by one in the same thread
-    LOCAL = 'local'
 
 
 process_agents = []
@@ -385,7 +386,11 @@ class ProcessAgentBase():
 class ProcessAgent(ProcessAgentBase):
     """Process Agent Generic
     """
-    def __new__(cls, mode=ProcessAgentMode.BORGY, **kwargs):
+    def __new__(cls, mode=ProcessAgentMode.AUTO, **kwargs):
+        if mode == ProcessAgentMode.AUTO:
+            mode = ProcessAgentMode.DOCKER
+            if 'BORGY_JOB_ID' in os.environ and 'BORGY_USER' in os.environ:
+                mode = ProcessAgentMode.BORGY
         pa_module = __import__(__name__ + '.modes.' + mode.value, fromlist=['ProcessAgent'])
 
         return pa_module.ProcessAgent(**kwargs)

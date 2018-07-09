@@ -26,7 +26,7 @@ class BaseTestCase(TestCase):
         os.environ['BORGY_JOB_ID'] = str(uuid.uuid4())
         os.environ['BORGY_USER'] = 'guillaume_smaha'
         if not self._pa:
-            self._pa = ProcessAgent()
+            self._pa = ProcessAgent(mode=ProcessAgentMode.BORGY)
             self._pa.set_autokill(False)
             self._pa._insert()
 

@@ -7,6 +7,7 @@
 
 from __future__ import absolute_import
 
+import os
 import copy
 import uuid
 import time
@@ -15,7 +16,7 @@ from flask import json
 from mock import patch
 from tests import BaseTestCase
 from tests.utils import MockJob
-from borgy_process_agent import ProcessAgent
+from borgy_process_agent import ProcessAgent, ProcessAgentMode
 from borgy_process_agent.job import State, Restart
 from borgy_process_agent.utils import get_now_isoformat
 
@@ -733,6 +734,19 @@ class TestProcessAgent(BaseTestCase):
         response = self.client.open('/v1/jobs', method='GET')
         # Should return 500 due to restartable job
         self.assertStatus(response, 500, 'Should return 500. Response body is : ' + response.data.decode('utf-8'))
+
+    def test_pa_auto_mode(self):
+        """Test case when auto mode is selected
+        """
+        pa_module_borgy = __import__('borgy_process_agent.modes.borgy', fromlist=['ProcessAgent'])
+        pa_module_docker = __import__('borgy_process_agent.modes.docker', fromlist=['ProcessAgent'])
+        pa = ProcessAgent(mode=ProcessAgentMode.AUTO)
+        self.assertIsInstance(pa, pa_module_borgy.ProcessAgent)
+
+        del os.environ['BORGY_JOB_ID']
+        del os.environ['BORGY_USER']
+        pa = ProcessAgent(mode=ProcessAgentMode.AUTO)
+        self.assertIsInstance(pa, pa_module_docker.ProcessAgent)
 
 
 if __name__ == '__main__':
