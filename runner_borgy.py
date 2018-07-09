@@ -7,14 +7,14 @@
 #
 
 import logging
-from borgy_process_agent import ProcessAgent
+from borgy_process_agent import ProcessAgent, ProcessAgentMode
 
 i_pa = 0
 
 
 def main():
     logging.basicConfig(level=logging.DEBUG)
-    process_agent = ProcessAgent(port=1234)
+    process_agent = ProcessAgent(mode=ProcessAgentMode.BORGY, port=1234)
 
     def return_new_jobs(pa):
         global i_pa
