@@ -7,13 +7,18 @@
 
 from __future__ import absolute_import
 
+
+import os
+import time
+import threading
 from collections import defaultdict
 from flask import json
 from tests import BaseTestCase
 from tests.utils import MockJob
 from borgy_process_agent_api_server.models.job_spec import JobSpec
-from borgy_process_agent import JobEventState
+from borgy_process_agent import ProcessAgent, JobEventState
 from borgy_process_agent.job import State
+from borgy_process_agent.exceptions import EnvironmentVarError
 
 
 class TestFlow(BaseTestCase):
@@ -360,6 +365,70 @@ class TestFlow(BaseTestCase):
         self.assertEqual(callbacks['job-3']['states'], [JobEventState.CREATED])
         self.assertEqual(callbacks['job-X']['called'], 1)
         self.assertEqual(callbacks['job-X']['states'], [JobEventState.ADDED])
+
+    def test_flow_create_bad_env_vars(self):
+        """ Flow test case without environment var when create instance
+        """
+        del os.environ['BORGY_JOB_ID']
+        del os.environ['BORGY_USER']
+        ProcessAgent()
+
+    def test_flow_start_bad_env_vars(self):
+        """ Flow test case without environment var at start
+        """
+        count_call = [0]
+
+        def start():
+            del os.environ['BORGY_JOB_ID']
+            del os.environ['BORGY_USER']
+            # Should raise on start
+            with self.assertRaises(EnvironmentVarError):
+                self._pa.start()
+            count_call[0] += 1
+
+        # start server in thread
+        app = threading.Thread(name='Web App', target=start)
+        app.setDaemon(True)
+        app.start()
+        # wait 1s
+        time.sleep(1)
+        # Check start failure
+        self.assertEqual(count_call[0], 1)
+        # Stop server in case of error
+        self._pa.stop()
+
+    def test_flow_bad_job_spec(self):
+        """ Flow test case with bad job spec
+        """
+
+        def get_new_jobs(pa):
+            return 22
+
+        self._pa.clear_jobs_in_creation()
+        self._pa.set_callback_jobs_provider(get_new_jobs)
+        count_call = [0]
+
+        def start():
+            # Should raise on start
+            with self.assertRaises(TypeError):
+                self._pa.start()
+            count_call[0] += 1
+
+        # start server in thread
+        app = threading.Thread(name='Web App', target=start)
+        app.setDaemon(True)
+        app.start()
+        # wait 0.5s
+        time.sleep(0.5)
+        # Governor call /v1/jobs to get jobs to schedule
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 500, 'Should return 500. Response body is : ' + response.data.decode('utf-8'))
+        # wait 0.5s
+        time.sleep(0.5)
+        # Check start failure
+        self.assertEqual(count_call[0], 1)
+        # Stop server in case of error
+        self._pa.stop()
 
 
 if __name__ == '__main__':

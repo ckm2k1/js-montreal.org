@@ -15,6 +15,7 @@ from dictdiffer import diff
 from tests import BaseTestCase
 from tests.utils import MockJob
 from borgy_process_agent import ProcessAgent, JobEventState
+from borgy_process_agent.exceptions import EnvironmentVarError
 from borgy_process_agent_api_server.models.job import Job
 
 
@@ -59,8 +60,9 @@ class TestJobsController(BaseTestCase):
         """
         count_call = [0]
 
-        def mock_borgy_process_agent_stop(s):
+        def mock_borgy_process_agent_stop(s, **kwargs):
             count_call[0] += 1
+            self.assertIsInstance(kwargs.get('error'), EnvironmentVarError)
 
         mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.stop'
         borgy_process_agent_stop = patch(mock_method, mock_borgy_process_agent_stop).start()
@@ -104,8 +106,9 @@ class TestJobsController(BaseTestCase):
         ]
         count_call = [0]
 
-        def mock_borgy_process_agent_stop(s):
+        def mock_borgy_process_agent_stop(s, **kwargs):
             count_call[0] += 1
+            self.assertIsInstance(kwargs.get('error'), TypeError)
 
         mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.stop'
         borgy_process_agent_stop = patch(mock_method, mock_borgy_process_agent_stop).start()

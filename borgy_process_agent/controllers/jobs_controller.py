@@ -31,7 +31,7 @@ def v1_jobs_get():
 
             def kill_delay():
                 for p in process_agents:
-                    p.stop()
+                    p.stop(error=e)  # noqa F821
             app = threading.Thread(name='Kill', target=kill_delay)
             app.setDaemon(True)
             app.start()

@@ -229,7 +229,6 @@ class TestProcessAgent(BaseTestCase):
     def test_start_stop_server(self):
         """Test case to test start and stop server application
         """
-        # Update port
         count_call = [0]
 
         def start():
@@ -287,7 +286,7 @@ class TestProcessAgent(BaseTestCase):
         def mock_borgy_process_agent_start(s):
             count_call[0] += 1
 
-        def mock_borgy_process_agent_stop(s):
+        def mock_borgy_process_agent_stop(s, **kwargs):
             count_call[1] += 1
 
         mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.start'
@@ -351,7 +350,7 @@ class TestProcessAgent(BaseTestCase):
         def mock_borgy_process_agent_start(s):
             count_call[0] += 1
 
-        def mock_borgy_process_agent_stop(s):
+        def mock_borgy_process_agent_stop(s, **kwargs):
             count_call[1] += 1
 
         mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.start'
@@ -426,7 +425,7 @@ class TestProcessAgent(BaseTestCase):
         def mock_borgy_process_agent_start(s):
             count_call[0] += 1
 
-        def mock_borgy_process_agent_stop(s):
+        def mock_borgy_process_agent_stop(s, **kwargs):
             count_call[1] += 1
 
         mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.start'

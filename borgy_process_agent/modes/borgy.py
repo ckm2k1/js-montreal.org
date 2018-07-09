@@ -32,32 +32,37 @@ class ProcessAgent(ProcessAgentBase):
         :rtype: NoReturn
         """
         super().__init__(**kwargs)
-        self._job_service = self._init_job_service()
+        self._job_service = None
         self._server_app = None
         self._server_srv = None
+        self._stop_error = None
 
     def _init_job_service(self):
-        """Delete process agent
+        """Initialize job service client
 
         :rtype: JobsApi
         """
-        info = self.get_info()
+        if not self._job_service:
+            info = self.get_info()
 
-        config = borgy_job_service_client.Configuration()
-        config.host = Config.get('job_service_url')
-        config.ssl_ca_cert = Config.get('job_service_certificate')
+            config = borgy_job_service_client.Configuration()
+            config.host = Config.get('job_service_url')
+            config.ssl_ca_cert = Config.get('job_service_certificate')
 
-        api_client = borgy_job_service_client.ApiClient(config)
-        api_client.set_default_header('X-User', info['createdBy'])
+            api_client = borgy_job_service_client.ApiClient(config)
+            api_client.set_default_header('X-User', info['createdBy'])
 
-        # create an instance of the API class
-        return borgy_job_service_client.JobsApi(api_client)
+            # create an instance of the API class
+            self._job_service = borgy_job_service_client.JobsApi(api_client)
+        return self._job_service
 
     def kill_job(self, job_id: str) -> Tuple[Job, bool]:
         """Kill a job
 
         :rtype: Tuple[Job, bool]
         """
+        if not self._job_service:
+            self._init_job_service()
         if job_id in self._process_agent_jobs:
             is_updated = False
             if self._process_agent_jobs[job_id].state in [State.QUEUING.value, State.QUEUED.value, State.RUNNING.value]:
@@ -81,20 +86,27 @@ class ProcessAgent(ProcessAgentBase):
 
         :rtype: NoReturn
         """
+        self.get_info()
+        self._init_job_service()
         self._insert()
         self._server_app = self.__class__.get_server_app()
         self._server_srv = make_server('0.0.0.0', self._options.get('port', 8080), self._server_app)
         logger.info('Start Process Agent server')
         self._server_srv.serve_forever()
         self._remove()
+        if self._stop_error:
+            raise self._stop_error
 
-    def stop(self):
+    def stop(self, **kwargs):
         """Stop process agent - stop server application
 
         :rtype: NoReturn
         """
         if self._server_srv:
             logger.info('Shutdown Process Agent server')
+            error = kwargs.get('error')
+            if error:
+                self._stop_error = error
             self._server_srv.shutdown()
         else:
             logger.warn('Process Agent server is not running')
