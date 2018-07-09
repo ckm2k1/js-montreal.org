@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# test_jobs_controller.py
+# test_flow.py
 # Guillaume Smaha, 2018-05-01
 # Copyright (c) 2018 ElementAI. All rights reserved.
 #
