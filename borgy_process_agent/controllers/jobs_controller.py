@@ -27,7 +27,7 @@ def v1_jobs_get():
         except NotReadyError as e:
             return 'Process Agent is not ready yet ! Take a tea break.', 418
         except (EnvironmentVarError, TypeError, ValueError) as e:
-            return str(e), 400
+            return str(e), 500
 
         if j is None:
             pa_state.append(None)

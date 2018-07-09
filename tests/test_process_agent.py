@@ -732,8 +732,8 @@ class TestProcessAgent(BaseTestCase):
 
         # Governor call /v1/jobs to get jobs to schedule and to rerun.
         response = self.client.open('/v1/jobs', method='GET')
-        # Should return 400 due to restartable job
-        self.assertStatus(response, 400, 'Should return 400. Response body is : ' + response.data.decode('utf-8'))
+        # Should return 500 due to restartable job
+        self.assertStatus(response, 500, 'Should return 500. Response body is : ' + response.data.decode('utf-8'))
 
 
 if __name__ == '__main__':

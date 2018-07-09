@@ -59,24 +59,24 @@ class TestJobsController(BaseTestCase):
         os.environ['BORGY_JOB_ID'] = ''
         self._pa.set_callback_jobs_provider(lambda pa: {})
         response = self.client.open('/v1/jobs', method='GET')
-        self.assertStatus(response, 400, 'Should return 400. Response body is : ' + response.data.decode('utf-8'))
+        self.assertStatus(response, 500, 'Should return 500. Response body is : ' + response.data.decode('utf-8'))
 
         os.environ['BORGY_JOB_ID'] = '1234'
         os.environ['BORGY_USER'] = ''
         self._pa.set_callback_jobs_provider(lambda pa: {})
         response = self.client.open('/v1/jobs', method='GET')
-        self.assertStatus(response, 400, 'Should return 400. Response body is : ' + response.data.decode('utf-8'))
+        self.assertStatus(response, 500, 'Should return 500. Response body is : ' + response.data.decode('utf-8'))
 
         del os.environ['BORGY_USER']
         self._pa.set_callback_jobs_provider(lambda pa: {})
         response = self.client.open('/v1/jobs', method='GET')
-        self.assertStatus(response, 400, 'Should return 400. Response body is : ' + response.data.decode('utf-8'))
+        self.assertStatus(response, 500, 'Should return 500. Response body is : ' + response.data.decode('utf-8'))
 
         del os.environ['BORGY_JOB_ID']
         os.environ['BORGY_USER'] = 'gsm'
         self._pa.set_callback_jobs_provider(lambda pa: {})
         response = self.client.open('/v1/jobs', method='GET')
-        self.assertStatus(response, 400, 'Should return 400. Response body is : ' + response.data.decode('utf-8'))
+        self.assertStatus(response, 500, 'Should return 500. Response body is : ' + response.data.decode('utf-8'))
 
     def test_v1_jobs_get_jobs_provider_types(self):
         """Test case for type returns by callback of jobs provider
@@ -91,7 +91,7 @@ class TestJobsController(BaseTestCase):
         for v in failing_values:
             self._pa.set_callback_jobs_provider(lambda pa: v)
             response = self.client.open('/v1/jobs', method='GET')
-            self.assertStatus(response, 400, 'Should return 400. Value is: ' + str(v)
+            self.assertStatus(response, 500, 'Should return 500. Value is: ' + str(v)
                               + '. Response body is : ' + response.data.decode('utf-8'))
 
         succeeded_values = [
