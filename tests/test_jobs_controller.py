@@ -10,6 +10,7 @@ from __future__ import absolute_import
 import os
 import copy
 from flask import json
+from mock import patch
 from dictdiffer import diff
 from tests import BaseTestCase
 from tests.utils import MockJob
@@ -56,27 +57,41 @@ class TestJobsController(BaseTestCase):
     def test_v1_jobs_get_check_environment_vars(self):
         """Test case for undefined environment variables
         """
+        count_call = [0]
+
+        def mock_borgy_process_agent_stop(s):
+            count_call[0] += 1
+
+        mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.stop'
+        borgy_process_agent_stop = patch(mock_method, mock_borgy_process_agent_stop).start()
+
         os.environ['BORGY_JOB_ID'] = ''
         self._pa.set_callback_jobs_provider(lambda pa: {})
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 500, 'Should return 500. Response body is : ' + response.data.decode('utf-8'))
+        self.assertEqual(count_call, [1])
 
         os.environ['BORGY_JOB_ID'] = '1234'
         os.environ['BORGY_USER'] = ''
         self._pa.set_callback_jobs_provider(lambda pa: {})
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 500, 'Should return 500. Response body is : ' + response.data.decode('utf-8'))
+        self.assertEqual(count_call, [2])
 
         del os.environ['BORGY_USER']
         self._pa.set_callback_jobs_provider(lambda pa: {})
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 500, 'Should return 500. Response body is : ' + response.data.decode('utf-8'))
+        self.assertEqual(count_call, [3])
 
         del os.environ['BORGY_JOB_ID']
         os.environ['BORGY_USER'] = 'gsm'
         self._pa.set_callback_jobs_provider(lambda pa: {})
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 500, 'Should return 500. Response body is : ' + response.data.decode('utf-8'))
+        self.assertEqual(count_call, [4])
+
+        del borgy_process_agent_stop
 
     def test_v1_jobs_get_jobs_provider_types(self):
         """Test case for type returns by callback of jobs provider
@@ -87,12 +102,20 @@ class TestJobsController(BaseTestCase):
             object(),
             [{}, "MySring"]
         ]
+        count_call = [0]
 
-        for v in failing_values:
+        def mock_borgy_process_agent_stop(s):
+            count_call[0] += 1
+
+        mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.stop'
+        borgy_process_agent_stop = patch(mock_method, mock_borgy_process_agent_stop).start()
+
+        for i, v in enumerate(failing_values):
             self._pa.set_callback_jobs_provider(lambda pa: v)
             response = self.client.open('/v1/jobs', method='GET')
             self.assertStatus(response, 500, 'Should return 500. Value is: ' + str(v)
                               + '. Response body is : ' + response.data.decode('utf-8'))
+            self.assertEqual(count_call, [i + 1])
 
         succeeded_values = [
             [],
@@ -107,6 +130,8 @@ class TestJobsController(BaseTestCase):
             response = self.client.open('/v1/jobs', method='GET')
             self.assertStatus(response, 200, 'Should return 200. Value is: ' + str(v)
                               + '. Response body is : ' + response.data.decode('utf-8'))
+
+        del borgy_process_agent_stop
 
     def test_v1_jobs_get_stop_jobs_provider(self):
         """Test case for jobs keep returning 204 when pa is shutdown

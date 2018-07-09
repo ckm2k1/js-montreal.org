@@ -34,6 +34,7 @@ class ProcessAgent(ProcessAgentBase):
         super().__init__(**kwargs)
         self._job_service = self._init_job_service()
         self._server_app = None
+        self._server_srv = None
 
     def _init_job_service(self):
         """Delete process agent
@@ -92,8 +93,11 @@ class ProcessAgent(ProcessAgentBase):
 
         :rtype: NoReturn
         """
-        logger.info('Shutdown Process Agent server')
-        self._server_srv.shutdown()
+        if self._server_srv:
+            logger.info('Shutdown Process Agent server')
+            self._server_srv.shutdown()
+        else:
+            logger.warn('Process Agent server is not running')
 
     @staticmethod
     def get_server_app():
