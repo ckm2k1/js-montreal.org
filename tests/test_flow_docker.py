@@ -311,6 +311,7 @@ class TestFlowDocker(BaseTestCase):
             'PRETEND_CPUS': cpu,
             'PRETEND_MEM': memory_bytes,
             'OMP_NUM_THREADS': cpu,
+            'OMP_THREAD_LIMIT': cpu,
             'HOME': '/home/MyUser',
             'NVIDIA_VISIBLE_DEVICES': '0,1,2,3',
         }

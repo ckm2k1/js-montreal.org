@@ -79,6 +79,7 @@ class ProcessAgent(ProcessAgentBase):
             'PRETEND_CPUS': cpu_count,
             'PRETEND_MEM': mem,
             'OMP_NUM_THREADS': cpu_count,
+            'OMP_THREAD_LIMIT': cpu_count,
             'HOME': '/home/' + job.created_by,
         }
 
