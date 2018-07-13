@@ -90,7 +90,7 @@ class ProcessAgent(ProcessAgentBase):
         self._init_job_service()
         self._insert()
         self._server_app = self.__class__.get_server_app()
-        self._server_srv = make_server('0.0.0.0', self._options.get('port', 8080), self._server_app)
+        self._server_srv = make_server('0.0.0.0', self._options.get('port', 80), self._server_app)
         logger.info('Start Process Agent server')
         self._server_srv.serve_forever()
         self._remove()

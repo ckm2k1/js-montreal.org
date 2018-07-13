@@ -14,7 +14,7 @@ i_pa = 0
 
 def main():
     logging.basicConfig(level=logging.DEBUG)
-    process_agent = ProcessAgent(mode=ProcessAgentMode.BORGY, port=1234)
+    process_agent = ProcessAgent(mode=ProcessAgentMode.BORGY)
 
     def return_new_jobs(pa):
         global i_pa
