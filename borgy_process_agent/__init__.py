@@ -86,16 +86,17 @@ class ProcessAgentBase():
                     })
             else:
                 fnd = False
-                for jc in self._process_agent_jobs_in_creation:
-                    if jc.spec_index == j.spec_index:
-                        jobs_updated.append({
-                            'job': jcopy,
-                            'update': list(diff(jc.to_dict(), j.to_dict())),
-                            'state': JobEventState.CREATED
-                        })
-                        self._process_agent_jobs_in_creation.remove(jc)
-                        fnd = True
-                        break
+                if j.spec_index is not None:
+                    for jc in self._process_agent_jobs_in_creation:
+                        if jc.spec_index == j.spec_index:
+                            jobs_updated.append({
+                                'job': jcopy,
+                                'update': list(diff(jc.to_dict(), j.to_dict())),
+                                'state': JobEventState.CREATED
+                            })
+                            self._process_agent_jobs_in_creation.remove(jc)
+                            fnd = True
+                            break
                 if not fnd:
                     jobs_updated.append({
                         'job': jcopy,
