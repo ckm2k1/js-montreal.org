@@ -295,7 +295,6 @@ class TestJobsController(BaseTestCase):
     def test_v1_jobs_put_check_callback_job_update(self):
         """Test case for adding job on v1_jobs_put
         """
-        in_creation_job = MockJob().get_job()
 
         def get_new_jobs(pa):
             return {

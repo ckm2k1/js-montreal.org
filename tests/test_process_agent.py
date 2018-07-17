@@ -748,6 +748,52 @@ class TestProcessAgent(BaseTestCase):
         pa = ProcessAgent(mode=ProcessAgentMode.AUTO)
         self.assertIsInstance(pa, pa_module_docker.ProcessAgent)
 
+    def test_pa_not_matching_jobs_by_name(self):
+        """Test case for no matching by name index
+        """
+
+        def get_new_jobs(pa):
+            return [{  # Will have specIndex = 0
+                'reqCores': 1,
+                'name': 'same-job-name'
+            }, {  # Will have specIndex = 1
+                'reqCores': 2,
+                'name': 'same-job-name'
+            }]
+
+        self._pa.set_callback_jobs_provider(get_new_jobs)
+
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs_to_submit = jobs_ops['submit']
+        self.assertEqual(len(jobs_to_submit), 2)
+        self.assertEqual(jobs_to_submit[0]['reqCores'], 1)
+        self.assertEqual(jobs_to_submit[1]['reqCores'], 2)
+
+        # Check job in creation in PA
+        jobs = self._pa.get_jobs_in_creation()
+        self.assertEqual(len(jobs), 2)
+        self.assertEqual(jobs[0].req_cores, 1)
+        self.assertEqual(jobs[1].req_cores, 2)
+
+        # Insert job in ProcessAgent
+        simple_job = MockJob(name='same-job-name', reqCores=2, specIndex=1).get_job()
+        jobs = [simple_job]
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        job = self._pa.get_job_by_id(simple_job.id)
+        self.assertIsNotNone(job)
+        self.assertEqual(job.name, 'same-job-name')
+        self.assertEqual(job.req_cores, 2)
+
+        # Check job in creation in PA
+        jobs = self._pa.get_jobs_in_creation()
+        self.assertEqual(len(jobs), 1)
+        self.assertEqual(jobs[0].req_cores, 1)
+
 
 if __name__ == '__main__':
     import unittest

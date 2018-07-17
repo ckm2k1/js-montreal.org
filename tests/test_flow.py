@@ -196,6 +196,8 @@ class TestFlow(BaseTestCase):
         job1 = JobSpec.from_dict(jobs_to_create[0])
         job2 = JobSpec.from_dict(jobs_to_create[1])
         job3 = JobSpec.from_dict(jobs_to_create[2])
+        print(job1)
+        print(job2)
         self.assertEqual('job-1', job1.name)
         self.assertEqual('job-2', job2.name)
         self.assertEqual('job-3', job3.name)
@@ -334,7 +336,7 @@ class TestFlow(BaseTestCase):
         self.assertEqual(len(jobs_created), 3)
 
         # Add job to governor a job unknow by PA
-        governor_jobs.append(MockJob(id='33339999-0000-2222-8888-666655554444', name='job-X').get_job())
+        governor_jobs.append(MockJob(id='33339999-0000-2222-8888-666655554444', name='job-X', specIndex=0).get_job())
 
         # Governor call PUT /v1/jobs to update state
         jobs_sent = [governor_jobs[3]]

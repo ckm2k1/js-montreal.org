@@ -87,7 +87,7 @@ class ProcessAgentBase():
             else:
                 fnd = False
                 for jc in self._process_agent_jobs_in_creation:
-                    if jc.name == j.name:
+                    if jc.spec_index == j.spec_index:
                         jobs_updated.append({
                             'job': jcopy,
                             'update': list(diff(jc.to_dict(), j.to_dict())),
@@ -295,6 +295,10 @@ class ProcessAgentBase():
             elif isinstance(jobs, dict):
                 jobs = [jobs]
             self._process_agent_jobs_in_creation = [self.get_default_job(j) for j in jobs]
+            # Set job specIndex
+            base_spec_index = len(self._process_agent_jobs)
+            for i, job in enumerate(self._process_agent_jobs_in_creation):
+                self._process_agent_jobs_in_creation[i].spec_index = base_spec_index + i
 
         return self.get_jobs_in_creation()
 

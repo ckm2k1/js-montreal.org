@@ -10,9 +10,12 @@ from borgy_process_agent.job import Restart
 from borgy_process_agent.utils import get_now_isoformat
 from borgy_process_agent_api_server.models.job import Job
 
+mock_spec_index = 0
+
 
 class MockJob(object):
     def __init__(self, **kwargs):
+        global mock_spec_index
         job_id = str(uuid.uuid4())
         self._job = {
             'alive': False,
@@ -47,11 +50,13 @@ class MockJob(object):
                 }
             ],
             'state': 'QUEUING',
+            'specIndex': mock_spec_index,
             'stateInfo': '',
             'stdin': False,
             'volumes': [],
             'workdir': ""
         }
+        mock_spec_index += 1
 
         if 'state' in kwargs:
             self._job['runs'][0]['state'] = kwargs['state']
