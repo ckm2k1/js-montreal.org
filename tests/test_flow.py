@@ -420,13 +420,13 @@ class TestFlow(BaseTestCase):
         app = threading.Thread(name='Web App', target=start)
         app.setDaemon(True)
         app.start()
-        # wait 0.5s
-        time.sleep(0.5)
+        # wait 1s
+        time.sleep(1)
         # Governor call /v1/jobs to get jobs to schedule
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 500, 'Should return 500. Response body is : ' + response.data.decode('utf-8'))
-        # wait 0.5s
-        time.sleep(0.5)
+        # wait 1s
+        time.sleep(1)
         # Check start failure
         self.assertEqual(count_call[0], 1)
         # Stop server in case of error
