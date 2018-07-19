@@ -9,6 +9,7 @@ import os
 import copy
 import connexion
 import logging
+import threading
 from typing import Tuple
 from werkzeug.serving import make_server
 from borgy_process_agent import controllers, ProcessAgentBase
@@ -107,7 +108,14 @@ class ProcessAgent(ProcessAgentBase):
             error = kwargs.get('error')
             if error:
                 self._stop_error = error
-            self._server_srv.shutdown()
+            logger.info('Go kill it')
+
+            def call_shutdown():
+                self._server_srv.shutdown()
+                logger.info('Killed !')
+            app = threading.Thread(name='Shutdown', target=call_shutdown)
+            app.setDaemon(True)
+            app.start()
         else:
             logger.warn('Process Agent server is not running')
 

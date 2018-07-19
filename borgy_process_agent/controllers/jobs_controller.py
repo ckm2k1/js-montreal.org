@@ -6,7 +6,6 @@
 #
 
 
-import threading
 import connexion
 from borgy_process_agent import process_agents
 from borgy_process_agent.exceptions import NotReadyError, EnvironmentVarError
@@ -28,13 +27,8 @@ def v1_jobs_get():
         except NotReadyError as e:
             return 'Process Agent is not ready yet ! Take a tea break.', 418
         except (EnvironmentVarError, TypeError, ValueError) as e:
-
-            def kill_delay():
-                for p in process_agents:
-                    p.stop(error=e)  # noqa F821
-            app = threading.Thread(name='Kill', target=kill_delay)
-            app.setDaemon(True)
-            app.start()
+            for p in process_agents:
+                p.stop(error=e)  # noqa F821
             raise e
 
         if j is None:
