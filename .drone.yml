@@ -61,7 +61,7 @@ pipeline:
     commands:
     # Publish docker image latest
     - export PIP_EXTRA_INDEX_URL="https://$TWINE_USERNAME:$TWINE_PASSWORD@pypi.elmt.io/repo/eai-core"
-    - make image.latest.process-agent
+    - make image.tag.latest.process-agent
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /home/drone/cache:/var/lib/docker
