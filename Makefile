@@ -1,5 +1,6 @@
 .PHONY: test test.full
 DEPLOYZOR_PROJECT=borgy
+DEPLOYZOR_DOCKER_OPTIONS_EXTRA_BUILD=--build-arg PIP_EXTRA_INDEX_URL=$(PIP_EXTRA_INDEX_URL)
 all: test package.build.process-agent
 include deployzor.mk
 

@@ -91,6 +91,10 @@ class ProcessAgent(ProcessAgentBase):
             envs.append(str(k) + '=' + str(v))
 
         logger.debug('\t\tStart container for job {} (name: {})'.format(job.id, job.name))
+        run_kwargs = self._options.get('docker_run_options', {})
+        if not isinstance(run_kwargs, dict):
+            raise TypeError('docker_run_options must be a dict')
+
         container = self._docker.containers.run(
             name=job.id,
             image=job.image,
@@ -104,7 +108,8 @@ class ProcessAgent(ProcessAgentBase):
             detach=self._options.get('docker_detach', True),
             runtime=self._options.get('docker_runtime'),
             tty=self._options.get('docker_tty'),
-            auto_remove=False
+            auto_remove=False,
+            **run_kwargs
         )
 
         return container

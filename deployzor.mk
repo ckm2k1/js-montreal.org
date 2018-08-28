@@ -60,7 +60,7 @@ $(COMPONENT_PREFIX_DIR)/Dockerfile:
 #
 image.build.%: COMPONENT=$*
 image.build.%: $(COMPONENT_PREFIX_DIR)/Dockerfile $(if $(findstring 1,$(DEPLOYZOR_ENABLE_BUILD_DEPENDENCY)),build.%)
-	docker build --build-arg PIP_EXTRA_INDEX_URL=$(PIP_EXTRA_INDEX_URL) --build-arg version=$(VERSION) --build-arg PROJECT=$(DEPLOYZOR_PROJECT) --build-arg COMPONENT=$(COMPONENT) -f $< -t $(DOCKER_FULL_IMAGE_NAME) $(if $(findstring 1,$(DEPLOYZOR_GLOBAL_DOCKER_CONTEXT)),.,$(<D))
+	docker build $(DEPLOYZOR_DOCKER_OPTIONS_EXTRA_BUILD) --build-arg version=$(VERSION) --build-arg PROJECT=$(DEPLOYZOR_PROJECT) --build-arg COMPONENT=$(COMPONENT) -f $< -t $(DOCKER_FULL_IMAGE_NAME) $(if $(findstring 1,$(DEPLOYZOR_GLOBAL_DOCKER_CONTEXT)),.,$(<D))
 
 
 image.run.%: COMPONENT=$*
@@ -82,7 +82,7 @@ image.publish.%: COMPONENT=$*
 image.publish.%:
 	@echo Checking for $(DOCKER_FULL_IMAGE_NAME) in registry;\
 	set -e; \
-	if ($(_FORCE_BUILD) || ! curl -k -f --head https://$(DEPLOYZOR_DOCKER_REGISTRY)/v2/$(DEPLOYZOR_PROJECT)/$(COMPONENT)/manifests/$(VERSION) 2>/dev/null >/dev/null); \
+	if ($(_FORCE_BUILD) || ! docker pull $(DOCKER_FULL_IMAGE_NAME) 2>/dev/null >/dev/null); \
 	then \
 	  if ($(_FORCE_BUILD) || ! docker inspect $(DOCKER_FULL_IMAGE_NAME) > /dev/null 2> /dev/null); then \
 	    if ! $(_FORCE_BUILD) && $(VERSION_SPECIFIED); then \
@@ -106,7 +106,7 @@ image.published.%: COMPONENT=$*
 image.published.%:
 	@echo Checking for $(DOCKER_FULL_IMAGE_NAME) in registry;\
 	set -e; \
-	if (! curl -k -f --head https://$(DEPLOYZOR_DOCKER_REGISTRY)/v2/$(DEPLOYZOR_PROJECT)/$(COMPONENT)/manifests/$(VERSION) 2>/dev/null >/dev/null); \
+	if (! docker pull $(DOCKER_FULL_IMAGE_NAME) 2>/dev/null >/dev/null); \
 	then \
 	  echo ""; echo -e "    " $(DOCKER_FULL_IMAGE_NAME) has not been published to registry.\\n "   " make image.publish.$(COMPONENT) should be called first; echo ""; exit 1; \
 	fi
