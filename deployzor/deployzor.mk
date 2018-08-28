@@ -49,6 +49,18 @@ COMPONENT?=
 DOCKER_IMAGE_NAME?=$(DEPLOYZOR_DOCKER_REGISTRY)/$(DEPLOYZOR_PROJECT)/$(COMPONENT)
 DOCKER_FULL_IMAGE_NAME?=$(DEPLOYZOR_DOCKER_REGISTRY)/$(DEPLOYZOR_PROJECT)/$(COMPONENT):$(VERSION)
 _FORCE_BUILD:=$(if $(findstring 1,$(FORCE_BUILD)),true,false)
+# Official regex from https://github.com/docker/distribution/blob/master/reference/regexp.go#L31
+DOCKER_REGEX_DOMAIN="^([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9](\.[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])*(:[0-9]+)?)"
+DOCKER_DOMAIN?=$(shell echo $(DEPLOYZOR_DOCKER_REGISTRY) | grep -oE $(DOCKER_REGEX_DOMAIN))
+DOCKER_AUTH?= $(shell \
+	if command -v jq > /dev/null; then \
+		cat ~/.docker/config.json|jq -r  '.auths["$(DOCKER_DOMAIN)"].auth + ""'; \
+	elif command -v python > /dev/null; then \
+	  cat ~/.docker/config.json|python -c "import sys, json; print(json.load(sys.stdin)['auths']['$(DOCKER_DOMAIN)']['auth'])" 2> /dev/null; \
+	elif command -v python3 > /dev/null; then \
+	  cat ~/.docker/config.json|python3 -c "import sys, json; print(json.load(sys.stdin)['auths']['$(DOCKER_DOMAIN)']['auth'])" 2> /dev/null; \
+	fi)
+DOCKER_CURL_BASIC_AUTH=$(if $(DOCKER_AUTH),-H 'Authorization:Basic $(DOCKER_AUTH)')
 
 # This makes sure that the required Dockerfile exists
 #
@@ -60,7 +72,7 @@ $(COMPONENT_PREFIX_DIR)/Dockerfile:
 #
 image.build.%: COMPONENT=$*
 image.build.%: $(COMPONENT_PREFIX_DIR)/Dockerfile $(if $(findstring 1,$(DEPLOYZOR_ENABLE_BUILD_DEPENDENCY)),build.%)
-	docker build $(DEPLOYZOR_DOCKER_OPTIONS_EXTRA_BUILD) --build-arg version=$(VERSION) --build-arg PROJECT=$(DEPLOYZOR_PROJECT) --build-arg COMPONENT=$(COMPONENT) -f $< -t $(DOCKER_FULL_IMAGE_NAME) $(if $(findstring 1,$(DEPLOYZOR_GLOBAL_DOCKER_CONTEXT)),.,$(<D))
+	docker build $(DEPLOYZOR_DOCKER_OPTIONS_EXTRA) --build-arg version=$(VERSION) --build-arg PROJECT=$(DEPLOYZOR_PROJECT) --build-arg COMPONENT=$(COMPONENT) -f $< -t $(DOCKER_FULL_IMAGE_NAME) $(if $(findstring 1,$(DEPLOYZOR_GLOBAL_DOCKER_CONTEXT)),.,$(<D))
 
 
 image.run.%: COMPONENT=$*
@@ -82,7 +94,7 @@ image.publish.%: COMPONENT=$*
 image.publish.%:
 	@echo Checking for $(DOCKER_FULL_IMAGE_NAME) in registry;\
 	set -e; \
-	if ($(_FORCE_BUILD) || ! docker pull $(DOCKER_FULL_IMAGE_NAME) 2>/dev/null >/dev/null); \
+	if ($(_FORCE_BUILD) || ! curl -k -f --head $(DOCKER_CURL_BASIC_AUTH) https://$(DEPLOYZOR_DOCKER_REGISTRY)/v2/$(DEPLOYZOR_PROJECT)/$(COMPONENT)/manifests/$(VERSION) 2>/dev/null >/dev/null); \
 	then \
 	  if ($(_FORCE_BUILD) || ! docker inspect $(DOCKER_FULL_IMAGE_NAME) > /dev/null 2> /dev/null); then \
 	    if ! $(_FORCE_BUILD) && $(VERSION_SPECIFIED); then \
@@ -106,7 +118,7 @@ image.published.%: COMPONENT=$*
 image.published.%:
 	@echo Checking for $(DOCKER_FULL_IMAGE_NAME) in registry;\
 	set -e; \
-	if (! docker pull $(DOCKER_FULL_IMAGE_NAME) 2>/dev/null >/dev/null); \
+	if (! curl -k -f --head $(DOCKER_CURL_BASIC_AUTH) https://$(DEPLOYZOR_DOCKER_REGISTRY)/v2/$(DEPLOYZOR_PROJECT)/$(COMPONENT)/manifests/$(VERSION) 2>/dev/null >/dev/null); \
 	then \
 	  echo ""; echo -e "    " $(DOCKER_FULL_IMAGE_NAME) has not been published to registry.\\n "   " make image.publish.$(COMPONENT) should be called first; echo ""; exit 1; \
 	fi
@@ -150,5 +162,6 @@ build_in_env.%:
 	  docker run --rm -v $$(pwd):$$(pwd) -w $$(pwd) $(DEPLOYZOR_DOCKER_REGISTRY)/dev/$(DEV_ENV) make -f $(firstword $(MAKEFILE_LIST)) build_cmd.$(COMPONENT); \
 	fi
 
--include deployzor.scanning.mk
--include deployzor.packaging.mk
+DEPLOYZOR_SELF_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
+-include $(DEPLOYZOR_SELF_DIR)/deployzor.scanning.mk
+-include $(DEPLOYZOR_SELF_DIR)/deployzor.packaging.mk
