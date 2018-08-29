@@ -53,12 +53,8 @@ _FORCE_BUILD:=$(if $(findstring 1,$(FORCE_BUILD)),true,false)
 DOCKER_REGEX_DOMAIN="^([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9](\.[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])*(:[0-9]+)?)"
 DOCKER_DOMAIN?=$(shell echo $(DEPLOYZOR_DOCKER_REGISTRY) | grep -oE $(DOCKER_REGEX_DOMAIN))
 DOCKER_AUTH?= $(shell \
-	if command -v jq > /dev/null; then \
-		cat ~/.docker/config.json|jq -r  '.auths["$(DOCKER_DOMAIN)"].auth + ""'; \
-	elif command -v python > /dev/null; then \
+	if command -v python > /dev/null; then \
 	  cat ~/.docker/config.json|python -c "import sys, json; print(json.load(sys.stdin)['auths']['$(DOCKER_DOMAIN)']['auth'])" 2> /dev/null; \
-	elif command -v python3 > /dev/null; then \
-	  cat ~/.docker/config.json|python3 -c "import sys, json; print(json.load(sys.stdin)['auths']['$(DOCKER_DOMAIN)']['auth'])" 2> /dev/null; \
 	fi)
 DOCKER_CURL_BASIC_AUTH=$(if $(DOCKER_AUTH),-H 'Authorization:Basic $(DOCKER_AUTH)')
 
