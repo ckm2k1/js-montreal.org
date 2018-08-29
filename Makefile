@@ -22,10 +22,4 @@ package.build.%:
 	deactivate; \
 	mv dist/*.tar.gz $(DEPLOYZOR_PACKAGE_NAME)
 
-docker-build-pythons:
-	docker build -f docker/Dockerfile-pythons -t $(DEPLOYZOR_DOCKER_REGISTRY)/$(DEPLOYZOR_PROJECT)/pythons .
-
-docker-publish-pythons: docker-build-pythons
-	docker push $(DEPLOYZOR_DOCKER_REGISTRY)/$(DEPLOYZOR_PROJECT)/pythons
-
 .PHONY: test test.full
