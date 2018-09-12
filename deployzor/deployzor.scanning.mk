@@ -39,7 +39,7 @@ RUN curl -s https://blackducksoftware.github.io/hub-detect/hub-detect.sh > hub-d
 
 COPY --from=base / /
 
-RUN pip install --no-cache-dir "pip<10" # work only with pip<10
+RUN pip install --no-cache-dir --upgrade pip # work only with pip<10
 RUN pip freeze > /requirements.txt # need a requirements.txt to work
 
 RUN /hub-detect/hub-detect.sh \\
