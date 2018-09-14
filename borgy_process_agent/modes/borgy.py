@@ -10,6 +10,7 @@ import copy
 import connexion
 import logging
 import threading
+import pkg_resources
 from typing import Tuple
 from werkzeug.serving import make_server
 from borgy_process_agent import controllers, ProcessAgentBase
@@ -22,6 +23,8 @@ from borgy_process_agent.exceptions import EnvironmentVarError
 import borgy_job_service_client
 
 logger = logging.getLogger(__name__)
+
+borgy_process_agent_version = pkg_resources.get_distribution('borgy_process_agent').version
 
 
 class ProcessAgent(ProcessAgentBase):
@@ -52,6 +55,7 @@ class ProcessAgent(ProcessAgentBase):
 
             api_client = borgy_job_service_client.ApiClient(config)
             api_client.set_default_header('X-User', info['createdBy'])
+            api_client.user_agent = "process-agent/" + borgy_process_agent_version
 
             # create an instance of the API class
             self._job_service = borgy_job_service_client.JobsApi(api_client)
