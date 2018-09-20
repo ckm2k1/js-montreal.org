@@ -65,6 +65,12 @@ class ProcessAgentBase():
 
         :rtype: NoReturn
         """
+        def get_pa_index(job):
+            for e in job.environment_vars:
+                if e.startswith('BORGY_PROCESS_AGENT_INDEX='):
+                    return int(e[26:])
+            return None
+
         # Check for jobs update
         jobs_updated = []
         for j in jobs:
@@ -86,9 +92,15 @@ class ProcessAgentBase():
                     })
             else:
                 fnd = False
-                if j.spec_index is not None:
+                pa_index = get_pa_index(j)
+                print('Pushed pa index: {}'.format(pa_index))
+                print('job in creation length: {}'.format(len(self._process_agent_jobs_in_creation)))
+                if pa_index is not None:
                     for jc in self._process_agent_jobs_in_creation:
-                        if jc.spec_index == j.spec_index:
+                        jc_pa_index = get_pa_index(jc)
+                        print('Match pa index ? {} vs {}'.format(pa_index, jc_pa_index))
+                        print(jc)
+                        if jc_pa_index == pa_index:
                             jobs_updated.append({
                                 'job': jcopy,
                                 'update': list(diff(jc.to_dict(), j.to_dict())),
@@ -295,11 +307,18 @@ class ProcessAgentBase():
                 raise TypeError("Dict expected in list elements from jobs_provider")
             elif isinstance(jobs, dict):
                 jobs = [jobs]
-            self._process_agent_jobs_in_creation = [self.get_default_job(j) for j in jobs]
+            # Add default fields
+            jobs = [self.get_default_job(j) for j in jobs]
             # Set job specIndex
-            base_spec_index = len(self._process_agent_jobs)
-            for i, job in enumerate(self._process_agent_jobs_in_creation):
-                self._process_agent_jobs_in_creation[i].spec_index = base_spec_index + i
+            base_pa_index = len(self._process_agent_jobs)
+            info = self.get_info()
+            for i, job in enumerate(jobs):
+                if jobs[i].environment_vars is None:
+                    jobs[i].environment_vars = []
+                jobs[i].environment_vars = ["BORGY_PROCESS_AGENT_INDEX="+str(base_pa_index + i),
+                                            "BORGY_PROCESS_AGENT="+info['id']] + jobs[i].environment_vars
+
+            self._process_agent_jobs_in_creation = jobs
 
         return self.get_jobs_in_creation()
 

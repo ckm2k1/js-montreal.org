@@ -753,10 +753,10 @@ class TestProcessAgent(BaseTestCase):
         """
 
         def get_new_jobs(pa):
-            return [{  # Will have specIndex = 0
+            return [{  # Will have paIndex = 0
                 'reqCores': 1,
                 'name': 'same-job-name'
-            }, {  # Will have specIndex = 1
+            }, {  # Will have paIndex = 1
                 'reqCores': 2,
                 'name': 'same-job-name'
             }]
@@ -779,7 +779,7 @@ class TestProcessAgent(BaseTestCase):
         self.assertEqual(jobs[1].req_cores, 2)
 
         # Insert job in ProcessAgent
-        simple_job = MockJob(name='same-job-name', reqCores=2, specIndex=1).get_job()
+        simple_job = MockJob(name='same-job-name', reqCores=2, paIndex=1).get_job()
         jobs = [simple_job]
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
