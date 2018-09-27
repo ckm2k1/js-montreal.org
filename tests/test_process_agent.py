@@ -794,6 +794,56 @@ class TestProcessAgent(BaseTestCase):
         self.assertEqual(len(jobs), 1)
         self.assertEqual(jobs[0].req_cores, 1)
 
+    def test_pa_check_merge_envs(self):
+        """Test case for no matching by name index
+        """
+
+        envs = [
+            'TEST_VAR=uuid',
+            'ACCESS_KEY=password',
+        ]
+
+        envs_final = [
+            'BORGY_PROCESS_AGENT_INDEX=0',
+            'BORGY_PROCESS_AGENT=new-job-id'
+        ] + envs
+
+        def get_new_jobs(pa):
+            return [{
+                'reqCores': 1,
+                'name': 'same-job-name',
+                'environmentVars': envs
+            }]
+
+        self._pa.set_callback_jobs_provider(get_new_jobs)
+
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs_to_submit = jobs_ops['submit']
+        self.assertEqual(len(jobs_to_submit), 1)
+        self.assertEqual(jobs_to_submit[0]['reqCores'], 1)
+        self.assertEqual(jobs_to_submit[0]['environmentVars'], envs)
+
+        # Check job in creation in PA
+        jobs = self._pa.get_jobs_in_creation()
+        self.assertEqual(len(jobs), 1)
+        self.assertEqual(jobs[0].req_cores, 1)
+        self.assertEqual(jobs[0].environment_vars, envs_final)
+
+        # Insert job in ProcessAgent
+        simple_job = MockJob(id='new-job-id', name='same-job-name', reqCores=1, paIndex=0).get_job()
+        jobs = [simple_job]
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        job = self._pa.get_job_by_id(simple_job.id)
+        self.assertIsNotNone(job)
+        self.assertEqual(job.name, 'same-job-name')
+        self.assertEqual(job.req_cores, 1)
+        self.assertEqual(jobs[0].environment_vars, envs_final)
+
 
 if __name__ == '__main__':
     import unittest
