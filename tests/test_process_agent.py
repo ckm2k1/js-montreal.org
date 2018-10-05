@@ -795,7 +795,7 @@ class TestProcessAgent(BaseTestCase):
         self.assertEqual(jobs[0].req_cores, 1)
 
     def test_pa_check_merge_envs(self):
-        """Test case for no matching by name index
+        """Test case to merge envs vars
         """
 
         envs = [
