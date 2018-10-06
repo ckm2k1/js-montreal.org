@@ -805,7 +805,7 @@ class TestProcessAgent(BaseTestCase):
 
         envs_final = [
             'BORGY_PROCESS_AGENT_INDEX=0',
-            'BORGY_PROCESS_AGENT=new-job-id'
+            'BORGY_PROCESS_AGENT='+os.environ['BORGY_JOB_ID']
         ] + envs
 
         def get_new_jobs(pa):
@@ -822,9 +822,10 @@ class TestProcessAgent(BaseTestCase):
         jobs_ops = response.get_json()
         self.assertIn('submit', jobs_ops)
         jobs_to_submit = jobs_ops['submit']
+        print(jobs_to_submit)
         self.assertEqual(len(jobs_to_submit), 1)
         self.assertEqual(jobs_to_submit[0]['reqCores'], 1)
-        self.assertEqual(jobs_to_submit[0]['environmentVars'], envs)
+        self.assertEqual(jobs_to_submit[0]['environmentVars'], envs_final)
 
         # Check job in creation in PA
         jobs = self._pa.get_jobs_in_creation()
@@ -833,7 +834,7 @@ class TestProcessAgent(BaseTestCase):
         self.assertEqual(jobs[0].environment_vars, envs_final)
 
         # Insert job in ProcessAgent
-        simple_job = MockJob(id='new-job-id', name='same-job-name', reqCores=1, paIndex=0).get_job()
+        simple_job = MockJob(name='same-job-name', reqCores=1, paIndex=0, environmentVars=envs_final).get_job()
         jobs = [simple_job]
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
