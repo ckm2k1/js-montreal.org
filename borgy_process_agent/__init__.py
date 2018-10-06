@@ -158,7 +158,7 @@ class ProcessAgentBase():
 
         :rtype: bool
         """
-        return not self._shutdown and self._callback_jobs_provider and callable(self._callback_jobs_provider)
+        return self._callback_jobs_provider and callable(self._callback_jobs_provider)
 
     def set_callback_jobs_provider(self, callback):
         """Define the callback which returns the job to create by the process agent
