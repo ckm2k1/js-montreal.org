@@ -39,7 +39,7 @@ class TestHealthController(BaseTestCase):
         response = self.client.open('/v1/health', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
         health = HealthCheck.from_dict(response.get_json())
-        self.assertEqual(health.is_ready, True, "Should be not ready.")
+        self.assertEqual(health.is_ready, True, "Should be ready.")
         self.assertEqual(health.is_shutdown, True, "Should be shutdown.")
 
     def test_v1_health_get_multiple_pa_ready(self):
@@ -88,7 +88,7 @@ class TestHealthController(BaseTestCase):
         response = self.client.open('/v1/health', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
         health = HealthCheck.from_dict(response.get_json())
-        self.assertEqual(health.is_ready, True, "Should be not ready.")
+        self.assertEqual(health.is_ready, True, "Should be ready.")
         self.assertEqual(health.is_shutdown, True, "Should be shutdown.")
 
         pa2._remove()
