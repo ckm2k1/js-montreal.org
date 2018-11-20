@@ -76,9 +76,9 @@ pipeline:
     - GITHUB_REPO=${DRONE_REPO_NAME}
     - GITHUB_USER=${DRONE_REPO_OWNER}
     commands:
-    - make DEPLOYZOR_RELEASE=1 package.build.process-agent
-    - export DEPLOYZOR_DISTRIB_BASE=/distrib/python
-    - make DEPLOYZOR_RELEASE=1 package.distrib.process-agent
+    - make DPZ_RELEASE=1 package.build.process-agent
+    - export DPZ_DISTRIB_BASE=/distrib/python
+    - make DPZ_RELEASE=1 package.distrib.process-agent
     - echo "Install using:" >> /tmp/notes.txt
     - echo "pip install $(make package.distrib.process-agent.path)" | sed -e 's|/distrib|http://distrib.borgy.elementai.lan|' >> /tmp/notes.txt
     - echo "OR" >> /tmp/notes.txt
@@ -104,7 +104,7 @@ pipeline:
     secrets: [ TWINE_USERNAME, TWINE_PASSWORD ]
     commands:
     # Upload to pypi
-    - export DEPLOYZOR_DISTRIB_BASE=/distrib/python
+    - export DPZ_DISTRIB_BASE=/distrib/python
     - twine upload --repository-url https://pypi.elmt.io/repo/eai-core $(make package.distrib.process-agent.path)
     volumes:
       - /mnt/borgy/distrib:/distrib
@@ -116,8 +116,8 @@ pipeline:
   update_latest:
     image: images.borgy.elementai.lan/borgy/plugin-python-release:latest
     commands:
-    - export DEPLOYZOR_DISTRIB_BASE=/distrib/python
-    - make DEPLOYZOR_RELEASE=1 VERSION=${DRONE_TAG} package.distrib.process-agent.latest
+    - export DPZ_DISTRIB_BASE=/distrib/python
+    - make DPZ_RELEASE=1 DPZ_VERSION=${DRONE_TAG} package.distrib.process-agent.latest
     volumes:
       - /mnt/borgy/distrib:/distrib
     when:

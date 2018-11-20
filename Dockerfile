@@ -1,6 +1,7 @@
 FROM python:3.6.5
 
 ARG PIP_EXTRA_INDEX_URL
+ARG DPZ_VERSION
 
 WORKDIR /usr/src/app
 
@@ -14,6 +15,6 @@ ADD setup.py ./
 
 RUN pip install -r requirements.txt
 
-ENV VERSION ${version}
+ENV VERSION ${DPZ_VERSION}
 
 ADD . .

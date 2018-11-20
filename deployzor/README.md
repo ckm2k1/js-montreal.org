@@ -8,27 +8,27 @@ Versionning/Docker Image Building/Deployment make utility.
 
 A project can be composed of one component (See [ElementAI/borgy-governor](https://github.com/ElementAI/borgy-governor)) or more (See [ElementAI/borgy](https://github.com/ElementAI/borgy)).
 
-The makefile targets are applied on one component at time, and that component name is stored in the `COMPONENT` variable.
+The makefile targets are applied on one component at time, and that component name is stored in the `DPZ_COMPONENT` variable.
 
 A few make variables will influence (i.e. parameterize) the behavior of this utility. These variables are:
 
 <dl>
-  <dt>DEPLOYZOR_PROJECT</dt>
+  <dt>DPZ_PROJECT</dt>
   <dd>This variable MUST be non-empty otherwise the inclusion will fail. It is used as a namespace in the synthesized docker image name.</dd>
 
-  <dt>DEPLOYZOR_DOCKER_REGISTRY</dt>
+  <dt>DPZ_DOCKER_REGISTRY</dt>
   <dd>Registry part of the synthesized docker image name. Default: <code>images.borgy.elementai.lan</code></dd>
 
-  <dt>DEPLOYZOR_BASE_PATH</dt>
+  <dt>DPZ_BASE_PATH</dt>
   <dd>All files (e.g. Dockerfile, templates, etc.) will be searched for starting in this directory. Default: empty, which is interpreted as the current working directory.</dd>
 
-  <dt>DEPLOYZOR_USE_COMPONENT_PREFIX</dt>
-  <dd>If set to 1, all files (e.g. Dockerfile, templates, etc.) will be searched for inside the COMPONENT subdirectory. This is especially useful if a source directory contains multiple components, each with their Dockerfile. Default: empty, thus false</dd>
+  <dt>DPZ_USE_COMPONENT_PREFIX</dt>
+  <dd>If set to 1, all files (e.g. Dockerfile, templates, etc.) will be searched for inside the DPZ_COMPONENT subdirectory. This is especially useful if a source directory contains multiple components, each with their Dockerfile. Default: empty, thus false</dd>
 
-  <dt>DEPLOYZOR_ENABLE_BUILD_DEPENDENCY</dt>
+  <dt>DPZ_ENABLE_BUILD_DEPENDENCY</dt>
   <dd>If set to 1, a build.[component] dependency is added to image.build.[component]. This allows the user to add a step (e.g. compilation, static page generation) before building the docker image. Default: empty, thus no dependency to build image.</dd>
 
-  <dt>DEPLOYZOR_GLOBAL_DOCKER_CONTEXT</dt>
+  <dt>DPZ_GLOBAL_DOCKER_CONTEXT</dt>
   <dd>If set to 1, the docker context will be the root of the repo instead of the component directory. Useful if there are some files to add to the docker image which are not the component directory. Default: empty, thus docker context is the component subdirectory alone.</dd>
 </dl>
 
@@ -37,9 +37,9 @@ A few make variables will influence (i.e. parameterize) the behavior of this uti
 The main borgy repository is where many small services required for the system ended up. Here are the first few lines of the repository [Makefile](https://github.com/ElementAI/borgy/blob/master/Makefile):
 
 ```makefile
-DEPLOYZOR_PROJECT=borgy
-DEPLOYZOR_BASE_PATH=services
-DEPLOYZOR_USE_COMPONENT_PREFIX=1
+DPZ_PROJECT=borgy
+DPZ_BASE_PATH=services
+DPZ_USE_COMPONENT_PREFIX=1
 include deployzor.mk
 
 [...]
@@ -79,13 +79,13 @@ Which describes the following directory structure for 3 components, `borsh`, `do
 The borgy governor is a single-component repository. Here are the first few lines of the repository [Makefile](https://github.com/ElementAI/borgy-governor/blob/master/Makefile):
 
 ```makefile
-DEPLOYZOR_PROJECT=borgy
+DPZ_PROJECT=borgy
 include deployzor.mk
 
 [...]
 ```
 
-Which describes the following directory structure for a single component, without a `DEPLOYZOR_BASE_PATH` which requires the `Dockerfile` and `k8s-deploy.template` to be in the root of the repo. (This is not exhaustive)
+Which describes the following directory structure for a single component, without a `DPZ_BASE_PATH` which requires the `Dockerfile` and `k8s-deploy.template` to be in the root of the repo. (This is not exhaustive)
 
 ```
 .
@@ -109,28 +109,28 @@ Which describes the following directory structure for a single component, withou
 
 ### Version Synthesis
 
-The `VERSION` variable can be set explicitly when invoking make. If unset, it will be synthesized according to the state of the repo.
+The `DPZ_VERSION` variable can be set explicitly when invoking make. If unset, it will be synthesized according to the state of the repo.
 
-* If clean, the short git hash is used as the `VERSION`
+* If clean, the short git hash is used as the `DPZ_VERSION`
 * If not, a more detailed state description is used, i.e. username-githash-branch-timestamp
 
 Notes:
-* if the source tree is NOT clean, the `VERSION` will change between invocations. It is likely that you will want to set the `VERSION` explicitly (e.g. `make VERSION=XXX ...`)
+* if the source tree is NOT clean, the `DPZ_VERSION` will change between invocations. It is likely that you will want to set the `DPZ_VERSION` explicitly (e.g. `make DPZ_VERSION=XXX ...`)
 
 ### Docker Related
 
 Multiple targets and variable are available when using this makefile.
 
 The Dockerfile used to build the image is the sum of the following:
-* `DEPLOYZOR_BASE_PATH` if non-empty
-* `COMPONENT` if `DEPLOYZOR_USE_COMPONENT_PREFIX` is 1
+* `DPZ_BASE_PATH` if non-empty
+* `DPZ_COMPONENT` if `DPZ_USE_COMPONENT_PREFIX` is 1
 * `Dockerfile`
 
-The docker image name is: `DEPLOYZOR_DOCKER_REGISTRY/DEPLOYZOR_PROJECT/COMPONENT:VERSION` and is available as `DOCKER_FULL_IMAGE_NAME` variable.
+The docker image name is: `DPZ_DOCKER_REGISTRY/DPZ_PROJECT/DPZ_COMPONENT:DPZ_VERSION` and is available as `DPZ_DOCKER_FULL_IMAGE_NAME` variable.
 
 Example image name: `images.borgy.elementai.lan/borgy/governor:jean-BM-227_get_gpuid-ef12918-20170912155052`
 
-The version-less image name is available as `DOCKER_IMAGE_NAME` variable.
+The version-less image name is available as `DPZ_DOCKER_IMAGE_NAME` variable.
 
 #### Supported Targets
 
@@ -150,11 +150,11 @@ The version-less image name is available as `DOCKER_IMAGE_NAME` variable.
 
 * `image.run.[component]`
     * Builds image according to repo status
-    * Runs given command in CMD variable in image. The CMD can be specified at the command line like in `make image.run.component_name CMD='env'` or through extra Makefile rules.
+    * Runs given command in DPZ_CMD variable in image. The DPZ_CMD can be specified at the command line like in `make image.run.component_name DPZ_CMD='env'` or through extra Makefile rules.
 
 * `image.run_volatile.[component]`
     * Builds image according to repo status
-    * Runs given command in CMD catching the return code
+    * Runs given command in DPZ_CMD catching the return code
     * Deletes image
     * Exit with the previously catched return code
 
@@ -172,7 +172,7 @@ The target to do this is:
 * `k8s-deploy.[component].yml`
     * Makes sure that a k8s-deploy.template file is found in the component directory (same location as the Dockerfile)
     * Makes sure the component's docker image is published
-    * replaces the `DOCKER_IMAGE` placeholder in the k8s-deploy.template file and saves in the in the current working directory under k8s-deploy.[component].yml
+    * replaces the `DPZ_DOCKER_IMAGE` placeholder in the k8s-deploy.template file and saves in the in the current working directory under k8s-deploy.[component].yml
 
 ## Example Use Cases
 
@@ -182,24 +182,24 @@ The target to do this is:
 
 ### Publish a specific version of an image which exists locally
 
-    make image.publish.[component] VERSION=[version_string]
+    make image.publish.[component] DPZ_VERSION=[version_string]
 
 In this case, if the image is not found locally nor in the registry, it will not be built and the target will fail. (this allows use in a deploy make target)
 
 ### Force Build and publish an image with a specific version (to overwrite an image in the registry)
 
-    make image.publish.[component] FORCE_BUILD=1 VERSION=[version_string]
+    make image.publish.[component] DPZ_FORCE_BUILD=1 DPZ_VERSION=[version_string]
 
 ### Build a temporary image, run a command in it and delete the image
 
-    make image.volatile_run.[component] CMD='command to run in container'`
+    make image.volatile_run.[component] DPZ_CMD='command to run in container'`
 
 ### Use in an including makefile
 
 The following can be used to build a makefile rule for a specific image/cmd:
 
     BANANE_CMD=/bin/bash -c "cd /something; python ./script.py"
-    image.volatile_run.banane: CMD=$(BANANE_CMD)
+    image.volatile_run.banane: DPZ_CMD=$(BANANE_CMD)
 
 Then, at the command line:
 
@@ -207,7 +207,7 @@ Then, at the command line:
 
 ### Build an image and run a command in it
 
-    make image.run.[pattern] CMD='quoted command to run'
+    make image.run.[pattern] DPZ_CMD='quoted command to run'
 
 Rules can be built like for the image.volatile_run.[pattern] target.
 
@@ -218,7 +218,7 @@ Rules can be built like for the image.volatile_run.[pattern] target.
 ## Pedantic Notes
 
 * It is possible not to include `deployzor.mk` and use it as is as long as there is a Dockerfile in the current directory
-     `make DEPLOYZOR_PROJECT=my_project -f deployzor.mk image.build.xxx`
-* As long as DEPLOYZOR_USE_COMPONENT_PREFIX contains a 1, it is considered to be set
+     `make DPZ_PROJECT=my_project -f deployzor.mk image.build.xxx`
+* As long as DPZ_USE_COMPONENT_PREFIX contains a 1, it is considered to be set
 
 
