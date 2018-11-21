@@ -295,11 +295,14 @@ class TestProcessAgent(BaseTestCase):
         mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.stop'
         borgy_process_agent_stop = patch(mock_method, mock_borgy_process_agent_stop).start()
 
+        def get_no_job(pa):
+            return []
+
         def get_stop_job(pa):
             return None
 
         self._pa.clear_jobs_in_creation()
-        self._pa.set_callback_jobs_provider(get_stop_job)
+        self._pa.set_callback_jobs_provider(get_no_job)
 
         self._pa.set_autokill(True)
         self._pa.start()
@@ -325,7 +328,22 @@ class TestProcessAgent(BaseTestCase):
         self.assertEqual(count_call, [1, 0])
         self.assertEqual(self._pa.is_shutdown(), False)
 
-        # Governor call /v1/jobs to get jobs to schedule.
+        # Set callback after PUT due to the call to get_jobs_to_create in a thread
+        self._pa.set_callback_jobs_provider(get_stop_job)
+
+        # # Governor call /v1/jobs to get jobs to schedule.
+        # Return an empty array, and prepare next jobs in parallel.
+        self._pa.set_callback_jobs_provider(lambda pa: None)
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        self.assertIn('rerun', jobs_ops)
+        self.assertEqual(len(jobs_ops['submit']), 0)
+        self.assertEqual(len(jobs_ops['rerun']), 0)
+
+        time.sleep(0.1)
+        # Governor call /v1/jobs a second time to get jobs to schedule.
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 204, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
         self.assertEqual(self._pa.is_shutdown(), True)
@@ -407,8 +425,17 @@ class TestProcessAgent(BaseTestCase):
 
         # Update callback
         self._pa.set_callback_jobs_provider(get_stop_job)
+        # Governor call /v1/jobs to get jobs to schedule
+        # First call will return an empty array and prepare jobs in parallel
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs_to_create = jobs_ops['submit']
+        self.assertEqual(len(jobs_to_create), 0)
 
-        # Governor call /v1/jobs to get jobs to schedule.
+        time.sleep(0.1)
+        # Second time, governor call /v1/jobs to get jobs to schedule
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 204, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
         self.assertEqual(self._pa.is_shutdown(), True)
@@ -434,11 +461,14 @@ class TestProcessAgent(BaseTestCase):
         mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.stop'
         borgy_process_agent_stop = patch(mock_method, mock_borgy_process_agent_stop).start()
 
+        def get_no_job(pa):
+            return []
+
         def get_stop_job(pa):
             return None
 
         self._pa.clear_jobs_in_creation()
-        self._pa.set_callback_jobs_provider(get_stop_job)
+        self._pa.set_callback_jobs_provider(get_no_job)
 
         self._pa.set_autokill(True)
         self._pa.start()
@@ -463,6 +493,9 @@ class TestProcessAgent(BaseTestCase):
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
         self.assertEqual(count_call, [1, 0])
         self.assertEqual(self._pa.is_shutdown(), False)
+
+        # Set callback after PUT due to the call to get_jobs_to_create in a thread
+        self._pa.set_callback_jobs_provider(get_stop_job)
 
         # Rerun last job
         j, updated = self._pa.rerun_job(simple_job3.id)
@@ -537,12 +570,15 @@ class TestProcessAgent(BaseTestCase):
     def test_pa_reset(self):
         """Reset test case
         """
+        def get_no_job(pa):
+            return []
+
         def get_stop_job(pa):
             return None
 
         self._pa.clear_jobs_in_creation()
         # Shutdown PA on next call
-        self._pa.set_callback_jobs_provider(get_stop_job)
+        self._pa.set_callback_jobs_provider(get_no_job)
 
         # Insert fake jobs in ProcessAgent
         simple_job = MockJob(name='gsm1', state=State.QUEUED.value).get_job()
@@ -552,7 +588,19 @@ class TestProcessAgent(BaseTestCase):
         self.assertEqual(self._pa.is_shutdown(), False)
         self.assertEqual(len(self._pa.get_jobs()), 1)
 
-        # Shutdown PA
+        # Set callback after PUT due to the call to get_jobs_to_create in a thread
+        self._pa.set_callback_jobs_provider(get_stop_job)
+
+        # First call will return an empty array and prepare jobs in parallel
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs_to_create = jobs_ops['submit']
+        self.assertEqual(len(jobs_to_create), 0)
+
+        time.sleep(0.1)
+        # Second time, Shutdown PA
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 204, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
         self.assertEqual(self._pa.is_shutdown(), True)
@@ -730,7 +778,17 @@ class TestProcessAgent(BaseTestCase):
 
         self._pa.set_callback_jobs_provider(get_restartable_job)
 
-        # Governor call /v1/jobs to get jobs to schedule and to rerun.
+        # Governor call /v1/jobs to get jobs to schedule
+        # First call will return an empty array and prepare jobs in parallel
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs_to_create = jobs_ops['submit']
+        self.assertEqual(len(jobs_to_create), 0)
+
+        time.sleep(0.1)
+        # Second time, governor call /v1/jobs to get jobs to schedule and to rerun
         response = self.client.open('/v1/jobs', method='GET')
         # Should return 500 due to restartable job
         self.assertStatus(response, 500, 'Should return 500. Response body is : ' + response.data.decode('utf-8'))
@@ -763,6 +821,16 @@ class TestProcessAgent(BaseTestCase):
 
         self._pa.set_callback_jobs_provider(get_new_jobs)
 
+        # First call will return an empty array and prepare jobs in parallel
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs_to_create = jobs_ops['submit']
+        self.assertEqual(len(jobs_to_create), 0)
+
+        time.sleep(0.1)
+        # Second time, return prepared jobs
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
         jobs_ops = response.get_json()
@@ -817,12 +885,21 @@ class TestProcessAgent(BaseTestCase):
 
         self._pa.set_callback_jobs_provider(get_new_jobs)
 
+        # First call will return an empty array and prepare jobs in parallel
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs_to_create = jobs_ops['submit']
+        self.assertEqual(len(jobs_to_create), 0)
+
+        time.sleep(0.1)
+        # Second time, return prepared jobs
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
         jobs_ops = response.get_json()
         self.assertIn('submit', jobs_ops)
         jobs_to_submit = jobs_ops['submit']
-        print(jobs_to_submit)
         self.assertEqual(len(jobs_to_submit), 1)
         self.assertEqual(jobs_to_submit[0]['reqCores'], 1)
         self.assertEqual(jobs_to_submit[0]['environmentVars'], envs_final)
@@ -844,6 +921,90 @@ class TestProcessAgent(BaseTestCase):
         self.assertEqual(job.name, 'same-job-name')
         self.assertEqual(job.req_cores, 1)
         self.assertEqual(jobs[0].environment_vars, envs_final)
+
+    def test_pa_prepare_job_to_create_after_jobs_push(self):
+        """Test case to check next jobs will be prepared in parallel after PUT call
+        """
+
+        def get_job(pa):
+            return {
+                'name': 'my-job'
+            }
+
+        self._pa.clear_jobs_in_creation()
+        self._pa.set_callback_jobs_provider(get_job)
+
+        # Insert fake jobs in ProcessAgent
+        # After jobs pushed in PA, PA starts a thread to prepare next jobs
+        simple_job = MockJob(name='gsm1', state=State.QUEUED.value).get_job()
+        simple_job2 = MockJob(name='gsm1', state=State.QUEUED.value).get_job()
+        simple_job3 = MockJob(name='gsm3', state=State.RUNNING.value).get_job()
+        jobs = [simple_job, simple_job2, simple_job3]
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        job = self._pa.get_jobs_by_name(simple_job3.name)[0]
+        self.assertEqual(job.state, State.RUNNING.value)
+
+        time.sleep(0.1)
+        # Check jobs in creation
+        jobs_in_creation = self._pa.get_jobs_in_creation()
+        self.assertEqual(len(jobs_in_creation), 1)
+
+        # Get jobs prepared after PUT
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs_to_submit = jobs_ops['submit']
+        self.assertEqual(len(jobs_to_submit), 1)
+
+    def test_pa_slow_get_job_to_create(self):
+        """Test case when the call to get_job_to_create is too long for the governor
+        """
+
+        def get_slow_job(pa):
+            time.sleep(1)
+            return {
+                'name': 'my-job'
+            }
+
+        self._pa.clear_jobs_in_creation()
+
+        # Insert fake jobs in ProcessAgent
+        simple_job = MockJob(name='gsm1', state=State.QUEUED.value).get_job()
+        simple_job2 = MockJob(name='gsm1', state=State.QUEUED.value).get_job()
+        simple_job3 = MockJob(name='gsm3', state=State.RUNNING.value).get_job()
+        jobs = [simple_job, simple_job2, simple_job3]
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        job = self._pa.get_jobs_by_name(simple_job3.name)[0]
+        self.assertEqual(job.state, State.RUNNING.value)
+
+        # Set callback after PUT due to the call to get_jobs_to_create in a thread
+        self._pa.set_callback_jobs_provider(get_slow_job)
+
+        # During the GET call, _prepare_jobs_to_create should be called in parallel.
+        # and the result sould be an empty array
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs_to_submit = jobs_ops['submit']
+        self.assertEqual(jobs_to_submit, [])
+
+        time.sleep(1.1)
+
+        # After 1.1 second, the jobs should be ready
+        # and the GET should return the spec for 'my-job'
+        jobs_in_creation = self._pa.get_jobs_in_creation()
+        self.assertEqual(len(jobs_in_creation), 1)
+
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs_to_submit = jobs_ops['submit']
+        self.assertEqual(len(jobs_to_submit), 1)
 
 
 if __name__ == '__main__':

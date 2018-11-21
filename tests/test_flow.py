@@ -55,6 +55,16 @@ class TestFlow(BaseTestCase):
         self._pa.set_callback_jobs_provider(get_new_jobs)
 
         # Governor call /v1/jobs to get jobs to schedule
+        # First call will return an empty array and prepare jobs in parallel
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs_to_create = jobs_ops['submit']
+        self.assertEqual(len(jobs_to_create), 0)
+
+        time.sleep(0.1)
+        # Second time, governor call /v1/jobs to get jobs to schedule
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
         jobs_ops = response.get_json()
@@ -96,8 +106,10 @@ class TestFlow(BaseTestCase):
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
 
         # Check job in creation in PA
+        # Should have 1 job in creation due to the thread launch by the PUT call when there is no jobs in creation.
+        time.sleep(0.5)
         jobs_in_creation = self._pa.get_jobs_in_creation()
-        self.assertEqual(len(jobs_in_creation), 0)
+        self.assertEqual(len(jobs_in_creation), 1)
 
         # Check job created
         jobs_created = self._pa.get_jobs()
@@ -113,8 +125,10 @@ class TestFlow(BaseTestCase):
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
 
         # Check job in creation in PA
+        # Should have 1 job in creation due to the thread launch by the PUT call when there is no jobs in creation.
+        time.sleep(0.5)
         jobs_in_creation = self._pa.get_jobs_in_creation()
-        self.assertEqual(len(jobs_in_creation), 0)
+        self.assertEqual(len(jobs_in_creation), 1)
 
         # Check job created
         jobs_created = self._pa.get_jobs()
@@ -186,6 +200,16 @@ class TestFlow(BaseTestCase):
         self._pa.set_callback_jobs_provider(get_new_jobs)
 
         # Governor call /v1/jobs to get jobs to schedule
+        # First call will return an empty array and prepare jobs in parallel
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs_to_create = jobs_ops['submit']
+        self.assertEqual(len(jobs_to_create), 0)
+
+        time.sleep(0.1)
+        # Second time, governor call /v1/jobs to get jobs to schedule
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
         jobs_ops = response.get_json()
@@ -295,9 +319,10 @@ class TestFlow(BaseTestCase):
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
 
         # Check job in creation in PA
-        # Should shave 0 jobs in creation
+        # Should have 3 jobs in creation due to the thread launch by the PUT call when there is no jobs in creation.
+        time.sleep(0.5)
         jobs_in_creation = self._pa.get_jobs_in_creation()
-        self.assertEqual(len(jobs_in_creation), 0)
+        self.assertEqual(len(jobs_in_creation), 3)
 
         # Check job created
         jobs_created = self._pa.get_jobs()
@@ -423,6 +448,16 @@ class TestFlow(BaseTestCase):
         # wait 1s
         time.sleep(1)
         # Governor call /v1/jobs to get jobs to schedule
+        # First call will return an empty array and prepare jobs in parallel
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs_to_create = jobs_ops['submit']
+        self.assertEqual(len(jobs_to_create), 0)
+
+        time.sleep(0.1)
+        # Second time, governor call /v1/jobs to get jobs to schedule
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 500, 'Should return 500. Response body is : ' + response.data.decode('utf-8'))
         # wait 1s

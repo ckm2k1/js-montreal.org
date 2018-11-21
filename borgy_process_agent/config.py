@@ -41,7 +41,7 @@ configs = {
 class Config:
 
     configs_cached = {}
-    regex_config_replace = re.compile('%\w+%')
+    regex_config_replace = re.compile(r'%\w+%')
 
     @staticmethod
     def _parse_value(getter, value):

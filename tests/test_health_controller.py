@@ -7,6 +7,7 @@
 
 from __future__ import absolute_import
 
+import time
 from tests import BaseTestCase
 from borgy_process_agent import ProcessAgent
 from borgy_process_agent_api_server.models.health_check import HealthCheck
@@ -18,9 +19,12 @@ class TestHealthController(BaseTestCase):
     def test_v1_health_get_ready(self):
         """Test case when PA is not ready
         """
+        print(self._pa._callback_jobs_provider)
         response = self.client.open('/v1/health', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
         health = HealthCheck.from_dict(response.get_json())
+        print(self._pa._callback_jobs_provider)
+        print(health)
         self.assertEqual(health.is_ready, False, "Should be not ready.")
         self.assertEqual(health.is_shutdown, False, "Should be not shutdown.")
 
@@ -32,8 +36,19 @@ class TestHealthController(BaseTestCase):
         self.assertEqual(health.is_ready, True, "Should be ready.")
         self.assertEqual(health.is_shutdown, False, "Should be not shutdown.")
 
-        # Return None on callback for PA. Should be shutdown yet.
+        # Return None on callback for PA.
+        # Return an empty array, and prepare next jobs in parallel.
         self._pa.set_callback_jobs_provider(lambda pa: None)
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        self.assertIn('rerun', jobs_ops)
+        self.assertEqual(len(jobs_ops['submit']), 0)
+        self.assertEqual(len(jobs_ops['rerun']), 0)
+
+        time.sleep(0.1)
+        # Prepared jobs should define shutdown state.
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 204, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
         response = self.client.open('/v1/health', method='GET')
@@ -81,8 +96,19 @@ class TestHealthController(BaseTestCase):
         self.assertEqual(health.is_ready, True, "Should be ready.")
         self.assertEqual(health.is_shutdown, False, "Should be not shutdown.")
 
-        # Return None on callback for second PA. Should be shutdown.
+        # Return None on callback for second PA.
+        # Return an empty array, and prepare next jobs in parallel.
         pa2.set_callback_jobs_provider(lambda pa: None)
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        self.assertIn('rerun', jobs_ops)
+        self.assertEqual(len(jobs_ops['submit']), 0)
+        self.assertEqual(len(jobs_ops['rerun']), 0)
+
+        time.sleep(0.1)
+        # Prepared jobs should define shutdown state.
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 204, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
         response = self.client.open('/v1/health', method='GET')

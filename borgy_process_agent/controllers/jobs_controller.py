@@ -24,7 +24,7 @@ def v1_jobs_get():
         jobs_rerun += pa.get_jobs_to_rerun()
         try:
             j = pa.get_job_to_create()
-        except NotReadyError as e:
+        except NotReadyError:
             return 'Process Agent is not ready yet ! Take a tea break.', 418
         except (EnvironmentVarError, TypeError, ValueError) as e:
             for p in process_agents:

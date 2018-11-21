@@ -8,6 +8,7 @@
 import os
 import copy
 import uuid
+import threading
 from enum import Enum
 from typing import List, Dict, Tuple
 from dictdiffer import diff
@@ -56,6 +57,9 @@ class ProcessAgentBase():
         self._options = kwargs
         self._observable_jobs_update = Observable()
         self._callback_jobs_provider = None
+        self._prepare_job_thread = None
+        self._prepare_job_thread_lock = threading.Lock()
+        self._prepare_job_error = None
         self.reset()
         self.set_autokill(autokill)
         self.set_autorerun_interrupted_jobs(autorerun_interrupted_jobs)
@@ -93,13 +97,13 @@ class ProcessAgentBase():
             else:
                 fnd = False
                 pa_index = get_pa_index(j)
-                print('Pushed pa index: {}'.format(pa_index))
-                print('job in creation length: {}'.format(len(self._process_agent_jobs_in_creation)))
+                # print('Pushed pa index: {}'.format(pa_index))
+                # print('job in creation length: {}'.format(len(self._process_agent_jobs_in_creation)))
                 if pa_index is not None:
                     for jc in self._process_agent_jobs_in_creation:
                         jc_pa_index = get_pa_index(jc)
-                        print('Match pa index ? {} vs {}'.format(pa_index, jc_pa_index))
-                        print(jc)
+                        # print('Match pa index ? {} vs {}'.format(pa_index, jc_pa_index))
+                        # print(jc)
                         if jc_pa_index == pa_index:
                             jobs_updated.append({
                                 'job': jcopy,
@@ -119,6 +123,21 @@ class ProcessAgentBase():
 
         if jobs_updated:
             self._observable_jobs_update.dispatch(pa=self, jobs=jobs_updated)
+            # If there is no job left, start a thread to prepare new jobs
+            if self.is_ready() and not self._shutdown and not self._process_agent_jobs_in_creation:
+                acquired = self._prepare_job_thread_lock.acquire(blocking=False)
+                if acquired:
+                    if (not self._prepare_job_thread or
+                       self._prepare_job_thread and not self._prepare_job_thread.is_alive()):
+                        try:
+                            self._prepare_job_thread = threading.Thread(
+                                name='PrepareNewJobs',
+                                target=self._prepare_job_to_create
+                            )
+                            self._prepare_job_thread.setDaemon(True)
+                            self._prepare_job_thread.start()
+                        finally:
+                            self._prepare_job_thread_lock.release()
 
     def _insert(self):
         """Insert process agent in PA list
@@ -141,6 +160,9 @@ class ProcessAgentBase():
 
         :rtype: NoReturn
         """
+        # Wait end of thread
+        if self._prepare_job_thread:
+            self._prepare_job_thread.join()
         self._process_agent_jobs = {}
         self._process_agent_jobs_in_creation = []
         self._process_agent_jobs_to_rerun = []
@@ -197,7 +219,7 @@ class ProcessAgentBase():
             return
 
         if autorerun_interrupted_jobs:
-            self._observable_jobs_update.subscribe(self.__class__.pa_autorerun_interrupted_jobs, 'autokill')
+            self._observable_jobs_update.subscribe(self.__class__.pa_autorerun_interrupted_jobs, 'autorerun')
         else:
             self._observable_jobs_update.unsubscribe(callback=self.__class__.pa_autorerun_interrupted_jobs)
         self._autorerun_interrupted_jobs = autorerun_interrupted_jobs
@@ -283,18 +305,8 @@ class ProcessAgentBase():
         """
         return copy.deepcopy(self._process_agent_jobs_in_creation)
 
-    def get_job_to_create(self) -> List[JobSpec]:
-        """Return the list of jobs to create. Returns job in creation if the list is not empty.
-
-        :rtype: List[JobSpec]
-        """
-        if self._shutdown:
-            return None
-
-        if not self.is_ready():
-            raise NotReadyError("Process agent is not ready yet!")
-
-        if not self._process_agent_jobs_in_creation:
+    def _prepare_job_to_create(self):
+        try:
             jobs = self._callback_jobs_provider(self)
             if jobs is None:
                 self._shutdown = True
@@ -319,6 +331,39 @@ class ProcessAgentBase():
                                             "BORGY_PROCESS_AGENT="+info['id']] + jobs[i].environment_vars
 
             self._process_agent_jobs_in_creation = jobs
+        except Exception as e:
+            self._prepare_job_error = e
+
+    def get_job_to_create(self) -> List[JobSpec]:
+        """Return the list of jobs to create. Returns job in creation if the list is not empty.
+
+        :rtype: List[JobSpec]
+        """
+        if self._shutdown:
+            return None
+
+        if not self.is_ready():
+            raise NotReadyError("Process agent is not ready yet!")
+
+        error = self._prepare_job_error
+        if error:
+            self._prepare_job_error = None
+            raise error
+
+        if self._process_agent_jobs_in_creation is not None and not self._process_agent_jobs_in_creation:
+            acquired = self._prepare_job_thread_lock.acquire(blocking=False)
+            if acquired:
+                if not self._prepare_job_thread or self._prepare_job_thread and not self._prepare_job_thread.is_alive():
+                    try:
+                        self._prepare_job_thread = threading.Thread(
+                            name='PrepareNewJobs',
+                            target=self._prepare_job_to_create
+                        )
+                        self._prepare_job_thread.setDaemon(True)
+                        self._prepare_job_thread.start()
+                    finally:
+                        self._prepare_job_thread_lock.release()
+            return []
 
         return self.get_jobs_in_creation()
 

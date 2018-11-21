@@ -9,6 +9,7 @@ from __future__ import absolute_import
 
 import os
 import copy
+import time
 from flask import json
 from mock import patch
 from dictdiffer import diff
@@ -69,6 +70,16 @@ class TestJobsController(BaseTestCase):
 
         os.environ['BORGY_JOB_ID'] = ''
         self._pa.set_callback_jobs_provider(lambda pa: {})
+        # First call, prepare jobs in parallel (set error to return in next call)
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs = jobs_ops['submit']
+        self.assertEqual(len(jobs), 0)
+        # Wait
+        time.sleep(0.1)
+        # Second call, return the error got previously
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 500, 'Should return 500. Response body is : ' + response.data.decode('utf-8'))
         self.assertEqual(count_call, [1])
@@ -76,12 +87,32 @@ class TestJobsController(BaseTestCase):
         os.environ['BORGY_JOB_ID'] = '1234'
         os.environ['BORGY_USER'] = ''
         self._pa.set_callback_jobs_provider(lambda pa: {})
+        # First call, prepare jobs in parallel (set error to return in next call)
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs = jobs_ops['submit']
+        self.assertEqual(len(jobs), 0)
+        # Wait
+        time.sleep(0.1)
+        # Second call, return the error got previously
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 500, 'Should return 500. Response body is : ' + response.data.decode('utf-8'))
         self.assertEqual(count_call, [2])
 
         del os.environ['BORGY_USER']
         self._pa.set_callback_jobs_provider(lambda pa: {})
+        # First call, prepare jobs in parallel (set error to return in next call)
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs = jobs_ops['submit']
+        self.assertEqual(len(jobs), 0)
+        # Wait
+        time.sleep(0.1)
+        # Second call, return the error got previously
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 500, 'Should return 500. Response body is : ' + response.data.decode('utf-8'))
         self.assertEqual(count_call, [3])
@@ -89,6 +120,16 @@ class TestJobsController(BaseTestCase):
         del os.environ['BORGY_JOB_ID']
         os.environ['BORGY_USER'] = 'gsm'
         self._pa.set_callback_jobs_provider(lambda pa: {})
+        # First call, prepare jobs in parallel (set error to return in next call)
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs = jobs_ops['submit']
+        self.assertEqual(len(jobs), 0)
+        # Wait
+        time.sleep(0.1)
+        # Second call, return the error got previously
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 500, 'Should return 500. Response body is : ' + response.data.decode('utf-8'))
         self.assertEqual(count_call, [4])
@@ -115,6 +156,17 @@ class TestJobsController(BaseTestCase):
 
         for i, v in enumerate(failing_values):
             self._pa.set_callback_jobs_provider(lambda pa: v)
+
+            # First call, prepare jobs in parallel (set error to return in next call)
+            response = self.client.open('/v1/jobs', method='GET')
+            self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+            jobs_ops = response.get_json()
+            self.assertIn('submit', jobs_ops)
+            jobs = jobs_ops['submit']
+            self.assertEqual(len(jobs), 0)
+
+            time.sleep(0.1)
+            # Second call, return the error got previously
             response = self.client.open('/v1/jobs', method='GET')
             self.assertStatus(response, 500, 'Should return 500. Value is: ' + str(v)
                               + '. Response body is : ' + response.data.decode('utf-8'))
@@ -140,6 +192,16 @@ class TestJobsController(BaseTestCase):
         """Test case for jobs keep returning 204 when pa is shutdown
         """
         self._pa.set_callback_jobs_provider(lambda pa: None)
+        # First call, prepare jobs in parallel (will define shutdown state)
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs = jobs_ops['submit']
+        self.assertEqual(len(jobs), 0)
+
+        time.sleep(0.1)
+        # Second time, return shutdown state
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 204, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
 
@@ -154,6 +216,17 @@ class TestJobsController(BaseTestCase):
             'command': ['bash', '-c', 'sleep', 'inifinity']
         }
         self._pa.set_callback_jobs_provider(lambda pa: job_spec)
+
+        # First call, prepare jobs in parallel
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs = jobs_ops['submit']
+        self.assertEqual(len(jobs), 0)
+
+        time.sleep(0.1)
+        # Second call, return prepared jobs
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
         jobs_ops = response.get_json()
@@ -302,7 +375,17 @@ class TestJobsController(BaseTestCase):
             }
         self._pa.set_callback_jobs_provider(get_new_jobs)
 
-        # Governor call /v1/jobs to get jobs to schedule
+        # Governor call /v1/jobs to get jobs to schedule.
+        # Prepare jobs in parallel and return an empty array
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs_to_create = jobs_ops['submit']
+        self.assertEqual(len(jobs_to_create), 0)
+
+        time.sleep(0.1)
+        # Governor call /v1/jobs a second time to get jobs to schedule
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
         jobs_ops = response.get_json()
