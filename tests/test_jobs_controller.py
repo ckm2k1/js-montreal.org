@@ -81,7 +81,9 @@ class TestJobsController(BaseTestCase):
         time.sleep(0.1)
         # Second call, return the error got previously
         response = self.client.open('/v1/jobs', method='GET')
-        self.assertStatus(response, 500, 'Should return 500. Response body is : ' + response.data.decode('utf-8'))
+        error = response.data.decode('utf-8').rstrip("\n")
+        self.assertStatus(response, 500, 'Should return 500. Response body is : ' + error)
+        self.assertEqual(error, '"Env var BORGY_JOB_ID is not defined. Are you running in borgy ?"')
         self.assertEqual(count_call, [1])
 
         os.environ['BORGY_JOB_ID'] = '1234'
@@ -98,7 +100,9 @@ class TestJobsController(BaseTestCase):
         time.sleep(0.1)
         # Second call, return the error got previously
         response = self.client.open('/v1/jobs', method='GET')
-        self.assertStatus(response, 500, 'Should return 500. Response body is : ' + response.data.decode('utf-8'))
+        error = response.data.decode('utf-8').rstrip("\n")
+        self.assertStatus(response, 500, 'Should return 500. Response body is : ' + error)
+        self.assertEqual(error, '"Env var BORGY_USER is not defined. Are you running in borgy ?"')
         self.assertEqual(count_call, [2])
 
         del os.environ['BORGY_USER']
@@ -114,7 +118,9 @@ class TestJobsController(BaseTestCase):
         time.sleep(0.1)
         # Second call, return the error got previously
         response = self.client.open('/v1/jobs', method='GET')
-        self.assertStatus(response, 500, 'Should return 500. Response body is : ' + response.data.decode('utf-8'))
+        error = response.data.decode('utf-8').rstrip("\n")
+        self.assertStatus(response, 500, 'Should return 500. Response body is : ' + error)
+        self.assertEqual(error, '"Env var BORGY_USER is not defined. Are you running in borgy ?"')
         self.assertEqual(count_call, [3])
 
         del os.environ['BORGY_JOB_ID']
@@ -131,7 +137,9 @@ class TestJobsController(BaseTestCase):
         time.sleep(0.1)
         # Second call, return the error got previously
         response = self.client.open('/v1/jobs', method='GET')
-        self.assertStatus(response, 500, 'Should return 500. Response body is : ' + response.data.decode('utf-8'))
+        error = response.data.decode('utf-8').rstrip("\n")
+        self.assertStatus(response, 500, 'Should return 500. Response body is : ' + error)
+        self.assertEqual(error, '"Env var BORGY_JOB_ID is not defined. Are you running in borgy ?"')
         self.assertEqual(count_call, [4])
 
         del borgy_process_agent_stop
@@ -140,10 +148,22 @@ class TestJobsController(BaseTestCase):
         """Test case for type returns by callback of jobs provider
         """
         failing_values = [
-            "MyString",
-            100,
-            object(),
-            [{}, "MySring"]
+            {
+                'value': "MyString",
+                'error': '"List or dict expected from jobs_provider"'
+            },
+            {
+                'value': 100,
+                'error': '"List or dict expected from jobs_provider"'
+            },
+            {
+                'value': object(),
+                'error': '"List or dict expected from jobs_provider"'
+            },
+            {
+                'value': [{}, "MySring"],
+                'error': '"Dict expected in list elements from jobs_provider"'
+            }
         ]
         count_call = [0]
 
@@ -155,7 +175,7 @@ class TestJobsController(BaseTestCase):
         borgy_process_agent_stop = patch(mock_method, mock_borgy_process_agent_stop).start()
 
         for i, v in enumerate(failing_values):
-            self._pa.set_callback_jobs_provider(lambda pa: v)
+            self._pa.set_callback_jobs_provider(lambda pa: v['value'])
 
             # First call, prepare jobs in parallel (set error to return in next call)
             response = self.client.open('/v1/jobs', method='GET')
@@ -168,8 +188,10 @@ class TestJobsController(BaseTestCase):
             time.sleep(0.1)
             # Second call, return the error got previously
             response = self.client.open('/v1/jobs', method='GET')
-            self.assertStatus(response, 500, 'Should return 500. Value is: ' + str(v)
-                              + '. Response body is : ' + response.data.decode('utf-8'))
+            error = response.data.decode('utf-8').rstrip("\n")
+            self.assertStatus(response, 500, 'Should return 500. Value is: ' + str(v['value'])
+                                             + '. Response body is : ' + error)
+            self.assertEqual(error, v['error'])
             self.assertEqual(count_call, [i + 1])
 
         succeeded_values = [

@@ -17,35 +17,39 @@ def v1_jobs_get():
 
     :rtype: JobsOps
     """
-    jobs = []
-    jobs_rerun = []
-    pa_state = []
-    for pa in process_agents:
-        jobs_rerun += pa.get_jobs_to_rerun()
-        try:
-            j = pa.get_job_to_create()
-        except NotReadyError:
-            return 'Process Agent is not ready yet ! Take a tea break.', 418
-        except (EnvironmentVarError, TypeError, ValueError) as e:
-            for p in process_agents:
-                p.stop(error=e)  # noqa F821
-            raise e
+    try:
+        jobs = []
+        jobs_rerun = []
+        pa_state = []
+        for pa in process_agents:
+            jobs_rerun += pa.get_jobs_to_rerun()
+            try:
+                j = pa.get_job_to_create()
+            except NotReadyError:
+                return 'Process Agent is not ready yet ! Take a tea break.', 418
+            except (EnvironmentVarError, TypeError, ValueError) as e:
+                for p in process_agents:
+                    p.stop(error=e)  # noqa F821
+                raise e
 
-        if j is None:
-            pa_state.append(None)
-            continue
+            if j is None:
+                pa_state.append(None)
+                continue
 
-        pa_state.append(True)
-        jobs += j
+            pa_state.append(True)
+            jobs += j
 
-    if all(v is None for v in pa_state) and not jobs_rerun:
-        return 'No more jobs', 204
+        if all(v is None for v in pa_state) and not jobs_rerun:
+            return 'No more jobs', 204
 
-    return {
-        'submit': jobs,
-        'rerun': jobs_rerun,
-        'kill': [],
-    }
+        return {
+            'submit': jobs,
+            'rerun': jobs_rerun,
+            'kill': [],
+        }
+    except Exception as e:
+        print('|'+str(e)+'|')
+        return str(e), 500
 
 
 def v1_jobs_put(body):

@@ -791,7 +791,9 @@ class TestProcessAgent(BaseTestCase):
         # Second time, governor call /v1/jobs to get jobs to schedule and to rerun
         response = self.client.open('/v1/jobs', method='GET')
         # Should return 500 due to restartable job
-        self.assertStatus(response, 500, 'Should return 500. Response body is : ' + response.data.decode('utf-8'))
+        error = response.data.decode('utf-8').rstrip("\n")
+        self.assertStatus(response, 500, 'Should return 500. Response body is : ' + error)
+        self.assertEqual(error, '"Process agent job can\'t have automatic restart. Use autorerun_interrupted_jobs parameter or handle rerun on job udpate by yourself."')  # noqa
 
     def test_pa_auto_mode(self):
         """Test case when auto mode is selected

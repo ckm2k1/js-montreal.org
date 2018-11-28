@@ -459,7 +459,9 @@ class TestFlow(BaseTestCase):
         time.sleep(0.1)
         # Second time, governor call /v1/jobs to get jobs to schedule
         response = self.client.open('/v1/jobs', method='GET')
-        self.assertStatus(response, 500, 'Should return 500. Response body is : ' + response.data.decode('utf-8'))
+        error = response.data.decode('utf-8').rstrip("\n")
+        self.assertStatus(response, 500, 'Should return 500. Response body is : ' + error)
+        self.assertEqual(error, '"List or dict expected from jobs_provider"')
         # wait 1s
         time.sleep(1)
         # Check start failure
