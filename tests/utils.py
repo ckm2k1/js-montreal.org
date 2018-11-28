@@ -27,7 +27,7 @@ class MockJob(object):
                 "BORGY_PROCESS_AGENT_INDEX="+str(mock_pa_index),
             ],
             'evictOthersIfNeeded': False,
-            'image': "images.borgy.elementai.lan/borsh:latest",
+            'image': "images.borgy.elementai.lan/borgy/borsh:latest",
             'id': job_id,
             'interactive': False,
             'isProcessAgent': False,
