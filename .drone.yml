@@ -25,7 +25,7 @@ pipeline:
       ref:
         exclude: [ refs/tags/latest, refs/tags/latest_test ]
 
-  scan:
+  black_duck_scan:
     image: images.borgy.elementai.lan/borgy/plugin-k8s-deploy:latest
     pull: true
     secrets: [ black_duck_api_key, TWINE_USERNAME, TWINE_PASSWORD ]
@@ -34,10 +34,11 @@ pipeline:
       - /home/drone/cache:/var/lib/docker
     commands:
       - export PIP_EXTRA_INDEX_URL="https://$TWINE_USERNAME:$TWINE_PASSWORD@pypi.elmt.io/repo/eai-core"
-      - make image.scan.process-agent
+      - make DPZ_BRANCH_NAME=$DRONE_BRANCH image.scan.process-agent
     when:
       event: [ push, tag ]
       ref:
+        include: [ refs/heads/dev, refs/tags/* ]
         exclude: [ refs/tags/latest, refs/tags/latest_test ]
 
   publish_image:
