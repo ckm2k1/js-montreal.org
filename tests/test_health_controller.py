@@ -7,7 +7,6 @@
 
 from __future__ import absolute_import
 
-import time
 from tests import BaseTestCase
 from borgy_process_agent import ProcessAgent
 from borgy_process_agent_api_server.models.health_check import HealthCheck
@@ -47,7 +46,9 @@ class TestHealthController(BaseTestCase):
         self.assertEqual(len(jobs_ops['submit']), 0)
         self.assertEqual(len(jobs_ops['rerun']), 0)
 
-        time.sleep(0.1)
+        # Wait end of jobs prepatation
+        self._pa._prepare_job_thread.join()
+
         # Prepared jobs should define shutdown state.
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 204, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
@@ -107,7 +108,9 @@ class TestHealthController(BaseTestCase):
         self.assertEqual(len(jobs_ops['submit']), 0)
         self.assertEqual(len(jobs_ops['rerun']), 0)
 
-        time.sleep(0.1)
+        # Wait end of jobs prepatation
+        self._pa._prepare_job_thread.join()
+
         # Prepared jobs should define shutdown state.
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 204, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))

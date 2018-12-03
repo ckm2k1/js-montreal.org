@@ -127,17 +127,16 @@ class ProcessAgentBase():
             if self.is_ready() and not self._shutdown and not self._process_agent_jobs_in_creation:
                 acquired = self._prepare_job_thread_lock.acquire(blocking=False)
                 if acquired:
-                    if (not self._prepare_job_thread or
-                       self._prepare_job_thread and not self._prepare_job_thread.is_alive()):
-                        try:
+                    try:
+                        if not (self._prepare_job_thread and self._prepare_job_thread.is_alive()):
                             self._prepare_job_thread = threading.Thread(
                                 name='PrepareNewJobs',
                                 target=self._prepare_job_to_create
                             )
                             self._prepare_job_thread.setDaemon(True)
                             self._prepare_job_thread.start()
-                        finally:
-                            self._prepare_job_thread_lock.release()
+                    finally:
+                        self._prepare_job_thread_lock.release()
 
     def _insert(self):
         """Insert process agent in PA list
@@ -345,24 +344,26 @@ class ProcessAgentBase():
         if not self.is_ready():
             raise NotReadyError("Process agent is not ready yet!")
 
+        # If there is an error in the previous call, raise it
         error = self._prepare_job_error
         if error:
             self._prepare_job_error = None
             raise error
 
-        if self._process_agent_jobs_in_creation is not None and not self._process_agent_jobs_in_creation:
+        # Prepare new jobs when the list is empty
+        if not self._process_agent_jobs_in_creation:
             acquired = self._prepare_job_thread_lock.acquire(blocking=False)
             if acquired:
-                if not self._prepare_job_thread or self._prepare_job_thread and not self._prepare_job_thread.is_alive():
-                    try:
+                try:
+                    if not (self._prepare_job_thread and self._prepare_job_thread.is_alive()):
                         self._prepare_job_thread = threading.Thread(
                             name='PrepareNewJobs',
                             target=self._prepare_job_to_create
                         )
                         self._prepare_job_thread.setDaemon(True)
                         self._prepare_job_thread.start()
-                    finally:
-                        self._prepare_job_thread_lock.release()
+                finally:
+                    self._prepare_job_thread_lock.release()
             return []
 
         return self.get_jobs_in_creation()

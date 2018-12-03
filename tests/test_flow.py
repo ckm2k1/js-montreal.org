@@ -63,7 +63,9 @@ class TestFlow(BaseTestCase):
         jobs_to_create = jobs_ops['submit']
         self.assertEqual(len(jobs_to_create), 0)
 
-        time.sleep(0.1)
+        # Wait end of jobs prepatation
+        self._pa._prepare_job_thread.join()
+
         # Second time, governor call /v1/jobs to get jobs to schedule
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
@@ -105,9 +107,11 @@ class TestFlow(BaseTestCase):
                                     content_type='application/json', data=json.dumps(jobs_sent))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
 
+        # Wait end of jobs prepatation
+        self._pa._prepare_job_thread.join()
+
         # Check job in creation in PA
         # Should have 1 job in creation due to the thread launch by the PUT call when there is no jobs in creation.
-        time.sleep(0.5)
         jobs_in_creation = self._pa.get_jobs_in_creation()
         self.assertEqual(len(jobs_in_creation), 1)
 
@@ -124,9 +128,11 @@ class TestFlow(BaseTestCase):
                                     content_type='application/json', data=json.dumps(jobs_sent))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
 
+        # Wait end of jobs prepatation
+        self._pa._prepare_job_thread.join()
+
         # Check job in creation in PA
         # Should have 1 job in creation due to the thread launch by the PUT call when there is no jobs in creation.
-        time.sleep(0.5)
         jobs_in_creation = self._pa.get_jobs_in_creation()
         self.assertEqual(len(jobs_in_creation), 1)
 
@@ -208,7 +214,9 @@ class TestFlow(BaseTestCase):
         jobs_to_create = jobs_ops['submit']
         self.assertEqual(len(jobs_to_create), 0)
 
-        time.sleep(0.1)
+        # Wait end of jobs prepatation
+        self._pa._prepare_job_thread.join()
+
         # Second time, governor call /v1/jobs to get jobs to schedule
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
@@ -318,9 +326,11 @@ class TestFlow(BaseTestCase):
                                     content_type='application/json', data=json.dumps(jobs_sent))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
 
+        # Wait end of jobs prepatation
+        self._pa._prepare_job_thread.join()
+
         # Check job in creation in PA
         # Should have 3 jobs in creation due to the thread launch by the PUT call when there is no jobs in creation.
-        time.sleep(0.5)
         jobs_in_creation = self._pa.get_jobs_in_creation()
         self.assertEqual(len(jobs_in_creation), 3)
 
@@ -456,7 +466,9 @@ class TestFlow(BaseTestCase):
         jobs_to_create = jobs_ops['submit']
         self.assertEqual(len(jobs_to_create), 0)
 
-        time.sleep(0.1)
+        # Wait end of jobs prepatation
+        self._pa._prepare_job_thread.join()
+
         # Second time, governor call /v1/jobs to get jobs to schedule
         response = self.client.open('/v1/jobs', method='GET')
         error = response.data.decode('utf-8').rstrip("\n")

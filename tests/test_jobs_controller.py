@@ -9,7 +9,6 @@ from __future__ import absolute_import
 
 import os
 import copy
-import time
 from flask import json
 from mock import patch
 from dictdiffer import diff
@@ -77,8 +76,8 @@ class TestJobsController(BaseTestCase):
         self.assertIn('submit', jobs_ops)
         jobs = jobs_ops['submit']
         self.assertEqual(len(jobs), 0)
-        # Wait
-        time.sleep(0.1)
+        # Wait end of jobs prepatation
+        self._pa._prepare_job_thread.join()
         # Second call, return the error got previously
         response = self.client.open('/v1/jobs', method='GET')
         error = response.data.decode('utf-8').rstrip("\n")
@@ -96,8 +95,8 @@ class TestJobsController(BaseTestCase):
         self.assertIn('submit', jobs_ops)
         jobs = jobs_ops['submit']
         self.assertEqual(len(jobs), 0)
-        # Wait
-        time.sleep(0.1)
+        # Wait end of jobs prepatation
+        self._pa._prepare_job_thread.join()
         # Second call, return the error got previously
         response = self.client.open('/v1/jobs', method='GET')
         error = response.data.decode('utf-8').rstrip("\n")
@@ -114,8 +113,8 @@ class TestJobsController(BaseTestCase):
         self.assertIn('submit', jobs_ops)
         jobs = jobs_ops['submit']
         self.assertEqual(len(jobs), 0)
-        # Wait
-        time.sleep(0.1)
+        # Wait end of jobs prepatation
+        self._pa._prepare_job_thread.join()
         # Second call, return the error got previously
         response = self.client.open('/v1/jobs', method='GET')
         error = response.data.decode('utf-8').rstrip("\n")
@@ -133,8 +132,8 @@ class TestJobsController(BaseTestCase):
         self.assertIn('submit', jobs_ops)
         jobs = jobs_ops['submit']
         self.assertEqual(len(jobs), 0)
-        # Wait
-        time.sleep(0.1)
+        # Wait end of jobs prepatation
+        self._pa._prepare_job_thread.join()
         # Second call, return the error got previously
         response = self.client.open('/v1/jobs', method='GET')
         error = response.data.decode('utf-8').rstrip("\n")
@@ -185,7 +184,9 @@ class TestJobsController(BaseTestCase):
             jobs = jobs_ops['submit']
             self.assertEqual(len(jobs), 0)
 
-            time.sleep(0.1)
+            # Wait end of jobs prepatation
+            self._pa._prepare_job_thread.join()
+
             # Second call, return the error got previously
             response = self.client.open('/v1/jobs', method='GET')
             error = response.data.decode('utf-8').rstrip("\n")
@@ -222,7 +223,9 @@ class TestJobsController(BaseTestCase):
         jobs = jobs_ops['submit']
         self.assertEqual(len(jobs), 0)
 
-        time.sleep(0.1)
+        # Wait end of jobs prepatation
+        self._pa._prepare_job_thread.join()
+
         # Second time, return shutdown state
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 204, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
@@ -247,7 +250,9 @@ class TestJobsController(BaseTestCase):
         jobs = jobs_ops['submit']
         self.assertEqual(len(jobs), 0)
 
-        time.sleep(0.1)
+        # Wait end of jobs prepatation
+        self._pa._prepare_job_thread.join()
+
         # Second call, return prepared jobs
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
@@ -406,7 +411,9 @@ class TestJobsController(BaseTestCase):
         jobs_to_create = jobs_ops['submit']
         self.assertEqual(len(jobs_to_create), 0)
 
-        time.sleep(0.1)
+        # Wait end of jobs prepatation
+        self._pa._prepare_job_thread.join()
+
         # Governor call /v1/jobs a second time to get jobs to schedule
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))

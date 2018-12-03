@@ -342,7 +342,9 @@ class TestProcessAgent(BaseTestCase):
         self.assertEqual(len(jobs_ops['submit']), 0)
         self.assertEqual(len(jobs_ops['rerun']), 0)
 
-        time.sleep(0.1)
+        # Wait end of jobs prepatation
+        self._pa._prepare_job_thread.join()
+
         # Governor call /v1/jobs a second time to get jobs to schedule.
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 204, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
@@ -434,7 +436,9 @@ class TestProcessAgent(BaseTestCase):
         jobs_to_create = jobs_ops['submit']
         self.assertEqual(len(jobs_to_create), 0)
 
-        time.sleep(0.1)
+        # Wait end of jobs prepatation
+        self._pa._prepare_job_thread.join()
+
         # Second time, governor call /v1/jobs to get jobs to schedule
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 204, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
@@ -599,7 +603,9 @@ class TestProcessAgent(BaseTestCase):
         jobs_to_create = jobs_ops['submit']
         self.assertEqual(len(jobs_to_create), 0)
 
-        time.sleep(0.1)
+        # Wait end of jobs prepatation
+        self._pa._prepare_job_thread.join()
+
         # Second time, Shutdown PA
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 204, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
@@ -787,7 +793,9 @@ class TestProcessAgent(BaseTestCase):
         jobs_to_create = jobs_ops['submit']
         self.assertEqual(len(jobs_to_create), 0)
 
-        time.sleep(0.1)
+        # Wait end of jobs prepatation
+        self._pa._prepare_job_thread.join()
+
         # Second time, governor call /v1/jobs to get jobs to schedule and to rerun
         response = self.client.open('/v1/jobs', method='GET')
         # Should return 500 due to restartable job
@@ -831,7 +839,9 @@ class TestProcessAgent(BaseTestCase):
         jobs_to_create = jobs_ops['submit']
         self.assertEqual(len(jobs_to_create), 0)
 
-        time.sleep(0.1)
+        # Wait end of jobs prepatation
+        self._pa._prepare_job_thread.join()
+
         # Second time, return prepared jobs
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
@@ -895,7 +905,9 @@ class TestProcessAgent(BaseTestCase):
         jobs_to_create = jobs_ops['submit']
         self.assertEqual(len(jobs_to_create), 0)
 
-        time.sleep(0.1)
+        # Wait end of jobs prepatation
+        self._pa._prepare_job_thread.join()
+
         # Second time, return prepared jobs
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
@@ -947,7 +959,9 @@ class TestProcessAgent(BaseTestCase):
         job = self._pa.get_jobs_by_name(simple_job3.name)[0]
         self.assertEqual(job.state, State.RUNNING.value)
 
-        time.sleep(0.1)
+        # Wait end of jobs prepatation
+        self._pa._prepare_job_thread.join()
+
         # Check jobs in creation
         jobs_in_creation = self._pa.get_jobs_in_creation()
         self.assertEqual(len(jobs_in_creation), 1)
@@ -997,6 +1011,196 @@ class TestProcessAgent(BaseTestCase):
         time.sleep(1.1)
 
         # After 1.1 second, the jobs should be ready
+        # and the GET should return the spec for 'my-job'
+        jobs_in_creation = self._pa.get_jobs_in_creation()
+        self.assertEqual(len(jobs_in_creation), 1)
+
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs_to_submit = jobs_ops['submit']
+        self.assertEqual(len(jobs_to_submit), 1)
+
+    def test_pa_parallel_get_job_to_create(self):
+        """Test case when there are parallel calls of GET /v1/jobs
+        """
+        count_call = [0]
+
+        def get_slow_job(pa):
+            count_call[0] += 1
+            time.sleep(1)
+            return {
+                'name': 'my-job'
+            }
+
+        def governor_get_job():
+            response = self.client.open('/v1/jobs', method='GET')
+            self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+            jobs_ops = response.get_json()
+            self.assertIn('submit', jobs_ops)
+            jobs_to_submit = jobs_ops['submit']
+            self.assertEqual(jobs_to_submit, [])
+
+        self._pa.clear_jobs_in_creation()
+
+        # Insert fake jobs in ProcessAgent
+        simple_job = MockJob(name='gsm1', state=State.QUEUED.value).get_job()
+        simple_job2 = MockJob(name='gsm1', state=State.QUEUED.value).get_job()
+        simple_job3 = MockJob(name='gsm3', state=State.RUNNING.value).get_job()
+        jobs = [simple_job, simple_job2, simple_job3]
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        job = self._pa.get_jobs_by_name(simple_job3.name)[0]
+        self.assertEqual(job.state, State.RUNNING.value)
+
+        # Set callback after PUT due to the call to get_jobs_to_create in a thread
+        self._pa.set_callback_jobs_provider(get_slow_job)
+
+        # During the GET call, first thread should prepare the new jobs in parallel and should return an empty array
+        # Second thread should not prepare the new jobs and just return an empty array
+        thread1 = threading.Thread(target=governor_get_job)
+        thread1.setDaemon(True)
+        thread1.start()
+        time.sleep(0.5)
+        thread2 = threading.Thread(target=governor_get_job)
+        thread2.setDaemon(True)
+        thread2.start()
+
+        time.sleep(1.1)
+
+        # The callback should be called just one time
+        self.assertEqual(count_call[0], 1)
+
+        # After 1.1 second, the jobs should be ready
+        # and the GET should return the spec for 'my-job'
+        jobs_in_creation = self._pa.get_jobs_in_creation()
+        self.assertEqual(len(jobs_in_creation), 1)
+
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs_to_submit = jobs_ops['submit']
+        self.assertEqual(len(jobs_to_submit), 1)
+        simple_job4 = MockJob(**jobs_to_submit[0]).get_job()
+
+        # Push job created in PA. Next jobs will be prepared in parallel because there are no more jobs in creation
+        jobs = [simple_job4]
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Start a thread to get jobs
+        # Should get an empty array and don't prepare jobs in parallel (already running)
+        time.sleep(0.5)
+        thread3 = threading.Thread(target=governor_get_job)
+        thread3.setDaemon(True)
+        thread3.start()
+
+        time.sleep(1.1)
+
+        # The callback should be called just a second time
+        self.assertEqual(count_call[0], 2)
+
+        # After 1.1 second, the jobs should be ready
+        # and the GET should return the spec for 'my-job'
+        jobs_in_creation = self._pa.get_jobs_in_creation()
+        self.assertEqual(len(jobs_in_creation), 1)
+
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs_to_submit = jobs_ops['submit']
+        self.assertEqual(len(jobs_to_submit), 1)
+
+    def test_pa_parallel_get_job_to_create_stress(self):
+        """Test case when there are parallel calls of GET /v1/jobs
+        """
+        count_call = [0]
+
+        def get_slow_job(pa):
+            count_call[0] += 1
+            time.sleep(1)
+            return {
+                'name': 'my-job'
+            }
+
+        def governor_get_job():
+            response = self.client.open('/v1/jobs', method='GET')
+            self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+            jobs_ops = response.get_json()
+            self.assertIn('submit', jobs_ops)
+            jobs_to_submit = jobs_ops['submit']
+            self.assertEqual(jobs_to_submit, [])
+
+        self._pa.clear_jobs_in_creation()
+
+        # Insert fake jobs in ProcessAgent
+        simple_job = MockJob(name='gsm1', state=State.QUEUED.value).get_job()
+        simple_job2 = MockJob(name='gsm1', state=State.QUEUED.value).get_job()
+        simple_job3 = MockJob(name='gsm3', state=State.RUNNING.value).get_job()
+        jobs = [simple_job, simple_job2, simple_job3]
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        job = self._pa.get_jobs_by_name(simple_job3.name)[0]
+        self.assertEqual(job.state, State.RUNNING.value)
+
+        # Set callback after PUT due to the call to get_jobs_to_create in a thread
+        self._pa.set_callback_jobs_provider(get_slow_job)
+
+        # Stress call with 100 threads
+        threads = []
+        for _ in range(100):
+            thread = threading.Thread(target=governor_get_job)
+            thread.setDaemon(True)
+            thread.start()
+            threads.append(thread)
+
+        for thread in threads:
+            thread.join()
+
+        self._pa._prepare_job_thread.join()
+
+        # The callback should be called just one time
+        self.assertEqual(count_call[0], 1)
+
+        # After end of threads, the jobs should be ready
+        # and the GET should return the spec for 'my-job'
+        jobs_in_creation = self._pa.get_jobs_in_creation()
+        self.assertEqual(len(jobs_in_creation), 1)
+
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs_to_submit = jobs_ops['submit']
+        self.assertEqual(len(jobs_to_submit), 1)
+        simple_job4 = MockJob(**jobs_to_submit[0]).get_job()
+
+        # Push job created in PA. Next jobs will be prepared in parallel because there are no more jobs in creation
+        jobs = [simple_job4]
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Should get an empty array and don't prepare jobs in parallel (already running)
+        # Stress with 100 threads
+        threads = []
+        for _ in range(100):
+            thread = threading.Thread(target=governor_get_job)
+            thread.setDaemon(True)
+            thread.start()
+            threads.append(thread)
+
+        for thread in threads:
+            thread.join()
+
+        self._pa._prepare_job_thread.join()
+
+        # The callback should be called just a second time
+        self.assertEqual(count_call[0], 2)
+
+        # After end of threads, the jobs should be ready
         # and the GET should return the spec for 'my-job'
         jobs_in_creation = self._pa.get_jobs_in_creation()
         self.assertEqual(len(jobs_in_creation), 1)
