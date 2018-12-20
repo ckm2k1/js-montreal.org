@@ -20,7 +20,7 @@ setup(
     name='borgy-process-agent',
     version='1.11.0',
     description='',
-    author='Borygy Team',
+    author='Borgy Team',
     packages=find_packages(exclude=('tests', 'docs')),
     install_requires=install_requires
 )
