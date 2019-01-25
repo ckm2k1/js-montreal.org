@@ -22,6 +22,15 @@ DPZ_BASE_PATH?=.
 
 DPZ_COMPONENT_PREFIX_DIR=$(DPZ_BASE_PATH)$(if $(findstring 1,$(DPZ_USE_COMPONENT_PREFIX)),/%)
 
+# Indicate if this is a release
+# Will check if there a tag exists for package.distrib.%
+# Will switch to production docker registry for image.publish.%
+_DPZ_RELEASE:=$(if $(findstring 1,$(DPZ_RELEASE)),true,false)
+
+# Default branch for production targets
+#
+DPZ_GIT_DEFAULT_BRANCH?=master
+
 # Version synthesis
 #
 _DPZ_VERSION_TAG_LAST=$(shell git describe --tags --abbrev=0 2> /dev/null)
@@ -45,7 +54,9 @@ DPZ_VERSION:=$(if $(DPZ_VERSION),$(DPZ_VERSION),$(_DPZ_VERSION))
 
 # Image naming and building
 #
-DPZ_DOCKER_REGISTRY?=images.borgy.elementai.lan
+DPZ_DOCKER_REGISTRY_VOLATILE?=volatile-images.borgy.elementai.net
+DPZ_DOCKER_REGISTRY_PROD?=images.borgy.elementai.lan
+DPZ_DOCKER_REGISTRY=$(if $(findstring true,$(_DPZ_RELEASE)),$(DPZ_DOCKER_REGISTRY_PROD),$(DPZ_DOCKER_REGISTRY_VOLATILE))
 DPZ_COMPONENT?=
 DPZ_DOCKER_IMAGE_NAME?=$(DPZ_DOCKER_REGISTRY)/$(DPZ_PROJECT)/$(DPZ_COMPONENT)
 DPZ_DOCKER_FULL_IMAGE_NAME?=$(DPZ_DOCKER_REGISTRY)/$(DPZ_PROJECT)/$(DPZ_COMPONENT):$(DPZ_VERSION)
@@ -54,7 +65,7 @@ _DPZ_FORCE_BUILD:=$(if $(findstring 1,$(DPZ_FORCE_BUILD)),true,false)
 DPZ_DOCKER_REGEX_DOMAIN="^([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9](\.[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])*(:[0-9]+)?)"
 DPZ_DOCKER_DOMAIN?=$(shell echo $(DPZ_DOCKER_REGISTRY) | grep -oE $(DPZ_DOCKER_REGEX_DOMAIN))
 DPZ_DOCKER_AUTH?= $(shell \
-	if command -v python > /dev/null; then \
+	if command -v python > /dev/null && test -e ~/.docker/config.json; then \
 	  cat ~/.docker/config.json|python -c "import sys, json; print(json.load(sys.stdin)['auths']['$(DPZ_DOCKER_DOMAIN)']['auth'])" 2> /dev/null; \
 	fi)
 DPZ_DOCKER_CURL_BASIC_AUTH?=$(if $(DPZ_DOCKER_AUTH),-H 'Authorization:Basic $(DPZ_DOCKER_AUTH)')
@@ -128,22 +139,10 @@ image.tag.latest.%: image.published.%
 
 .PHONY: image.publish.% image.build.%
 
-
-# k8s deploy file parameterization
-
-# Make sure tha the k8s-deploy.template file exists
+# utils
 #
-$(DPZ_COMPONENT_PREFIX_DIR)/k8s-deploy.template:
-	@echo ""; echo "     " Expected \"$@\" is not found, can not deploy image.; echo ""; exit 1
-
-# Replace the docker image name with the one that has been built/published
-#
-k8s-deploy.%.yml: DPZ_COMPONENT=$*
-k8s-deploy.%.yml: $(DPZ_COMPONENT_PREFIX_DIR)/k8s-deploy.template image.publish.% FORCE
-	sed -e 's|DPZ_DOCKER_IMAGE|$(DPZ_DOCKER_FULL_IMAGE_NAME)|g' < $< > $@
-
-.PHONY: k8s-deploy.%.yml FORCE
-FORCE: ;
+.PHONY: DPZ_FORCE
+DPZ_FORCE: ;
 
 build_in_env.%: DEV_ENV=$(word 1,$(subst ., ,$*))
 build_in_env.%: DPZ_COMPONENT=$(word 2,$(subst ., ,$*))
@@ -160,5 +159,6 @@ build_in_env.%:
 	fi
 
 DPZ_SELF_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
--include $(DPZ_SELF_DIR)/deployzor.scanning.mk
--include $(DPZ_SELF_DIR)/deployzor.packaging.mk
+-include $(DPZ_SELF_DIR)deployzor.scanning.mk
+-include $(DPZ_SELF_DIR)deployzor.packaging.mk
+-include $(DPZ_SELF_DIR)deployzor.deploy.mk

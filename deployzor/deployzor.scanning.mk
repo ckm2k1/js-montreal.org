@@ -71,7 +71,7 @@ image.scan.%: image.build.% image.scan.%.dockerfile
 	--build-arg PROJECT_VERSION=$(if $(DPZ_VERSION_TAG),$(DPZ_VERSION_TAG),$(DPZ_BRANCH_NAME)) \
 	--build-arg PROJECT_PHASE=$(if $(DPZ_VERSION_TAG),RELEASED,DEVELOPMENT) \
 	--build-arg PROJECT_SRC_PATH=$(DPZ_SRC_PATH) \
-	--build-arg PROJECT_CODE_LOCATION_NAME=$(if $(DPZ_VERSION_TAG),$(DPZ_VERSION_TAG),$(DPZ_BRANCH_NAME)) \
+	--build-arg PROJECT_CODE_LOCATION_NAME=$(DPZ_PROJECT)-$(DPZ_COMPONENT)"-"$(if $(DPZ_VERSION_TAG),$(DPZ_VERSION_TAG),$(DPZ_BRANCH_NAME)) \
 	-f image.scan.$*.dockerfile \
 	.
 

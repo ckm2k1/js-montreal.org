@@ -16,8 +16,17 @@ A few make variables will influence (i.e. parameterize) the behavior of this uti
   <dt>DPZ_PROJECT</dt>
   <dd>This variable MUST be non-empty otherwise the inclusion will fail. It is used as a namespace in the synthesized docker image name.</dd>
 
+  <dt>DPZ_RELEASE</dt>
+  <dd>If set to 1, define the release state. Default: <code>empty, thus false</code></dd>
+
+  <dt>DPZ_DOCKER_REGISTRY_PROD</dt>
+  <dd>Registry part of the synthesized docker image name for production. Default: <code>images.borgy.elementai.lan</code></dd>
+
+  <dt>DPZ_DOCKER_REGISTRY_VOLATILE</dt>
+  <dd>Registry part of the synthesized docker image name for testing. Default: <code>volatile-images.borgy.elementai.net</code></dd>
+
   <dt>DPZ_DOCKER_REGISTRY</dt>
-  <dd>Registry part of the synthesized docker image name. Default: <code>images.borgy.elementai.lan</code></dd>
+  <dd>Depending on DPZ_RELEASE value, the registry will be set to DPZ_DOCKER_REGISTRY_PROD when DPZ_RELEASE=1 else to DPZ_DOCKER_REGISTRY_VOLATILE. Default: <code>$DPZ_DOCKER_REGISTRY_VOLATILE</code></dd>
 
   <dt>DPZ_BASE_PATH</dt>
   <dd>All files (e.g. Dockerfile, templates, etc.) will be searched for starting in this directory. Default: empty, which is interpreted as the current working directory.</dd>

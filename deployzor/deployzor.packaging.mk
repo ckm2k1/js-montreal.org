@@ -5,8 +5,6 @@
 #  Note. This is included from deployzor.mk and relies on targets and variables defined
 #  therein. It can not be used on its own.
 #
-_DPZ_RELEASE:=$(if $(findstring 1,$(DPZ_RELEASE)),true,false)
-
 DPZ_DISTRIB_BASE?=./distrib
 DPZ_DISTRIB_PACKAGE?=$(DPZ_DISTRIB_BASE)/$(DPZ_PROJECT)-$(DPZ_COMPONENT)
 # Package naming
