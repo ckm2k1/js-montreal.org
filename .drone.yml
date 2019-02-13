@@ -4,26 +4,26 @@ pipeline:
     image: plugins/git
     tags: true
 
-  test:
-    image: images.borgy.elementai.lan/borgy/plugin-pythons-testenv:latest
-    secrets: [ COVERALLS_REPO_TOKEN, TWINE_USERNAME, TWINE_PASSWORD ]
-    commands:
-      - export PIP_EXTRA_INDEX_URL="https://$TWINE_USERNAME:$TWINE_PASSWORD@pypi.elmt.io/repo/eai-core"
-      - python3.6 -m venv venv
-      - . venv/bin/activate
-      - pip install -r requirements.txt
-      - pip install -r requirements-tests.txt
-      - make test.full
-      - coveralls
-      - deactivate
-      - rm -fr venv
-    volumes:
-      # Required for the process agent docker mode to work
-      - /var/run/docker.sock:/var/run/docker.sock
-    when:
-      event: [ push, tag ]
-      ref:
-        exclude: [ refs/tags/latest, refs/tags/latest_test ]
+  #test:
+  #  image: images.borgy.elementai.lan/borgy/plugin-pythons-testenv:latest
+  #  secrets: [ COVERALLS_REPO_TOKEN, TWINE_USERNAME, TWINE_PASSWORD ]
+  #  commands:
+  #    - export PIP_EXTRA_INDEX_URL="https://$TWINE_USERNAME:$TWINE_PASSWORD@pypi.elmt.io/repo/eai-core"
+  #    - python3.6 -m venv venv
+  #    - . venv/bin/activate
+  #    - pip install -r requirements.txt
+  #    - pip install -r requirements-tests.txt
+  #    - make test.full
+  #    - coveralls
+  #    - deactivate
+  #    - rm -fr venv
+  #  volumes:
+  #    # Required for the process agent docker mode to work
+  #    - /var/run/docker.sock:/var/run/docker.sock
+  #  when:
+  #    event: [ push, tag ]
+  #    ref:
+  #      exclude: [ refs/tags/latest, refs/tags/latest_test ]
 
   publish:
     image: images.borgy.elementai.lan/borgy/plugin-python-release:latest
@@ -72,8 +72,6 @@ pipeline:
       - /var/run/docker.sock:/var/run/docker.sock
     when:
       event: tag
-      ref:
-        exclude: [ refs/tags/latest, refs/tags/latest_test ]
 
   #publish_image_latest:
   #  image: images.borgy.elementai.lan/borgy/plugin-k8s-deploy:latest
