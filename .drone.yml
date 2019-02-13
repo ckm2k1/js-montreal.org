@@ -14,10 +14,11 @@ pipeline:
       - pip install -r requirements.txt
       - pip install -r requirements-tests.txt
       - make test.full
-      - coveralls --verbose
+      - coveralls
       - deactivate
       - rm -fr venv
     volumes:
+      # Required for the process agent docker mode to work
       - /var/run/docker.sock:/var/run/docker.sock
     when:
       event: [ push, tag ]
@@ -59,10 +60,13 @@ pipeline:
     secrets: [ TWINE_USERNAME, TWINE_PASSWORD ]
     commands:
     # Publish docker image
+    - env | sort
     - export PIP_EXTRA_INDEX_URL="https://$TWINE_USERNAME:$TWINE_PASSWORD@pypi.elmt.io/repo/eai-core"
-    - version=$(set -x; git show-ref --tags -d | grep $(git show-ref --tags -d | grep ${DRONE_COMMIT_REF} | cut -d ' ' -f 1) | grep -v ${DRONE_COMMIT_REF} | cut -d ' ' -f 2 | sed -e 's|refs/tags/||g')
+    - version=$(set -x; git show-ref --tags -d | grep $(git show-ref --tags -d | grep ${DRONE_COMMIT_REF} | cut -d ' ' -f 1) | cut -d ' ' -f 2 | sed -e 's|refs/tags/||g')
     - test -n "$version" || ( echo no version tag at ${DRONE_TAG}; exit 1 )
     - export DPZ_RELEASE=1
+    - export DPZ_VERSION=$version
+    - export DPZ_FORCE_BUILD=1
     - make image.publish.process-agent
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
