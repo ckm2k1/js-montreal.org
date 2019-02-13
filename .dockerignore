@@ -1,14 +1,10 @@
 *
-!.coverage
-!.flake8
 !borgy-job-service.crt
 !borgy_process_agent
 !requirements.txt
-!requirements-tests.txt
 !setup.py
 !setup.cfg
 !runner_borgy.py
 !runner_docker.py
 !runner_auto.py
-!tox.ini
-!tests
+!runner_test.py
