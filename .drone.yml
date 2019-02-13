@@ -63,8 +63,7 @@ pipeline:
     - set -x
     - env | sort
     - export PIP_EXTRA_INDEX_URL="https://$TWINE_USERNAME:$TWINE_PASSWORD@pypi.elmt.io/repo/eai-core"
-    - version=$(set -x; git show-ref --tags -d | grep $(git show-ref --tags -d | grep "${DRONE_COMMIT_REF}$" | cut -d ' ' -f 1) | cut -d ' ' -f 2 | sed -e 's|refs/tags/||g')
-    - test -n "$version" || ( echo no version tag at ${DRONE_TAG}; exit 1 )
+    - version=$(set -x; echo "${DRONE_COMMIT_REF}$" | sed -e 's|refs/tags/||g')
     - export DPZ_RELEASE=1
     - export DPZ_VERSION=$version
     - export DPZ_FORCE_BUILD=1
