@@ -25,51 +25,6 @@ pipeline:
       ref:
         exclude: [ refs/tags/latest, refs/tags/latest_test ]
 
-  black_duck_scan:
-    image: images.borgy.elementai.lan/borgy/plugin-k8s-deploy:latest
-    pull: true
-    secrets: [ black_duck_api_key, TWINE_USERNAME, TWINE_PASSWORD ]
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /home/drone/cache:/var/lib/docker
-    commands:
-      - export PIP_EXTRA_INDEX_URL="https://$TWINE_USERNAME:$TWINE_PASSWORD@pypi.elmt.io/repo/eai-core"
-      - make DPZ_BRANCH_NAME=$DRONE_BRANCH image.scan.process-agent
-    when:
-      event: [ push, tag ]
-      ref:
-        include: [ refs/heads/dev, refs/tags/* ]
-        exclude: [ refs/tags/latest, refs/tags/latest_test ]
-
-  publish_image:
-    image: images.borgy.elementai.lan/borgy/plugin-k8s-deploy:latest
-    secrets: [ TWINE_USERNAME, TWINE_PASSWORD ]
-    commands:
-    # Publish docker image
-    - export PIP_EXTRA_INDEX_URL="https://$TWINE_USERNAME:$TWINE_PASSWORD@pypi.elmt.io/repo/eai-core"
-    - make image.publish.process-agent
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /home/drone/cache:/var/lib/docker
-    when:
-      event: tag
-      ref:
-        exclude: [ refs/tags/latest, refs/tags/latest_test ]
-
-  publish_image_latest:
-    image: images.borgy.elementai.lan/borgy/plugin-k8s-deploy:latest
-    secrets: [ TWINE_USERNAME, TWINE_PASSWORD ]
-    commands:
-    # Publish docker image latest
-    - export PIP_EXTRA_INDEX_URL="https://$TWINE_USERNAME:$TWINE_PASSWORD@pypi.elmt.io/repo/eai-core"
-    - make image.tag.latest.process-agent
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /home/drone/cache:/var/lib/docker
-    when:
-      event: tag
-      ref: [ refs/tags/latest, refs/tags/latest_test ]
-
   publish:
     image: images.borgy.elementai.lan/borgy/plugin-python-release:latest
     secrets: [ github_token ]
@@ -99,6 +54,36 @@ pipeline:
       event: tag
       ref:
         exclude: [ refs/tags/latest, refs/tags/latest_test ]
+
+  publish_image:
+    image: images.borgy.elementai.lan/borgy/plugin-k8s-deploy:latest
+    secrets: [ TWINE_USERNAME, TWINE_PASSWORD ]
+    commands:
+    # Publish docker image
+    - export PIP_EXTRA_INDEX_URL="https://$TWINE_USERNAME:$TWINE_PASSWORD@pypi.elmt.io/repo/eai-core"
+    - version=$(set -x; git show-ref --tags -d | grep $(git show-ref --tags -d | grep ${DRONE_COMMIT_REF} | cut -d ' ' -f 1) | grep -v ${DRONE_COMMIT_REF} | cut -d ' ' -f 2 | sed -e 's|refs/tags/||g')
+    - test -n "$version" || ( echo no version tag at ${DRONE_TAG}; exit 1 )
+    - export DPZ_RELEASE=1
+    - make image.publish.process-agent
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    when:
+      event: tag
+      ref:
+        exclude: [ refs/tags/latest, refs/tags/latest_test ]
+
+  #publish_image_latest:
+  #  image: images.borgy.elementai.lan/borgy/plugin-k8s-deploy:latest
+  #  secrets: [ TWINE_USERNAME, TWINE_PASSWORD ]
+  #  commands:
+  #  # Publish docker image latest
+  #  - export PIP_EXTRA_INDEX_URL="https://$TWINE_USERNAME:$TWINE_PASSWORD@pypi.elmt.io/repo/eai-core"
+  #  - make image.tag.latest.process-agent
+  #  volumes:
+  #    - /var/run/docker.sock:/var/run/docker.sock
+  #  when:
+  #    event: tag
+  #    ref: [ refs/tags/latest, refs/tags/latest_test ]
 
   publish_pypi:
     image: images.borgy.elementai.lan/borgy/plugin-pypi-release:latest
@@ -140,3 +125,19 @@ pipeline:
     when:
       status: [ success, failure ]
       event: tag
+
+  black_duck_scan:
+    image: images.borgy.elementai.lan/borgy/plugin-k8s-deploy:latest
+    pull: true
+    secrets: [ black_duck_api_key, TWINE_USERNAME, TWINE_PASSWORD ]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /home/drone/cache:/var/lib/docker
+    commands:
+      - export PIP_EXTRA_INDEX_URL="https://$TWINE_USERNAME:$TWINE_PASSWORD@pypi.elmt.io/repo/eai-core"
+      - make DPZ_BRANCH_NAME=$DRONE_BRANCH image.scan.process-agent
+    when:
+      event: [ push, tag ]
+      ref:
+        include: [ refs/heads/dev, refs/tags/* ]
+        exclude: [ refs/tags/latest, refs/tags/latest_test ]
