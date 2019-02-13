@@ -18,7 +18,8 @@ install_requires = [
 
 setup(
     name='borgy-process-agent',
-    version='1.13.0b2',
+    url='https://github.com/ElementAI/borgy-process-agent',
+    version='1.13.0b3',
     description='',
     author='Borgy Team',
     packages=find_packages(exclude=('tests', 'docs')),
