@@ -22,7 +22,7 @@ def main():
             json_str = os.getenv(name, default_value)
             try:
                 data = json.loads(json_str)
-            except Exception as e:
+            except Exception:
                 assert False, '{} should be valid JSON. Was:\n{}'.format(name, json_str)
             assert type(data) in types, "name {} must be in [{}]".format(name, types)
             return data
