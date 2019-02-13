@@ -133,6 +133,13 @@ class TestProcessAgent(BaseTestCase):
         self.assertEqual(count_call[0], 1)
         del job_service_call_delete
 
+    def test_pa_set_callbacks_are_callable(self):
+        with self.assertRaises(ValueError):
+            self._pa.set_callback_jobs_provider(1)
+
+        with self.assertRaises(ValueError):
+            self._pa.subscribe_jobs_update(1)
+
     def test_pa_rerun_job(self):
         """Test case for rerun_job
         """

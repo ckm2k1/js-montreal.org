@@ -12,6 +12,9 @@ test:
 test.full:
 	@tox -e 'flake8,cov-init,py34,py35,py36,coverage'
 
+flake8:
+	python -m flake8
+
 image.build.%: DPZ_DOCKER_BUILD_OPTIONS_EXTRA=--build-arg PIP_EXTRA_INDEX_URL=$(PIP_EXTRA_INDEX_URL)
 
 package.build.%:

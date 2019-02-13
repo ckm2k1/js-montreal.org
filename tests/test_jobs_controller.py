@@ -7,7 +7,6 @@
 
 from __future__ import absolute_import
 
-import os
 import copy
 from flask import json
 from mock import patch
@@ -15,7 +14,6 @@ from dictdiffer import diff
 from tests import BaseTestCase
 from tests.utils import MockJob
 from borgy_process_agent import ProcessAgent, JobEventState
-from borgy_process_agent.exceptions import EnvironmentVarError
 from borgy_process_agent_api_server.models.job import Job
 
 
@@ -54,94 +52,6 @@ class TestJobsController(BaseTestCase):
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
 
         pa2._remove()
-
-    def test_v1_jobs_get_check_environment_vars(self):
-        """Test case for undefined environment variables
-        """
-        count_call = [0]
-
-        def mock_borgy_process_agent_stop(s, **kwargs):
-            count_call[0] += 1
-            self.assertIsInstance(kwargs.get('error'), EnvironmentVarError)
-
-        mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.stop'
-        borgy_process_agent_stop = patch(mock_method, mock_borgy_process_agent_stop).start()
-
-        os.environ['BORGY_JOB_ID'] = ''
-        self._pa.set_callback_jobs_provider(lambda pa: {})
-        # First call, prepare jobs in parallel (set error to return in next call)
-        response = self.client.open('/v1/jobs', method='GET')
-        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
-        jobs_ops = response.get_json()
-        self.assertIn('submit', jobs_ops)
-        jobs = jobs_ops['submit']
-        self.assertEqual(len(jobs), 0)
-        # Wait end of jobs prepatation
-        self._pa._prepare_job_thread.join()
-        # Second call, return the error got previously
-        response = self.client.open('/v1/jobs', method='GET')
-        error = response.data.decode('utf-8').rstrip("\n")
-        self.assertStatus(response, 500, 'Should return 500. Response body is : ' + error)
-        self.assertEqual(error, '"Env var BORGY_JOB_ID is not defined. Are you running in borgy ?"')
-        self.assertEqual(count_call, [1])
-
-        os.environ['BORGY_JOB_ID'] = '1234'
-        os.environ['BORGY_USER'] = ''
-        self._pa.set_callback_jobs_provider(lambda pa: {})
-        # First call, prepare jobs in parallel (set error to return in next call)
-        response = self.client.open('/v1/jobs', method='GET')
-        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
-        jobs_ops = response.get_json()
-        self.assertIn('submit', jobs_ops)
-        jobs = jobs_ops['submit']
-        self.assertEqual(len(jobs), 0)
-        # Wait end of jobs prepatation
-        self._pa._prepare_job_thread.join()
-        # Second call, return the error got previously
-        response = self.client.open('/v1/jobs', method='GET')
-        error = response.data.decode('utf-8').rstrip("\n")
-        self.assertStatus(response, 500, 'Should return 500. Response body is : ' + error)
-        self.assertEqual(error, '"Env var BORGY_USER is not defined. Are you running in borgy ?"')
-        self.assertEqual(count_call, [2])
-
-        del os.environ['BORGY_USER']
-        self._pa.set_callback_jobs_provider(lambda pa: {})
-        # First call, prepare jobs in parallel (set error to return in next call)
-        response = self.client.open('/v1/jobs', method='GET')
-        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
-        jobs_ops = response.get_json()
-        self.assertIn('submit', jobs_ops)
-        jobs = jobs_ops['submit']
-        self.assertEqual(len(jobs), 0)
-        # Wait end of jobs prepatation
-        self._pa._prepare_job_thread.join()
-        # Second call, return the error got previously
-        response = self.client.open('/v1/jobs', method='GET')
-        error = response.data.decode('utf-8').rstrip("\n")
-        self.assertStatus(response, 500, 'Should return 500. Response body is : ' + error)
-        self.assertEqual(error, '"Env var BORGY_USER is not defined. Are you running in borgy ?"')
-        self.assertEqual(count_call, [3])
-
-        del os.environ['BORGY_JOB_ID']
-        os.environ['BORGY_USER'] = 'gsm'
-        self._pa.set_callback_jobs_provider(lambda pa: {})
-        # First call, prepare jobs in parallel (set error to return in next call)
-        response = self.client.open('/v1/jobs', method='GET')
-        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
-        jobs_ops = response.get_json()
-        self.assertIn('submit', jobs_ops)
-        jobs = jobs_ops['submit']
-        self.assertEqual(len(jobs), 0)
-        # Wait end of jobs prepatation
-        self._pa._prepare_job_thread.join()
-        # Second call, return the error got previously
-        response = self.client.open('/v1/jobs', method='GET')
-        error = response.data.decode('utf-8').rstrip("\n")
-        self.assertStatus(response, 500, 'Should return 500. Response body is : ' + error)
-        self.assertEqual(error, '"Env var BORGY_JOB_ID is not defined. Are you running in borgy ?"')
-        self.assertEqual(count_call, [4])
-
-        del borgy_process_agent_stop
 
     def test_v1_jobs_get_jobs_provider_types(self):
         """Test case for type returns by callback of jobs provider

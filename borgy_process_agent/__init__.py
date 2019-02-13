@@ -47,13 +47,14 @@ process_agents = []
 
 
 class ProcessAgentBase():
-    def __init__(self, autokill: bool = True, autorerun_interrupted_jobs: bool = True, **kwargs):
-        """Contrustor
+    def __init__(self, pa_job_id: str = None, pa_user: str = None,
+                 autokill: bool = True, autorerun_interrupted_jobs: bool = True, **kwargs):
+        """Constructor
 
         :rtype: NoReturn
         """
-        self._autokill = False
-        self._autorerun_interrupted_jobs = False
+        self._autokill = None
+        self._autorerun_interrupted_jobs = None
         self._options = kwargs
         self._observable_jobs_update = Observable()
         self._callback_jobs_provider = None
@@ -63,6 +64,12 @@ class ProcessAgentBase():
         self.reset()
         self.set_autokill(autokill)
         self.set_autorerun_interrupted_jobs(autorerun_interrupted_jobs)
+
+        if not pa_job_id or not pa_user:
+            raise ValueError("ProcessAgentBase: both pa_job_id and pa_user must be set")
+
+        self._pa_job_id = pa_job_id
+        self._pa_user = pa_user
 
     def _push_jobs(self, jobs: List[Job]):
         """Call when PUT API receives jobs
@@ -179,13 +186,15 @@ class ProcessAgentBase():
 
         :rtype: bool
         """
-        return self._callback_jobs_provider and callable(self._callback_jobs_provider)
+        return self._callback_jobs_provider is not None
 
     def set_callback_jobs_provider(self, callback):
         """Define the callback which returns the job to create by the process agent
 
         :rtype: NoReturn
         """
+        if not callable(callback):
+            raise ValueError('set_callback_jobs_provider: callback must be callable')
         self._callback_jobs_provider = callback
 
     def subscribe_jobs_update(self, callback):
@@ -193,6 +202,8 @@ class ProcessAgentBase():
 
         :rtype: NoReturn
         """
+        if not callable(callback):
+            raise ValueError('subscribe_jobs_update: callback must be callable')
         self._observable_jobs_update.subscribe(callback)
 
     def set_autokill(self, autokill: bool):
@@ -273,22 +284,14 @@ class ProcessAgentBase():
 
         :rtype: List[Job]
         """
-        jobs = []
-        for (_, j) in self._process_agent_jobs.items():
-            if j.state == state:
-                jobs.append(j)
-        return copy.deepcopy(jobs)
+        return copy.deepcopy([j for j in self._process_agent_jobs.values() if j.state == state])
 
     def get_jobs_by_name(self, name: str) -> List[Job]:
         """Get jobs by name
 
         :rtype: List[Job]
         """
-        jobs = []
-        for (_, j) in self._process_agent_jobs.items():
-            if j.name == name:
-                jobs.append(j)
-        return copy.deepcopy(jobs)
+        return copy.deepcopy([j for j in self._process_agent_jobs.values() if j.name == name])
 
     def get_jobs_to_rerun(self) -> List[str]:
         """Get all jobs to rerun by the process agent and waiting for a return of the governor
@@ -322,12 +325,11 @@ class ProcessAgentBase():
             jobs = [self.get_default_job(j) for j in jobs]
             # Set job specIndex
             base_pa_index = len(self._process_agent_jobs)
-            info = self.get_info()
             for i, job in enumerate(jobs):
                 if jobs[i].environment_vars is None:
                     jobs[i].environment_vars = []
                 jobs[i].environment_vars = ["BORGY_PROCESS_AGENT_INDEX="+str(base_pa_index + i),
-                                            "BORGY_PROCESS_AGENT="+info['id']] + jobs[i].environment_vars
+                                            "BORGY_PROCESS_AGENT="+self._pa_job_id] + jobs[i].environment_vars
 
             self._process_agent_jobs_in_creation = jobs
         except Exception as e:
@@ -382,31 +384,24 @@ class ProcessAgentBase():
         """
         raise NotImplementedError
 
-    def get_info(self):
-        """Get information about the process agent
-
-        :rtype: dict
-        """
-        return {
-            'id': '00000000-0000-0000-0000-000000000000',
-            'createdBy': 'MyUser',
-        }
-
     def get_default_job(self, job=None) -> JobSpec:
         """Get default parameters for a job
 
         :rtype: JobSpec
         """
-        info = self.get_info()
+        job = job if job else {}
+        if not isinstance(job, dict):
+            raise ValueError("get_default_job: when specified, job argument must be a dict. Was {}".type(job))
+
         result = {
             'command': [],
-            'createdBy': info['createdBy'],
+            'createdBy': self._pa_user,
             'environmentVars': [],
             'image': "images.borgy.elementai.lan/borsh:latest",
             'interactive': False,
             'labels': [],
             'maxRunTimeSecs': 0,
-            'name': info['id'] + "-" + str(uuid.uuid4()),
+            'name': self._pa_job_id + ":" + str(uuid.uuid4()),
             'options': {},
             'preemptable': True,
             'reqCores': 1,
@@ -415,10 +410,9 @@ class ProcessAgentBase():
             'restart': Restart.NO.value,
             'stdin': False,
             'volumes': [],
-            'workdir': ""
+            'workdir': "",
+            **job
         }
-        if job and isinstance(job, dict):
-            result.update(job)
 
         if result['restart'] == Restart.ON_INTERRUPTION.value:
             raise ValueError('Process agent job can\'t have automatic restart. Use autorerun_interrupted_jobs parameter or handle rerun on job udpate by yourself.')  # noqa: E501

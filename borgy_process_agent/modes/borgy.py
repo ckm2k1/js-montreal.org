@@ -31,12 +31,30 @@ class ProcessAgent(ProcessAgentBase):
     """Process Agent for Borgy
     """
     def __init__(self, **kwargs):
-        """Contrustor
+        """Constructor
 
         :rtype: NoReturn
         """
-        super().__init__(**kwargs)
+        missing_env = []
+
+        def check_env_var(name):
+            nonlocal missing_env
+            value = os.getenv(name, None)
+            if not value:
+                missing_env.append(name)
+            return value
+
+        pa_job_id = check_env_var('BORGY_JOB_ID')
+        pa_user = check_env_var('BORGY_USER')
+
+        if missing_env:
+            raise EnvironmentVarError('Env var(s) {} not defined or empty. Are you running in borgy ?'.
+                                      format(missing_env))
+
+        super().__init__(pa_job_id=pa_job_id, pa_user=pa_user, **kwargs)
         self._job_service = None
+        self._init_job_service()
+
         self._server_app = None
         self._server_srv = None
         self._stop_error = None
@@ -46,33 +64,26 @@ class ProcessAgent(ProcessAgentBase):
 
         :rtype: JobsApi
         """
-        if not self._job_service:
-            info = self.get_info()
+        config = borgy_job_service_client.Configuration()
+        config.host = Config.get('job_service_url')
+        config.ssl_ca_cert = Config.get('job_service_certificate')
 
-            config = borgy_job_service_client.Configuration()
-            config.host = Config.get('job_service_url')
-            config.ssl_ca_cert = Config.get('job_service_certificate')
+        api_client = borgy_job_service_client.ApiClient(config)
+        api_client.set_default_header('X-User', self._pa_user)
+        api_client.user_agent = "process-agent/" + borgy_process_agent_version
 
-            api_client = borgy_job_service_client.ApiClient(config)
-            api_client.set_default_header('X-User', info['createdBy'])
-            api_client.user_agent = "process-agent/" + borgy_process_agent_version
-
-            # create an instance of the API class
-            self._job_service = borgy_job_service_client.JobsApi(api_client)
-        return self._job_service
+        # create an instance of the API class
+        self._job_service = borgy_job_service_client.JobsApi(api_client)
 
     def kill_job(self, job_id: str) -> Tuple[Job, bool]:
         """Kill a job
 
         :rtype: Tuple[Job, bool]
         """
-        if not self._job_service:
-            self._init_job_service()
         if job_id in self._process_agent_jobs:
             is_updated = False
             if self._process_agent_jobs[job_id].state in [State.QUEUING.value, State.QUEUED.value, State.RUNNING.value]:
-                info = self.get_info()
-                job = self._job_service.v1_jobs_job_id_delete(job_id, info['createdBy'])
+                job = self._job_service.v1_jobs_job_id_delete(job_id, self._pa_user)
                 # Push job event
                 self._push_jobs([job])
                 is_updated = True
@@ -91,10 +102,8 @@ class ProcessAgent(ProcessAgentBase):
 
         :rtype: NoReturn
         """
-        self.get_info()
-        self._init_job_service()
         self._insert()
-        self._server_app = self.__class__.get_server_app()
+        self._server_app = ProcessAgent.get_server_app()
         self._server_srv = make_server('0.0.0.0', self._options.get('port', 8666), self._server_app)
         logger.info('Start Process Agent server')
         self._server_srv.serve_forever()
@@ -134,18 +143,3 @@ class ProcessAgent(ProcessAgentBase):
         app.app.json_encoder = encoder.JSONEncoder
         app.add_api('swagger.yaml', arguments={'title': 'Borgy Process Agent'})
         return app
-
-    def get_info(self):
-        """Get information about the process agent
-
-        :rtype: dict
-        """
-        if 'BORGY_JOB_ID' not in os.environ or not os.environ['BORGY_JOB_ID']:
-            raise EnvironmentVarError('Env var BORGY_JOB_ID is not defined. Are you running in borgy ?')
-        elif 'BORGY_USER' not in os.environ or not os.environ['BORGY_USER']:
-            raise EnvironmentVarError('Env var BORGY_USER is not defined. Are you running in borgy ?')
-
-        return {
-            'id': os.environ['BORGY_JOB_ID'],
-            'createdBy': os.environ['BORGY_USER'],
-        }

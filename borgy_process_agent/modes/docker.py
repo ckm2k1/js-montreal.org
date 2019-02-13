@@ -27,13 +27,13 @@ class ProcessAgent(ProcessAgentBase):
     """Process Agent for Docker
     """
     def __init__(self, **kwargs):
-        """Contrustor
+        """Constructor
 
         :rtype: NoReturn
         """
-        super().__init__(**kwargs)
-        self._docker = docker.from_env()
         self._job_id = kwargs.get('job_id', str(uuid.uuid4()))
+        super().__init__(pa_job_id=self._job_id, pa_user='MyUser', **kwargs)
+        self._docker = docker.from_env()
         self._poll_interval = kwargs.get('poll_interval', 10)
 
     def reset(self):
@@ -319,13 +319,3 @@ class ProcessAgent(ProcessAgentBase):
         """
         logger.debug('Shutdown Process Agent server')
         self._running = False
-
-    def get_info(self):
-        """Get information about the process agent
-
-        :rtype: dict
-        """
-        return {
-            'id': self._job_id,
-            'createdBy': 'MyUser',
-        }
