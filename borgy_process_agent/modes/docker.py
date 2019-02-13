@@ -11,6 +11,7 @@ import time
 import uuid
 import docker
 import logging
+import pkg_resources
 from typing import Tuple, List
 from dateutil.parser import parse
 from borgy_process_agent import ProcessAgentBase, process_agents
@@ -21,6 +22,8 @@ from borgy_process_agent_api_server.models.job import Job, JobRuns
 from borgy_process_agent_api_server.models.job_spec import JobSpec
 
 logger = logging.getLogger(__name__)
+
+borgy_process_agent_version = pkg_resources.get_distribution('borgy_process_agent').version
 
 
 class ProcessAgent(ProcessAgentBase):
