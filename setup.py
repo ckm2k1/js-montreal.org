@@ -18,7 +18,7 @@ install_requires = [
 
 setup(
     name='borgy-process-agent',
-    version='1.13.0b1',
+    version='1.13.0b2',
     description='',
     author='Borgy Team',
     packages=find_packages(exclude=('tests', 'docs')),
