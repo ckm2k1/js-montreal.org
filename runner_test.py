@@ -1,4 +1,3 @@
-from borgy_job_service_client import JobSpec
 from borgy_process_agent import ProcessAgent, ProcessAgentMode
 import json
 import logging
@@ -11,21 +10,21 @@ logging.basicConfig(datefmt='%Y-%m-%d %H:%M:%S',
 logger = logging.getLogger("main")
 logger.setLevel(logging.INFO)
 
+
 def main():
     try:
-        iteration_max = int(os.getenv('PA_TESTER_ITERATION','30'))
+        iteration_max = int(os.getenv('PA_TESTER_ITERATION', '30'))
         iteration = 0
 
-        n_children = int(os.getenv('PA_TESTER_CHILDREN','0'))
+        n_children = int(os.getenv('PA_TESTER_CHILDREN', '0'))
 
         def get_json(name, default_value, types):
             json_str = os.getenv(name, default_value)
             try:
                 data = json.loads(json_str)
-            except:
-                assert False,'{} should be valid JSON. Was:\n{}'.format(name, json_str)
-
-            assert type(data) in types,"name {} must be in [{}]".format(name, types)
+            except Exception as e:
+                assert False, '{} should be valid JSON. Was:\n{}'.format(name, json_str)
+            assert type(data) in types, "name {} must be in [{}]".format(name, types)
             return data
 
         # content of PA_TESTER_JOBS must be a single job_spec (dict) or a list of job_specs
@@ -33,12 +32,12 @@ def main():
                              '{"reqCores": "1", "reqGpus": "0", "image": "ubuntu:18.04", "command": ["sleep", "60"]}',
                              [type(dict()), type(list())])
 
-        if type(job_specs) == type(dict()):
-            job_specs = [ job_specs ]
+        if isinstance(job_specs, dict):
+            job_specs = [job_specs]
 
         logger.info("Job Specs:")
         for i, job_spec in enumerate(job_specs):
-            assert type(job_spec) == type(dict()), 'job_specs entry {} should be a dict. Was {}'.format(i, type(job_spec))
+            assert isinstance(job_spec, dict), 'job_specs entry {} should be a dict. Was {}'.format(i, type(job_spec))
             logger.info("{}: {}".format(i, job_spec))
 
         # content of PA_TESTER_JOBS must be a list of job_specs
@@ -49,14 +48,14 @@ def main():
         jobs_provider = []
 
         # XOR - only one of the two must be set
-        assert (n_children > 0) != (len(jobs_provider_data) > 0), "One and only one of PA_TESTER_CHILDREN or PA_TESTER_JOBS_PROVIDER must be set"
+        assert (n_children > 0) != (len(jobs_provider_data) > 0), "One and only one of PA_TESTER_CHILDREN or PA_TESTER_JOBS_PROVIDER must be set"  # noqa
 
         if n_children:
             jobs_provider_data = [[0 for i in range(n_children)]]
 
         logger.info("Jobs Provider returns:")
         for i, new_jobs in enumerate(jobs_provider_data):
-            assert type(new_jobs) == type(list()), 'new_jobs entry {} should be a list. Was {}'.format(i, type(new_jobs))
+            assert isinstance(new_jobs, list), 'new_jobs entry {} should be a list. Was {}'.format(i, type(new_jobs))
 
             if i == 1 and len(new_jobs) == 0:
                 new_jobs = [0 for i in range(n_children)]
@@ -64,7 +63,7 @@ def main():
             jobs_provider.append([])
             ids = []
             for j, new_job in enumerate(new_jobs):
-                assert new_job < len(job_specs), 'jobs_provider data entry {}, offset {} out of range (max: {})'.format(i, j, len(job_specs))
+                assert new_job < len(job_specs), 'jobs_provider data entry {}, offset {} out of range (max: {})'.format(i, j, len(job_specs))  # noqa
                 jobs_provider[-1].append(job_specs[new_job])
                 ids.append(new_job)
 
@@ -106,5 +105,6 @@ def main():
 
     except Exception as e:
         logger.exception(e)
+
 
 main()
