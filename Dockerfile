@@ -17,5 +17,6 @@ ARG DPZ_VERSION
 ENV VERSION ${DPZ_VERSION}
 
 ADD . .
+RUN pip install -e .
 
 CMD /usr/local/bin/python3 /usr/src/app/runner_test.py
