@@ -410,9 +410,10 @@ class ProcessAgentBase():
             'restart': Restart.NO.value,
             'stdin': False,
             'volumes': [],
-            'workdir': "",
-            **job
+            'workdir': ""
         }
+
+        result.update(job)
 
         if result['restart'] == Restart.ON_INTERRUPTION.value:
             raise ValueError('Process agent job can\'t have automatic restart. Use autorerun_interrupted_jobs parameter or handle rerun on job udpate by yourself.')  # noqa: E501
