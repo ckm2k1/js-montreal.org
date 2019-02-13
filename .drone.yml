@@ -60,6 +60,7 @@ pipeline:
     secrets: [ TWINE_USERNAME, TWINE_PASSWORD ]
     commands:
     # Publish docker image
+    - set -x
     - env | sort
     - export PIP_EXTRA_INDEX_URL="https://$TWINE_USERNAME:$TWINE_PASSWORD@pypi.elmt.io/repo/eai-core"
     - version=$(set -x; git show-ref --tags -d | grep $(git show-ref --tags -d | grep ${DRONE_COMMIT_REF} | cut -d ' ' -f 1) | cut -d ' ' -f 2 | sed -e 's|refs/tags/||g')
@@ -127,17 +128,17 @@ pipeline:
       status: [ success, failure ]
       event: tag
 
-  black_duck_scan:
-    image: images.borgy.elementai.lan/borgy/plugin-k8s-deploy:latest
-    pull: true
-    secrets: [ black_duck_api_key, TWINE_USERNAME, TWINE_PASSWORD ]
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    commands:
-      - export PIP_EXTRA_INDEX_URL="https://$TWINE_USERNAME:$TWINE_PASSWORD@pypi.elmt.io/repo/eai-core"
-      - make DPZ_BRANCH_NAME=$DRONE_BRANCH image.scan.process-agent
-    when:
-      event: [ push, tag ]
-      ref:
-        include: [ refs/heads/dev, refs/tags/* ]
-        exclude: [ refs/tags/latest, refs/tags/latest_test ]
+  # black_duck_scan:
+  #  image: images.borgy.elementai.lan/borgy/plugin-k8s-deploy:latest
+  #  pull: true
+  #  secrets: [ black_duck_api_key, TWINE_USERNAME, TWINE_PASSWORD ]
+  #  volumes:
+  #    - /var/run/docker.sock:/var/run/docker.sock
+  #  commands:
+  #    - export PIP_EXTRA_INDEX_URL="https://$TWINE_USERNAME:$TWINE_PASSWORD@pypi.elmt.io/repo/eai-core"
+  #    - make DPZ_BRANCH_NAME=$DRONE_BRANCH image.scan.process-agent
+  #  when:
+  #    event: [ push, tag ]
+  #    ref:
+  #      include: [ refs/heads/dev, refs/tags/* ]
+  #      exclude: [ refs/tags/latest, refs/tags/latest_test ]
