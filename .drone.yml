@@ -72,8 +72,8 @@ pipeline:
       - /var/run/docker.sock:/var/run/docker.sock
     when:
       event: [ push, tag ]
-        ref:
-          include: [ refs/heads/dev, refs/tags/* ]
+      ref:
+        include: [ refs/heads/dev, refs/tags/* ]
 
   publish_pypi:
     image: images.borgy.elementai.lan/borgy/plugin-pypi-release:latest
