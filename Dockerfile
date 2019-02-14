@@ -1,10 +1,8 @@
-FROM python:3.6.5
+FROM python:alpine3.6
 
 WORKDIR /usr/src/app
 
-RUN export DEBIAN_FRONTEND=noninteractive; apt-get update && apt-get -y upgrade \
-    && apt-get autoremove && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN apk --no-cache update; apk --no-cache upgrade
 
 ADD requirements.txt ./
 ADD setup.cfg ./
