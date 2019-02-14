@@ -4,3 +4,4 @@ parsedatetime==2.4
 python-dateutil==2.7.3
 dictdiffer==0.7.1
 docker==3.4.0
+connexion[swagger-ui]
