@@ -75,6 +75,28 @@ pipeline:
       ref:
         include: [ refs/heads/dev, refs/tags/* ]
 
+  trigger_dev_integration_tests:
+    image: plugins/downstream
+    server: https://drone.elementai.com:8443
+    secrets: [ downstream_token ]
+    fork: true
+    repositories:
+      - ElementAI/borgy@integration_tests_dev
+    when:
+      event: push
+      branch: dev
+
+  trigger_prod_integration_tests:
+    image: plugins/downstream
+    server: https://drone.elementai.com:8443
+    secrets: [ downstream_token ]
+    fork: true
+    repositories:
+      - ElementAI/borgy@integration_tests_prod
+    when:
+      event: tag
+      ref: refs/tags/latest
+
   publish_pypi:
     image: images.borgy.elementai.lan/borgy/plugin-pypi-release:latest
     secrets: [ TWINE_USERNAME, TWINE_PASSWORD ]
