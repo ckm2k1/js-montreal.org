@@ -13,13 +13,14 @@ install_requires = [
     "parsedatetime==2.4",
     "python-dateutil==2.7.3",
     "dictdiffer==0.7.1",
-    "docker==3.4.0"
+    "docker==3.4.0",
+    "connexion[swagger-ui]"
 ]
 
 setup(
     name='borgy-process-agent',
     url='https://github.com/ElementAI/borgy-process-agent',
-    version='1.13.0b5',
+    version='1.13.0b6',
     description='',
     author='Borgy Team',
     packages=find_packages(exclude=('tests', 'docs')),
