@@ -70,9 +70,10 @@ pipeline:
     - make image.publish.process-agent
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    event: [ push, tag ]
-      ref:
-        include: [ refs/heads/dev, refs/tags/* ]
+    when:
+      event: [ push, tag ]
+        ref:
+          include: [ refs/heads/dev, refs/tags/* ]
 
   publish_pypi:
     image: images.borgy.elementai.lan/borgy/plugin-pypi-release:latest
