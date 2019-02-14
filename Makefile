@@ -1,7 +1,7 @@
 all: test package.build.process-agent
 
 deployzor/deployzor.mk:
-	git subtree add --squash --prefix deployzor git@github.com:ElementAI/eai-deployzor.git 3.1.0
+	git subtree add --squash --prefix deployzor git@github.com:ElementAI/eai-deployzor.git 3.3.0
 
 DPZ_PROJECT=borgy
 -include deployzor/deployzor.mk
