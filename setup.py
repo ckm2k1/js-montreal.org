@@ -8,8 +8,8 @@
 from setuptools import setup, find_packages
 
 install_requires = [
-    "borgy-process-agent-api-server==1.5.0",
-    "borgy-job-service-client==1.10.1",
+    "borgy-process-agent-api-server==1.6.0",
+    "borgy-job-service-client==1.11.0",
     "parsedatetime==2.4",
     "python-dateutil==2.7.3",
     "dictdiffer==0.7.1",
@@ -20,7 +20,7 @@ install_requires = [
 setup(
     name='borgy-process-agent',
     url='https://github.com/ElementAI/borgy-process-agent',
-    version='1.13.0',
+    version='1.14.0',
     description='',
     author='Borgy Team',
     packages=find_packages(exclude=('tests', 'docs')),

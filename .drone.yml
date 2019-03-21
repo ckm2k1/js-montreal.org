@@ -7,6 +7,9 @@ pipeline:
   test:
     image: images.borgy.elementai.lan/borgy/plugin-pythons-testenv:latest
     secrets: [ COVERALLS_REPO_TOKEN, TWINE_USERNAME, TWINE_PASSWORD ]
+    environment:
+      - BORGY_RAM=8
+      - BORGY_CPU=2
     commands:
       - export PIP_EXTRA_INDEX_URL="https://$TWINE_USERNAME:$TWINE_PASSWORD@pypi.elmt.io/repo/eai-core"
       - python3.6 -m venv venv
