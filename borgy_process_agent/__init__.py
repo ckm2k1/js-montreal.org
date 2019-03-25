@@ -12,7 +12,7 @@ import threading
 from enum import Enum
 from typing import List, Dict, Tuple
 from dictdiffer import diff
-from borgy_process_agent.event import Observable
+from borgy_process_agent.event import Observable, CallbackOrder
 from borgy_process_agent.job import Restart, State
 from borgy_process_agent.exceptions import NotReadyError
 from borgy_process_agent_api_server.models.job import Job
@@ -204,7 +204,7 @@ class ProcessAgentBase():
         """
         if not callable(callback):
             raise ValueError('subscribe_jobs_update: callback must be callable')
-        self._observable_jobs_update.subscribe(callback)
+        self._observable_jobs_update.subscribe(callback=callback)
 
     def set_autokill(self, autokill: bool):
         """Enable or disable autokill
@@ -215,7 +215,9 @@ class ProcessAgentBase():
             return
 
         if autokill:
-            self._observable_jobs_update.subscribe(self.__class__.pa_check_autokill, 'autokill')
+            self._observable_jobs_update.subscribe(callback=self.__class__.pa_check_autokill,
+                                                   name='autokill',
+                                                   order=CallbackOrder.End)
         else:
             self._observable_jobs_update.unsubscribe(callback=self.__class__.pa_check_autokill)
         self._autokill = autokill
@@ -229,7 +231,9 @@ class ProcessAgentBase():
             return
 
         if autorerun_interrupted_jobs:
-            self._observable_jobs_update.subscribe(self.__class__.pa_autorerun_interrupted_jobs, 'autorerun')
+            self._observable_jobs_update.subscribe(callback=self.__class__.pa_autorerun_interrupted_jobs,
+                                                   name='autorerun',
+                                                   order=CallbackOrder.Begin)
         else:
             self._observable_jobs_update.unsubscribe(callback=self.__class__.pa_autorerun_interrupted_jobs)
         self._autorerun_interrupted_jobs = autorerun_interrupted_jobs

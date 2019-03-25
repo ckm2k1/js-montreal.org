@@ -8,7 +8,7 @@
 from __future__ import absolute_import
 
 from tests import BaseTestCase
-from borgy_process_agent.event import Observable, Event
+from borgy_process_agent.event import Observable, Event, CallbackOrder
 
 
 class TestEvent(BaseTestCase):
@@ -498,6 +498,48 @@ class TestEvent(BaseTestCase):
             'inject2': 22
         })
         self.assertIsNone(results[2])
+
+    def test_dispatch_order(self):
+        """Test case for results returned by dispatch
+        """
+        obs = Observable()
+
+        called = []
+
+        def callback(i):
+            def callback_fct(event):
+                while len(called) <= i:
+                    called.append(0)
+                called[i] += 1
+                return i
+            return callback_fct
+
+        obs.subscribe(callback(0), order=CallbackOrder.End)
+        obs.subscribe(callback(1), order=CallbackOrder.Begin)
+        c2 = callback(2)
+        obs.subscribe(c2)
+
+        results = obs.dispatch()
+        self.assertEqual(called, [1, 1, 1])
+        self.assertEqual(results, [1, 2, 0])
+
+        called = []
+        obs.subscribe(callback(3))
+        results = obs.dispatch()
+        self.assertEqual(called, [1, 1, 1, 1])
+        self.assertEqual(results, [1, 2, 3, 0])
+
+        called = []
+        obs.subscribe(callback(4), order=CallbackOrder.Begin)
+        results = obs.dispatch()
+        self.assertEqual(called, [1, 1, 1, 1, 1])
+        self.assertEqual(results, [1, 4, 2, 3, 0])
+
+        called = []
+        obs.unsubscribe(c2)
+        results = obs.dispatch()
+        self.assertEqual(called, [1, 1, 0, 1, 1])
+        self.assertEqual(results, [1, 4, 3, 0])
 
 
 if __name__ == '__main__':

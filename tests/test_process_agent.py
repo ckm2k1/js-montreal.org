@@ -260,30 +260,30 @@ class TestProcessAgent(BaseTestCase):
         """Test case for setting autokill multiple time
         """
         list_autokill = [c for c in self._pa._observable_jobs_update._callbacks
-                         if c['callback'] == ProcessAgent.pa_check_autokill]
+                         if c[1]['callback'] == ProcessAgent.pa_check_autokill]
         self.assertEqual(len(list_autokill), 0)
         self._pa.set_autokill(True)
         list_autokill = [c for c in self._pa._observable_jobs_update._callbacks
-                         if c['callback'] == ProcessAgent.pa_check_autokill]
+                         if c[1]['callback'] == ProcessAgent.pa_check_autokill]
         self.assertEqual(len(list_autokill), 1)
         self._pa.set_autokill(True)
         list_autokill = [c for c in self._pa._observable_jobs_update._callbacks
-                         if c['callback'] == ProcessAgent.pa_check_autokill]
+                         if c[1]['callback'] == ProcessAgent.pa_check_autokill]
         self.assertEqual(len(list_autokill), 1)
 
     def test_pa_disable_autokill(self):
         """Test case to disable autokill
         """
         list_autokill = [c for c in self._pa._observable_jobs_update._callbacks
-                         if c['callback'] == ProcessAgent.pa_check_autokill]
+                         if c[1]['callback'] == ProcessAgent.pa_check_autokill]
         self.assertEqual(len(list_autokill), 0)
         self._pa.set_autokill(True)
         list_autokill = [c for c in self._pa._observable_jobs_update._callbacks
-                         if c['callback'] == ProcessAgent.pa_check_autokill]
+                         if c[1]['callback'] == ProcessAgent.pa_check_autokill]
         self.assertEqual(len(list_autokill), 1)
         self._pa.set_autokill(False)
         list_autokill = [c for c in self._pa._observable_jobs_update._callbacks
-                         if c['callback'] == ProcessAgent.pa_check_autokill]
+                         if c[1]['callback'] == ProcessAgent.pa_check_autokill]
         self.assertEqual(len(list_autokill), 0)
 
     def test_pa_autokill(self):
@@ -554,6 +554,273 @@ class TestProcessAgent(BaseTestCase):
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
         self.assertEqual(self._pa.is_shutdown(), True)
+        self.assertEqual(count_call, [1, 1])
+
+        del borgy_process_agent_start
+        del borgy_process_agent_stop
+
+    def test_pa_autokill_with_interrupted_jobs_to_rerun_without_autorerun(self):
+        """Autokill test case when there are interrupted jobs and without autorerun
+        """
+        count_call = [0, 0]
+
+        def mock_borgy_process_agent_start(s):
+            count_call[0] += 1
+
+        def mock_borgy_process_agent_stop(s, **kwargs):
+            count_call[1] += 1
+
+        mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.start'
+        borgy_process_agent_start = patch(mock_method, mock_borgy_process_agent_start).start()
+        mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.stop'
+        borgy_process_agent_stop = patch(mock_method, mock_borgy_process_agent_stop).start()
+
+        def get_no_job(pa):
+            return []
+
+        def get_stop_job(pa):
+            return None
+
+        self._pa.clear_jobs_in_creation()
+        self._pa.set_callback_jobs_provider(get_no_job)
+
+        self._pa.set_autokill(True)
+        self._pa.set_autorerun_interrupted_jobs(False)
+        self._pa.start()
+        self.assertEqual(count_call, [1, 0])
+
+        # Insert fake jobs in ProcessAgent
+        simple_job = MockJob(name='gsm1', state=State.SUCCEEDED.value).get_job()
+        simple_job2 = MockJob(name='gsm1', state=State.SUCCEEDED.value).get_job()
+        simple_job3 = MockJob(name='gsm3', state=State.RUNNING.value).get_job()
+        jobs = copy.deepcopy([simple_job, simple_job2, simple_job3])
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        self.assertEqual(count_call, [1, 0])
+        self.assertEqual(self._pa.is_shutdown(), False)
+
+        self._pa.set_callback_jobs_provider(get_stop_job)
+
+        # Governor call /v1/jobs to get jobs to schedule.
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        self.assertEqual(self._pa.is_shutdown(), True)
+        self.assertEqual(count_call, [1, 0])
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        self.assertIn('rerun', jobs_ops)
+        self.assertEqual(len(jobs_ops['submit']), 0)
+        self.assertEqual(len(jobs_ops['rerun']), 0)
+
+        # Update jobs in ProcessAgent
+        simple_job.state = State.SUCCEEDED.value
+        simple_job2.state = State.SUCCEEDED.value
+        simple_job3.state = State.INTERRUPTED.value
+        jobs = copy.deepcopy([simple_job, simple_job2, simple_job3])
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        # PA should be stopped
+        # Without autorerun, the INTERRUPTED has to be rerun by the user.
+        self.assertEqual(self._pa.is_shutdown(), True)
+        self.assertEqual(count_call, [1, 1])
+
+        del borgy_process_agent_start
+        del borgy_process_agent_stop
+
+    def test_pa_autokill_with_interrupted_jobs_to_rerun_and_autorerun(self):
+        """Autokill test case when there are interrupted jobs and autorerun
+        """
+        count_call = [0, 0]
+
+        def mock_borgy_process_agent_start(s):
+            count_call[0] += 1
+
+        def mock_borgy_process_agent_stop(s, **kwargs):
+            count_call[1] += 1
+
+        mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.start'
+        borgy_process_agent_start = patch(mock_method, mock_borgy_process_agent_start).start()
+        mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.stop'
+        borgy_process_agent_stop = patch(mock_method, mock_borgy_process_agent_stop).start()
+
+        def get_no_job(pa):
+            return []
+
+        def get_stop_job(pa):
+            return None
+
+        self._pa.clear_jobs_in_creation()
+        self._pa.set_callback_jobs_provider(get_no_job)
+
+        self._pa.set_autokill(True)
+        self._pa.start()
+        self.assertEqual(count_call, [1, 0])
+
+        # Insert fake jobs in ProcessAgent
+        simple_job = MockJob(name='gsm1', state=State.SUCCEEDED.value).get_job()
+        simple_job2 = MockJob(name='gsm1', state=State.SUCCEEDED.value).get_job()
+        simple_job3 = MockJob(name='gsm3', state=State.RUNNING.value).get_job()
+        jobs = copy.deepcopy([simple_job, simple_job2, simple_job3])
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        self.assertEqual(count_call, [1, 0])
+        self.assertEqual(self._pa.is_shutdown(), False)
+
+        self._pa.set_callback_jobs_provider(get_stop_job)
+
+        # Governor call /v1/jobs to get jobs to schedule.
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        self.assertEqual(self._pa.is_shutdown(), True)
+        self.assertEqual(count_call, [1, 0])
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        self.assertIn('rerun', jobs_ops)
+        self.assertEqual(len(jobs_ops['submit']), 0)
+        self.assertEqual(len(jobs_ops['rerun']), 0)
+
+        # Update jobs in ProcessAgent
+        simple_job.state = State.SUCCEEDED.value
+        simple_job2.state = State.SUCCEEDED.value
+        simple_job3.state = State.INTERRUPTED.value
+        jobs = copy.deepcopy([simple_job, simple_job2, simple_job3])
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        # PA should be always running
+        self.assertEqual(count_call, [1, 0])
+        self.assertEqual(self._pa.is_shutdown(), True)
+
+        # Governor call /v1/jobs to get jobs to schedule.
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        self.assertEqual(self._pa.is_shutdown(), True)
+        self.assertEqual(count_call, [1, 0])
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        self.assertIn('rerun', jobs_ops)
+        self.assertEqual(len(jobs_ops['submit']), 0)
+        self.assertEqual(len(jobs_ops['rerun']), 1)
+
+        # Update jobs in ProcessAgent
+        simple_job3.state = State.CANCELLED.value
+        simple_job3.runs.append(
+            {
+                'id': str(uuid.uuid4()),
+                'jobId': simple_job3.id,
+                'createdOn': get_now_isoformat(),
+                'state': State.CANCELLED.value,
+                'info': {},
+                'ip': '127.0.0.1',
+                'nodeName': 'local',
+            }
+        )
+        jobs = copy.deepcopy([simple_job3])
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        self.assertEqual(self._pa.is_shutdown(), True)
+        # PA should be stopped
+        self.assertEqual(count_call, [1, 1])
+
+        del borgy_process_agent_start
+        del borgy_process_agent_stop
+
+    def test_pa_autokill_with_interrupted_jobs_to_rerun_and_autorerun_order(self):
+        """Autokill test case when there are interrupted jobs and autorerun and try to update callbacks order
+        """
+        count_call = [0, 0]
+
+        def mock_borgy_process_agent_start(s):
+            count_call[0] += 1
+
+        def mock_borgy_process_agent_stop(s, **kwargs):
+            count_call[1] += 1
+
+        mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.start'
+        borgy_process_agent_start = patch(mock_method, mock_borgy_process_agent_start).start()
+        mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.stop'
+        borgy_process_agent_stop = patch(mock_method, mock_borgy_process_agent_stop).start()
+
+        def get_no_job(pa):
+            return []
+
+        def get_stop_job(pa):
+            return None
+
+        self._pa.clear_jobs_in_creation()
+        self._pa.set_callback_jobs_provider(get_no_job)
+
+        # Disable it to change the order of update subscribers
+        self._pa.set_autokill(False)
+        self._pa.set_autorerun_interrupted_jobs(False)
+        # Try to enable autokill before autorerun to check if autokill is always the last callback to be called
+        self._pa.set_autokill(True)
+        self._pa.set_autorerun_interrupted_jobs(True)
+        self._pa.start()
+
+        # Insert fake jobs in ProcessAgent
+        simple_job = MockJob(name='gsm1', state=State.SUCCEEDED.value).get_job()
+        simple_job2 = MockJob(name='gsm1', state=State.SUCCEEDED.value).get_job()
+        simple_job3 = MockJob(name='gsm3', state=State.RUNNING.value).get_job()
+        jobs = copy.deepcopy([simple_job, simple_job2, simple_job3])
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        self.assertEqual(count_call, [1, 0])
+        self.assertEqual(self._pa.is_shutdown(), False)
+
+        self._pa.set_callback_jobs_provider(get_stop_job)
+
+        # Governor call /v1/jobs to get jobs to schedule.
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        self.assertEqual(self._pa.is_shutdown(), True)
+        self.assertEqual(count_call, [1, 0])
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        self.assertIn('rerun', jobs_ops)
+        self.assertEqual(len(jobs_ops['submit']), 0)
+        self.assertEqual(len(jobs_ops['rerun']), 0)
+
+        # Update jobs in ProcessAgent
+        simple_job.state = State.SUCCEEDED.value
+        simple_job2.state = State.SUCCEEDED.value
+        simple_job3.state = State.INTERRUPTED.value
+        jobs = copy.deepcopy([simple_job, simple_job2, simple_job3])
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        # PA should be always running
+        # The autorerun and autokill call order is important for this case
+        self.assertEqual(count_call, [1, 0])
+        self.assertEqual(self._pa.is_shutdown(), True)
+
+        # Governor call /v1/jobs to get jobs to schedule.
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        self.assertEqual(self._pa.is_shutdown(), True)
+        self.assertEqual(count_call, [1, 0])
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        self.assertIn('rerun', jobs_ops)
+        self.assertEqual(len(jobs_ops['submit']), 0)
+        self.assertEqual(len(jobs_ops['rerun']), 1)
+
+        # Update jobs in ProcessAgent
+        simple_job3.state = State.CANCELLED.value
+        simple_job3.runs.append(
+            {
+                'id': str(uuid.uuid4()),
+                'jobId': simple_job3.id,
+                'createdOn': get_now_isoformat(),
+                'state': State.CANCELLED.value,
+                'info': {},
+                'ip': '127.0.0.1',
+                'nodeName': 'local',
+            }
+        )
+        jobs = copy.deepcopy([simple_job3])
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        self.assertEqual(self._pa.is_shutdown(), True)
+        # PA should be stopped
         self.assertEqual(count_call, [1, 1])
 
         del borgy_process_agent_start
