@@ -98,7 +98,6 @@ class TestFlowDocker(BaseTestCase):
             {
                 'events': [
                     {'name': 'job-3', 'state': State.CANCELLED.value},
-                    {'name': 'job-5', 'state': State.RUNNING.value},
                 ],
                 'actions': [
                     [stop_job, 'job-1']
@@ -106,6 +105,7 @@ class TestFlowDocker(BaseTestCase):
             },
             {
                 'events': [
+                    {'name': 'job-5', 'state': State.RUNNING.value},
                     {'name': 'job-1', 'state': State.SUCCEEDED.value},
                 ],
                 'actions': [

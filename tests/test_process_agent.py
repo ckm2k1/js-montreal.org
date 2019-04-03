@@ -1004,6 +1004,15 @@ class TestProcessAgent(BaseTestCase):
         self.assertEqual(job.state, State.INTERRUPTED.value)
 
         # Governor call /v1/jobs to get jobs to schedule and to rerun.
+        # Return [] en launch jobs preparation
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
+
+        # Wait end of jobs prepatation
+        self._pa._prepare_job_thread.join()
+
+        # Governor call /v1/jobs to get jobs to schedule and to rerun.
+        # Return 204
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 204, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
 
@@ -1211,7 +1220,7 @@ class TestProcessAgent(BaseTestCase):
         self.assertEqual(jobs[0].environment_vars, envs_final)
 
     def test_pa_prepare_job_to_create_after_jobs_push(self):
-        """Test case to check next jobs will be prepared in parallel after PUT call
+        """Test case to check next jobs will be NOT prepared in parallel after PUT call
         """
 
         def get_job(pa):
@@ -1233,20 +1242,28 @@ class TestProcessAgent(BaseTestCase):
         job = self._pa.get_jobs_by_name(simple_job3.name)[0]
         self.assertEqual(job.state, State.RUNNING.value)
 
-        # Wait end of jobs prepatation
-        self._pa._prepare_job_thread.join()
+        # No jobs prepatation: no thread
+        self.assertIsNone(self._pa._prepare_job_thread)
 
         # Check jobs in creation
         jobs_in_creation = self._pa.get_jobs_in_creation()
-        self.assertEqual(len(jobs_in_creation), 1)
+        self.assertEqual(len(jobs_in_creation), 0)
 
-        # Get jobs prepared after PUT
+        # Get jobs and launch jobs preparation
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
         jobs_ops = response.get_json()
         self.assertIn('submit', jobs_ops)
         jobs_to_submit = jobs_ops['submit']
-        self.assertEqual(len(jobs_to_submit), 1)
+        self.assertEqual(len(jobs_to_submit), 0)
+
+        # Wait end of jobs prepatation
+        self._pa._prepare_job_thread.join()
+
+        # Check job in creation in PA
+        # Should have 1 job in creation
+        jobs_in_creation = self._pa.get_jobs_in_creation()
+        self.assertEqual(len(jobs_in_creation), 1)
 
     def test_pa_slow_get_job_to_create(self):
         """Test case when the call to get_job_to_create is too long for the governor

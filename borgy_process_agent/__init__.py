@@ -130,20 +130,6 @@ class ProcessAgentBase():
 
         if jobs_updated:
             self._observable_jobs_update.dispatch(pa=self, jobs=jobs_updated)
-            # If there is no job left, start a thread to prepare new jobs
-            if self.is_ready() and not self._shutdown and not self._process_agent_jobs_in_creation:
-                acquired = self._prepare_job_thread_lock.acquire(blocking=False)
-                if acquired:
-                    try:
-                        if not (self._prepare_job_thread and self._prepare_job_thread.is_alive()):
-                            self._prepare_job_thread = threading.Thread(
-                                name='PrepareNewJobs',
-                                target=self._prepare_job_to_create
-                            )
-                            self._prepare_job_thread.setDaemon(True)
-                            self._prepare_job_thread.start()
-                    finally:
-                        self._prepare_job_thread_lock.release()
 
     def _insert(self):
         """Insert process agent in PA list
