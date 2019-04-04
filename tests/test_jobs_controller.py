@@ -122,7 +122,7 @@ class TestJobsController(BaseTestCase):
         del borgy_process_agent_stop
 
     def test_v1_jobs_get_stop_jobs_provider(self):
-        """Test case for jobs keep returning 204 when pa is shutdown
+        """Test case for jobs stop being in shutdown state
         """
         self._pa.set_callback_jobs_provider(lambda pa: None)
         # First call, prepare jobs in parallel (will define shutdown state)
@@ -138,11 +138,21 @@ class TestJobsController(BaseTestCase):
 
         # Second time, return shutdown state
         response = self.client.open('/v1/jobs', method='GET')
-        self.assertStatus(response, 204, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
 
+        # Wait end of jobs preparation
+        self._pa._prepare_job_thread.join()
+        self.assertEqual(self._pa.is_shutdown(), True)
+
+        # PA should remove shutdown state
         self._pa.set_callback_jobs_provider(lambda pa: [])
         response = self.client.open('/v1/jobs', method='GET')
-        self.assertStatus(response, 204, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Wait end of jobs prepatation
+        self._pa._prepare_job_thread.join()
+
+        self.assertEqual(self._pa.is_shutdown(), False)
 
     def test_v1_jobs_keep_last_creation(self):
         """Test case for jobs keep returning last creation list

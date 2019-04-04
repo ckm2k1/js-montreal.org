@@ -304,7 +304,10 @@ class ProcessAgentBase():
                 self._shutdown = True
                 # Dispatch an empty event to eventually call autokill
                 self._observable_jobs_update.dispatch(pa=self, jobs=[])
-                return None
+                return
+
+            # Disable shutdown if it is not None
+            self._shutdown = False
             if not isinstance(jobs, list) and not isinstance(jobs, dict):
                 raise TypeError("List or dict expected from jobs_provider")
             if isinstance(jobs, list) and not all(isinstance(j, dict) for j in jobs):
@@ -330,9 +333,6 @@ class ProcessAgentBase():
 
         :rtype: List[JobSpec]
         """
-        if self._shutdown:
-            return None
-
         if not self.is_ready():
             raise NotReadyError("Process agent is not ready yet!")
 

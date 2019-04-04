@@ -354,7 +354,7 @@ class TestProcessAgent(BaseTestCase):
 
         # Governor call /v1/jobs a second time to get jobs to schedule.
         response = self.client.open('/v1/jobs', method='GET')
-        self.assertStatus(response, 204, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
         self.assertEqual(self._pa.is_shutdown(), True)
         self.assertEqual(count_call, [1, 0])
 
@@ -435,7 +435,7 @@ class TestProcessAgent(BaseTestCase):
         # Update callback
         self._pa.set_callback_jobs_provider(get_stop_job)
         # Governor call /v1/jobs to get jobs to schedule
-        # First call will return an empty array and prepare jobs in parallel
+        # First call will return an empty array and prepare jobs in parallel. This thread will stop the PA
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
         jobs_ops = response.get_json()
@@ -446,11 +446,7 @@ class TestProcessAgent(BaseTestCase):
         # Wait end of jobs prepatation
         self._pa._prepare_job_thread.join()
 
-        # Second time, governor call /v1/jobs to get jobs to schedule
-        response = self.client.open('/v1/jobs', method='GET')
-        self.assertStatus(response, 204, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
         self.assertEqual(self._pa.is_shutdown(), True)
-        # self._pa.stop() should be call
         self.assertEqual(count_call, [1, 1])
 
         del borgy_process_agent_start
@@ -544,7 +540,7 @@ class TestProcessAgent(BaseTestCase):
 
         # Governor call /v1/jobs to get jobs to schedule.
         response = self.client.open('/v1/jobs', method='GET')
-        self.assertStatus(response, 204, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
         self.assertEqual(self._pa.is_shutdown(), True)
         self.assertEqual(count_call, [1, 0])
 
@@ -882,7 +878,7 @@ class TestProcessAgent(BaseTestCase):
 
         # Second time, Shutdown PA
         response = self.client.open('/v1/jobs', method='GET')
-        self.assertStatus(response, 204, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
         self.assertEqual(self._pa.is_shutdown(), True)
         self.assertEqual(len(self._pa.get_jobs()), 1)
 
@@ -925,7 +921,7 @@ class TestProcessAgent(BaseTestCase):
 
         # Governor call /v1/jobs to get jobs to schedule and to rerun.
         response = self.client.open('/v1/jobs', method='GET')
-        self.assertStatus(response, 200, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
         jobs_ops = response.get_json()
         self.assertIn('rerun', jobs_ops)
         jobs_to_rerun = jobs_ops['rerun']
@@ -1006,15 +1002,15 @@ class TestProcessAgent(BaseTestCase):
         # Governor call /v1/jobs to get jobs to schedule and to rerun.
         # Return [] en launch jobs preparation
         response = self.client.open('/v1/jobs', method='GET')
-        self.assertStatus(response, 200, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
 
         # Wait end of jobs prepatation
         self._pa._prepare_job_thread.join()
 
         # Governor call /v1/jobs to get jobs to schedule and to rerun.
-        # Return 204
+        # Return 200
         response = self.client.open('/v1/jobs', method='GET')
-        self.assertStatus(response, 204, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
 
     def test_pa_autorerun_interrupted_jobs_on_with_shutdown(self):
         """Test case when autorerun for interrupted jobs is enabled and PA is shutting down

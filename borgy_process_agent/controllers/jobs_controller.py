@@ -13,7 +13,7 @@ from borgy_process_agent_api_server.models.job import Job
 
 
 def v1_jobs_get():
-    """Get a new job, will return 204 if there is nothing to submit for the time being
+    """Get jobs to create, rerun or kill
 
     :rtype: JobsOps
     """
@@ -38,9 +38,6 @@ def v1_jobs_get():
 
             pa_state.append(True)
             jobs += j
-
-        if all(v is None for v in pa_state) and not jobs_rerun:
-            return 'No more jobs', 204
 
         return {
             'submit': jobs,

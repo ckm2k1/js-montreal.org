@@ -51,7 +51,7 @@ class TestHealthController(BaseTestCase):
 
         # Prepared jobs should define shutdown state.
         response = self.client.open('/v1/jobs', method='GET')
-        self.assertStatus(response, 204, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
         response = self.client.open('/v1/health', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
         health = HealthCheck.from_dict(response.get_json())
@@ -113,7 +113,7 @@ class TestHealthController(BaseTestCase):
 
         # Prepared jobs should define shutdown state.
         response = self.client.open('/v1/jobs', method='GET')
-        self.assertStatus(response, 204, 'Should return 204. Response body is : ' + response.data.decode('utf-8'))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
         response = self.client.open('/v1/health', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
         health = HealthCheck.from_dict(response.get_json())
