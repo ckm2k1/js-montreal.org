@@ -29,7 +29,7 @@ def main():
 
         # content of PA_TESTER_JOBS must be a single job_spec (dict) or a list of job_specs
         job_specs = get_json('PA_TESTER_JOBS',
-                             '{"reqCores": "1", "reqGpus": "0", "image": "ubuntu:18.04", "command": ["sleep", "60"]}',
+                             '{"reqCores": "1", "reqGpus": "0", "image": "ubuntu:18.04", "command": ["sleep", "5"]}',
                              [type(dict()), type(list())])
 
         if isinstance(job_specs, dict):
