@@ -45,6 +45,8 @@ class ProcessAgentMode(Enum):
 
 process_agents = []
 
+process_agents_max_jobs_to_create = 100
+
 
 class ProcessAgentBase():
     def __init__(self, pa_job_id: str = None, pa_user: str = None,
@@ -314,6 +316,11 @@ class ProcessAgentBase():
                 raise TypeError("Dict expected in list elements from jobs_provider")
             elif isinstance(jobs, dict):
                 jobs = [jobs]
+
+            if len(jobs) > process_agents_max_jobs_to_create:
+                raise ValueError("Jobs to create can't contain more than {} jobs"
+                                 .format(process_agents_max_jobs_to_create))
+
             # Add default fields
             jobs = [self.get_default_job(j) for j in jobs]
             # Set job specIndex

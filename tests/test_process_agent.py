@@ -1499,6 +1499,17 @@ class TestProcessAgent(BaseTestCase):
         jobs_to_submit = jobs_ops['submit']
         self.assertEqual(len(jobs_to_submit), 1)
 
+    def test_pa_create_too_much_jobs(self):
+        """Test case when the callback to create jobs return too much jobs
+        """
+
+        def get_150_jobs(pa):
+            return [{'name': 'my-job'+str(i)} for i in range(150)]
+
+        self._pa.set_callback_jobs_provider(get_150_jobs)
+        self._pa._prepare_job_to_create()
+        self.assertIsInstance(self._pa._prepare_job_error, ValueError)
+
 
 if __name__ == '__main__':
     import unittest
