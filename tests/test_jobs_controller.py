@@ -469,6 +469,214 @@ class TestJobsController(BaseTestCase):
         job = Job.from_dict(jobs[0])
         self.assertEqual(job.name, 'gsm')
 
+    def test_v1_status_get_limit_sort_offset(self):
+        """Test case for v1_status_get with limit, offset and sort
+        """
+        # Insert fake jobs in ProcessAgent
+
+        prefix_id = "2c5a1103-c63f-401d-b95f-fd73b8141"
+        name_idx = 0
+        for i in range(10):
+            j = MockJob(id="{}{:0>3}".format(prefix_id, 100-i),
+                        name="{:0>3}".format(name_idx),
+                        createdOn="2018-10-02 {:0>2}:{:0>2}:59Z".format(10 + (i // 60), i % 60)).get_job()
+            self._pa._process_agent_jobs[j.id] = j
+            name_idx += 1
+        # Same date, different ID
+        for i in range(10):
+            j = MockJob(id="{}{:0>3}".format(prefix_id, 200-i),
+                        name="{:0>3}".format(name_idx),
+                        createdOn="2018-10-02 {:0>2}:{:0>2}:59Z".format(10 + (i // 60), i % 60)).get_job()
+            self._pa._process_agent_jobs[j.id] = j
+            name_idx += 1
+
+        response = self.client.open('/v1/status', method='GET')
+        self.assert200(response, 'Response body is : ' + response.data.decode('utf-8'))
+        jobs = response.get_json()
+        self.assertEqual(len(jobs), 20)
+
+        # Default sort by createdOn:asc
+        response = self.client.open('/v1/status?limit=5', method='GET')
+        self.assert200(response, 'Response body is : ' + response.data.decode('utf-8'))
+        jobs = response.get_json()
+        ids = [j['id'][-3:] for j in jobs]
+        self.assertEqual(ids, [
+            "100",
+            "200",
+            "099",
+            "199",
+            "098"
+        ])
+
+        # Limit to 5 jobs
+        response = self.client.open('/v1/status?limit=5&sort=name', method='GET')
+        self.assert200(response, 'Response body is : ' + response.data.decode('utf-8'))
+        jobs = response.get_json()
+        ids = [j['id'][-3:] for j in jobs]
+        self.assertEqual(ids, [
+            "100",
+            "099",
+            "098",
+            "097",
+            "096"
+        ])
+
+        # Limit to 5 jobs with an offset of 5
+        response = self.client.open('/v1/status?limit=5&offset=5&sort=name', method='GET')
+        self.assert200(response, 'Response body is : ' + response.data.decode('utf-8'))
+        jobs = response.get_json()
+        ids = [j['id'][-3:] for j in jobs]
+        self.assertEqual(ids, [
+            "095",
+            "094",
+            "093",
+            "092",
+            "091"
+        ])
+
+        # Limit to 5 jobs with an offset of -5
+        response = self.client.open('/v1/status?offset=-5&limit=5&sort=name', method='GET')
+        self.assert200(response, 'Response body is : ' + response.data.decode('utf-8'))
+        jobs = response.get_json()
+        ids = [j['id'][-3:] for j in jobs]
+        self.assertEqual(ids, [
+            "195",
+            "194",
+            "193",
+            "192",
+            "191"
+        ])
+
+        # Jobs with an offset of -5
+        response = self.client.open('/v1/status?offset=-5&sort=name', method='GET')
+        self.assert200(response, 'Response body is : ' + response.data.decode('utf-8'))
+        jobs = response.get_json()
+        ids = [j['id'][-3:] for j in jobs]
+        self.assertEqual(ids, [
+            "195",
+            "194",
+            "193",
+            "192",
+            "191"
+        ])
+
+        # Jobs with an offset of -5 and a limit of -2
+        response = self.client.open('/v1/status?offset=-5&limit=-2&sort=name', method='GET')
+        self.assert200(response, 'Response body is : ' + response.data.decode('utf-8'))
+        jobs = response.get_json()
+        ids = [j['id'][-3:] for j in jobs]
+        self.assertEqual(ids, [
+            "195",
+            "194",
+            "193"
+        ])
+
+        # Jobs with an offset of 15 and a limit of -2
+        response = self.client.open('/v1/status?offset=15&limit=-2&sort=name', method='GET')
+        self.assert200(response, 'Response body is : ' + response.data.decode('utf-8'))
+        jobs = response.get_json()
+        ids = [j['id'][-3:] for j in jobs]
+        self.assertEqual(ids, [
+            "195",
+            "194",
+            "193"
+        ])
+
+        # Sort by id ascending and limit to 5 jobs
+        response = self.client.open('/v1/status?limit=5&sort=id', method='GET')
+        self.assert200(response, 'Response body is : ' + response.data.decode('utf-8'))
+        jobs = response.get_json()
+        ids = [j['id'][-3:] for j in jobs]
+        self.assertEqual(ids, [
+            "091",
+            "092",
+            "093",
+            "094",
+            "095"
+        ])
+
+        # Sort by id ascending and limit to 5 jobs
+        response = self.client.open('/v1/status?limit=5&sort=id:asc', method='GET')
+        self.assert200(response, 'Response body is : ' + response.data.decode('utf-8'))
+        jobs = response.get_json()
+        ids = [j['id'][-3:] for j in jobs]
+        self.assertEqual(ids, [
+            "091",
+            "092",
+            "093",
+            "094",
+            "095"
+        ])
+
+        # Sort by id ascending and limit to 5 jobs with an offset of 5
+        response = self.client.open('/v1/status?limit=5&sort=id:asc&offset=5', method='GET')
+        self.assert200(response, 'Response body is : ' + response.data.decode('utf-8'))
+        jobs = response.get_json()
+        ids = [j['id'][-3:] for j in jobs]
+        self.assertEqual(ids, [
+            "096",
+            "097",
+            "098",
+            "099",
+            "100"
+        ])
+
+        # Sort by id ascending and limit to 5 jobs with an offset of -5
+        response = self.client.open('/v1/status?limit=5&sort=id:asc&offset=-5', method='GET')
+        self.assert200(response, 'Response body is : ' + response.data.decode('utf-8'))
+        jobs = response.get_json()
+        ids = [j['id'][-3:] for j in jobs]
+        self.assertEqual(ids, [
+            "196",
+            "197",
+            "198",
+            "199",
+            "200"
+        ])
+
+        # Sort by id ascending and limit to 5 jobs
+        response = self.client.open('/v1/status?limit=5&sort=id:desc', method='GET')
+        self.assert200(response, 'Response body is : ' + response.data.decode('utf-8'))
+        jobs = response.get_json()
+        ids = [j['id'][-3:] for j in jobs]
+        self.assertEqual(ids, [
+            "200",
+            "199",
+            "198",
+            "197",
+            "196"
+        ])
+
+        # Sort by id ascending and limit to 5 jobs with an offset of 5
+        response = self.client.open('/v1/status?limit=5&sort=id:desc&offset=5', method='GET')
+        self.assert200(response, 'Response body is : ' + response.data.decode('utf-8'))
+        jobs = response.get_json()
+        ids = [j['id'][-3:] for j in jobs]
+        self.assertEqual(ids, [
+            "195",
+            "194",
+            "193",
+            "192",
+            "191"
+        ])
+
+        # Sort by created_on date and id and limit to 5 jobs
+        response = self.client.open('/v1/status?limit=5&sort=createdOn:desc&sort=id:asc', method='GET')
+        self.assert200(response, 'Response body is : ' + response.data.decode('utf-8'))
+        jobs = response.get_json()
+        ids = [j['id'][-3:] for j in jobs]
+        self.assertEqual(ids, [
+            "091",
+            "191",
+            "092",
+            "192",
+            "093"
+        ])
+
+        # Sort by an unknow key will return status code 400
+        response = self.client.open('/v1/status?sort=unknow', method='GET')
+        self.assert400(response, 'Response body is : ' + response.data.decode('utf-8'))
+
 
 if __name__ == '__main__':
     import unittest
