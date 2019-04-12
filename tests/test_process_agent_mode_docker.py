@@ -31,29 +31,31 @@ class TestProcessAgentDocker(BaseTestCaseDocker):
             jobs[i] = self._pa._create_job(j)
         self._pa._push_jobs(jobs)
 
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         # Should not call job_service
-        job, is_updated = self._pa.kill_job('random')
-        self.assertEqual(job, None)
+        is_updated = self._pa.kill_job('random')
         self.assertEqual(is_updated, False)
 
         # Should not call job_service
-        job, is_updated = self._pa.kill_job(jobs[0].id)
-        self.assertEqual(jobs[0].name, job.name)
+        is_updated = self._pa.kill_job(jobs[0].id)
         self.assertEqual(is_updated, True)
 
         # Should call job_service
-        job, is_updated = self._pa.kill_job(jobs[1].id)
-        self.assertEqual(jobs[1].name, job.name)
+        is_updated = self._pa.kill_job(jobs[1].id)
         self.assertEqual(is_updated, True)
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         # Test if state is directly updated to CANCELLING
-        self.assertEqual(job.state, State.CANCELLING.value)
         job = self._pa.get_job_by_id(jobs[1].id)
         self.assertEqual(job.state, State.CANCELLING.value)
 
         # Call a second time should not call job service
-        job, is_updated = self._pa.kill_job(jobs[1].id)
+        is_updated = self._pa.kill_job(jobs[1].id)
         self.assertEqual(is_updated, False)
-        self.assertEqual(job.state, State.CANCELLING.value)
         job = self._pa.get_job_by_id(jobs[1].id)
         self.assertEqual(job.state, State.CANCELLING.value)
 
@@ -68,43 +70,43 @@ class TestProcessAgentDocker(BaseTestCaseDocker):
         for i, j in enumerate(jobs):
             jobs[i] = self._pa._create_job(j)
         self._pa._push_jobs(copy.deepcopy(jobs))
+        self._pa.join_pushed_jobs()
 
         self._pa._update_job_state(jobs[1].id, State.QUEUED)
         self._pa._push_jobs(copy.deepcopy([jobs[1]]))
+        self._pa.join_pushed_jobs()
         self._pa._update_job_state(jobs[1].id, State.CANCELLING)
         self._pa._push_jobs(copy.deepcopy([jobs[1]]))
+        self._pa.join_pushed_jobs()
         self._pa._update_job_state(jobs[1].id, State.CANCELLED)
         self._pa._push_jobs(copy.deepcopy([jobs[1]]))
+        self._pa.join_pushed_jobs()
 
         # Should not add job_id in rerun list
-        job, is_updated = self._pa.rerun_job('random')
-        self.assertEqual(job, None)
+        is_updated = self._pa.rerun_job('random')
         self.assertEqual(is_updated, False)
 
         # Should not add job_id in rerun list
-        job, is_updated = self._pa.rerun_job(jobs[0].id)
-        self.assertEqual(jobs[0].name, job.name)
+        is_updated = self._pa.rerun_job(jobs[0].id)
         self.assertEqual(is_updated, False)
 
         # Should add job_id in rerun list
-        job, is_updated = self._pa.rerun_job(jobs[1].id)
-        self.assertEqual(jobs[1].name, job.name)
+        is_updated = self._pa.rerun_job(jobs[1].id)
         self.assertEqual(is_updated, True)
         # Test if job is added in job list to rerun
         self.assertEqual(self._pa.get_jobs_to_rerun(), [jobs[1].id])
-        self.assertEqual(job.state, State.CANCELLED.value)
         job = self._pa.get_job_by_id(jobs[1].id)
         self.assertEqual(job.state, State.CANCELLED.value)
 
         # Call a second time should not add job_id in rerun list
-        job, is_updated = self._pa.rerun_job(jobs[1].id)
-        self.assertEqual(jobs[1].name, job.name)
+        is_updated = self._pa.rerun_job(jobs[1].id)
         self.assertEqual(is_updated, False)
         self.assertEqual(self._pa.get_jobs_to_rerun(), [jobs[1].id])
 
         # Update and push update
         self._pa._update_job_state(jobs[1].id, State.QUEUING)
         self._pa._push_jobs([self._pa._governor_jobs[jobs[1].id]['job']])
+        self._pa.join_pushed_jobs()
 
         # Test if job is removed from job list to rerun
         self.assertEqual(self._pa.get_jobs_to_rerun(), [])
@@ -112,10 +114,8 @@ class TestProcessAgentDocker(BaseTestCaseDocker):
         self.assertEqual(job.state, State.QUEUING.value)
 
         # Call a second time should not add job in rerun list
-        job, is_updated = self._pa.rerun_job(jobs[1].id)
-        self.assertEqual(job.id, jobs[1].id)
+        is_updated = self._pa.rerun_job(jobs[1].id)
         self.assertEqual(is_updated, False)
-        self.assertEqual(job.state, State.QUEUING.value)
         job = self._pa.get_job_by_id(jobs[1].id)
         self.assertEqual(job.state, State.QUEUING.value)
 

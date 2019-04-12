@@ -33,6 +33,9 @@ class TestProcessAgent(BaseTestCase):
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
 
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         job = self._pa.get_job_by_id(simple_job.id)
         self.assertIsNotNone(job)
         self.assertEqual(job.name, 'gsm')
@@ -48,6 +51,9 @@ class TestProcessAgent(BaseTestCase):
         jobs = [simple_job]
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
 
         job = self._pa.get_jobs_by_name(simple_job.name)
         self.assertEqual(len(job), 1)
@@ -66,6 +72,9 @@ class TestProcessAgent(BaseTestCase):
         jobs = [simple_job, simple_job2, simple_job3]
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
 
         jobs = self._pa.get_jobs_by_state(State.QUEUED.value)
         self.assertEqual(len(jobs), 2)
@@ -90,43 +99,57 @@ class TestProcessAgent(BaseTestCase):
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
 
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
+        print(self._pa._process_agent_jobs)
+
         # Mock
         count_call = [0]
 
         def mock_jobs_delete(s, job_id, user):
             count_call[0] += 1
             simple_job2.state = State.CANCELLING.value
+            print(simple_job2.state)
             return simple_job2
 
         mock_method = 'borgy_job_service_client.api.jobs_api.JobsApi.v1_jobs_job_id_delete'
         job_service_call_delete = patch(mock_method, mock_jobs_delete).start()
 
         # Should not call job_service
-        job, is_updated = self._pa.kill_job('random')
-        self.assertEqual(job, None)
+        is_updated = self._pa.kill_job('random')
         self.assertEqual(is_updated, False)
         self.assertEqual(count_call[0], 0)
 
         # Should not call job_service
-        job, is_updated = self._pa.kill_job(simple_job.id)
-        self.assertEqual(job, simple_job)
+        is_updated = self._pa.kill_job(simple_job.id)
         self.assertEqual(is_updated, False)
         self.assertEqual(count_call[0], 0)
 
         # Should call job_service
-        job, is_updated = self._pa.kill_job(simple_job2.id)
-        self.assertEqual(job.id, simple_job2.id)
+        is_updated = self._pa.kill_job(simple_job2.id)
         self.assertEqual(is_updated, True)
-        # Test if state is directly updated to CANCELLING
-        self.assertEqual(job.state, State.CANCELLING.value)
+        self.assertEqual(count_call[0], 1)
+
+        # Governor call PUT /v1/jobs to update state with the cancelling job
+        job = copy.deepcopy(simple_job2)
+        job.state = State.CANCELLING.value
+        jobs_sent = [job]
+        response = self.client.open('/v1/jobs', method='PUT',
+                                    content_type='application/json', data=json.dumps(jobs_sent))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        # New job state is pushed in PA
+        self._pa.join_pushed_jobs()
+
+        # Test if state is updated to CANCELLING
         job = self._pa.get_job_by_id(simple_job2.id)
         self.assertEqual(job.state, State.CANCELLING.value)
 
         # Call a second time should not call job service
-        job, is_updated = self._pa.kill_job(simple_job2.id)
-        self.assertEqual(job.id, simple_job2.id)
+        is_updated = self._pa.kill_job(simple_job2.id)
         self.assertEqual(is_updated, False)
-        self.assertEqual(job.state, State.CANCELLING.value)
         job = self._pa.get_job_by_id(simple_job2.id)
         self.assertEqual(job.state, State.CANCELLING.value)
         # Test if job service was called only one time
@@ -151,29 +174,27 @@ class TestProcessAgent(BaseTestCase):
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
 
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         # Should not add job_id in rerun list
-        job, is_updated = self._pa.rerun_job('random')
-        self.assertEqual(job, None)
+        is_updated = self._pa.rerun_job('random')
         self.assertEqual(is_updated, False)
 
         # Should not add job_id in rerun list
-        job, is_updated = self._pa.rerun_job(simple_job.id)
-        self.assertEqual(job, simple_job)
+        is_updated = self._pa.rerun_job(simple_job.id)
         self.assertEqual(is_updated, False)
 
         # Should add job_id in rerun list
-        job, is_updated = self._pa.rerun_job(simple_job2.id)
-        self.assertEqual(job.id, simple_job2.id)
+        is_updated = self._pa.rerun_job(simple_job2.id)
         self.assertEqual(is_updated, True)
         # Test if job is added in job list to rerun
         self.assertEqual(self._pa.get_jobs_to_rerun(), [simple_job2.id])
-        self.assertEqual(job.state, State.FAILED.value)
         job = self._pa.get_job_by_id(simple_job2.id)
         self.assertEqual(job.state, State.FAILED.value)
 
         # Call a second time should add job_id in rerun list
-        job, is_updated = self._pa.rerun_job(simple_job2.id)
-        self.assertEqual(job.id, simple_job2.id)
+        is_updated = self._pa.rerun_job(simple_job2.id)
         self.assertEqual(is_updated, False)
         self.assertEqual(self._pa.get_jobs_to_rerun(), [simple_job2.id])
 
@@ -201,13 +222,16 @@ class TestProcessAgent(BaseTestCase):
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
 
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         # Test if job is removed from job list to rerun
         self.assertEqual(self._pa.get_jobs_to_rerun(), [])
         job = self._pa.get_job_by_id(simple_job2.id)
         self.assertEqual(job.state, State.QUEUING.value)
 
         # Call a second time should not add job in rerun list
-        job, is_updated = self._pa.rerun_job(simple_job2.id)
+        is_updated = self._pa.rerun_job(simple_job2.id)
         self.assertEqual(job.id, simple_job2.id)
         self.assertEqual(is_updated, False)
         self.assertEqual(job.state, State.QUEUING.value)
@@ -224,6 +248,9 @@ class TestProcessAgent(BaseTestCase):
         jobs = [simple_job, simple_job2, simple_job3]
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
 
         def get_new_jobs(pa):
             jobs = pa.get_jobs()
@@ -322,6 +349,9 @@ class TestProcessAgent(BaseTestCase):
         jobs = [simple_job, simple_job2, simple_job3]
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
         self.assertEqual(count_call, [1, 0])
         self.assertEqual(self._pa.is_shutdown(), False)
 
@@ -332,6 +362,9 @@ class TestProcessAgent(BaseTestCase):
         jobs = [simple_job, simple_job2, simple_job3]
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
         self.assertEqual(count_call, [1, 0])
         self.assertEqual(self._pa.is_shutdown(), False)
 
@@ -364,6 +397,10 @@ class TestProcessAgent(BaseTestCase):
         jobs = [simple_job, simple_job2]
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         # self._pa.stop() should be call
         self.assertEqual(count_call, [1, 1])
 
@@ -406,6 +443,10 @@ class TestProcessAgent(BaseTestCase):
         jobs = [simple_job, simple_job2, simple_job3]
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         self.assertEqual(count_call, [1, 0])
         self.assertEqual(self._pa.is_shutdown(), False)
 
@@ -416,6 +457,10 @@ class TestProcessAgent(BaseTestCase):
         jobs = [simple_job, simple_job2, simple_job3]
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         self.assertEqual(count_call, [1, 0])
         self.assertEqual(self._pa.is_shutdown(), False)
 
@@ -430,6 +475,10 @@ class TestProcessAgent(BaseTestCase):
         jobs = [simple_job, simple_job2]
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         self.assertEqual(count_call, [1, 0])
 
         # Update callback
@@ -488,6 +537,10 @@ class TestProcessAgent(BaseTestCase):
         jobs = copy.deepcopy([simple_job, simple_job2, simple_job3])
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         self.assertEqual(count_call, [1, 0])
         self.assertEqual(self._pa.is_shutdown(), False)
 
@@ -498,6 +551,10 @@ class TestProcessAgent(BaseTestCase):
         jobs = copy.deepcopy([simple_job, simple_job2, simple_job3])
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         self.assertEqual(count_call, [1, 0])
         self.assertEqual(self._pa.is_shutdown(), False)
 
@@ -505,8 +562,8 @@ class TestProcessAgent(BaseTestCase):
         self._pa.set_callback_jobs_provider(get_stop_job)
 
         # Rerun last job
-        j, updated = self._pa.rerun_job(simple_job3.id)
-        self.assertEqual(updated, True)
+        is_updated = self._pa.rerun_job(simple_job3.id)
+        self.assertEqual(is_updated, True)
 
         # Governor call /v1/jobs to get jobs to schedule.
         response = self.client.open('/v1/jobs', method='GET')
@@ -535,6 +592,10 @@ class TestProcessAgent(BaseTestCase):
         jobs = copy.deepcopy([simple_job3])
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         self.assertEqual(self._pa.is_shutdown(), True)
         self.assertEqual(count_call, [1, 0])
 
@@ -549,6 +610,10 @@ class TestProcessAgent(BaseTestCase):
         jobs = copy.deepcopy([simple_job3])
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         self.assertEqual(self._pa.is_shutdown(), True)
         self.assertEqual(count_call, [1, 1])
 
@@ -592,6 +657,10 @@ class TestProcessAgent(BaseTestCase):
         jobs = copy.deepcopy([simple_job, simple_job2, simple_job3])
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         self.assertEqual(count_call, [1, 0])
         self.assertEqual(self._pa.is_shutdown(), False)
 
@@ -615,6 +684,10 @@ class TestProcessAgent(BaseTestCase):
         jobs = copy.deepcopy([simple_job, simple_job2, simple_job3])
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         # PA should be stopped
         # Without autorerun, the INTERRUPTED has to be rerun by the user.
         self.assertEqual(self._pa.is_shutdown(), True)
@@ -659,6 +732,10 @@ class TestProcessAgent(BaseTestCase):
         jobs = copy.deepcopy([simple_job, simple_job2, simple_job3])
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         self.assertEqual(count_call, [1, 0])
         self.assertEqual(self._pa.is_shutdown(), False)
 
@@ -682,6 +759,10 @@ class TestProcessAgent(BaseTestCase):
         jobs = copy.deepcopy([simple_job, simple_job2, simple_job3])
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         # PA should be always running
         self.assertEqual(count_call, [1, 0])
         self.assertEqual(self._pa.is_shutdown(), True)
@@ -713,6 +794,10 @@ class TestProcessAgent(BaseTestCase):
         jobs = copy.deepcopy([simple_job3])
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         self.assertEqual(self._pa.is_shutdown(), True)
         # PA should be stopped
         self.assertEqual(count_call, [1, 1])
@@ -760,6 +845,10 @@ class TestProcessAgent(BaseTestCase):
         jobs = copy.deepcopy([simple_job, simple_job2, simple_job3])
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         self.assertEqual(count_call, [1, 0])
         self.assertEqual(self._pa.is_shutdown(), False)
 
@@ -783,6 +872,10 @@ class TestProcessAgent(BaseTestCase):
         jobs = copy.deepcopy([simple_job, simple_job2, simple_job3])
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         # PA should be always running
         # The autorerun and autokill call order is important for this case
         self.assertEqual(count_call, [1, 0])
@@ -815,6 +908,10 @@ class TestProcessAgent(BaseTestCase):
         jobs = copy.deepcopy([simple_job3])
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         self.assertEqual(self._pa.is_shutdown(), True)
         # PA should be stopped
         self.assertEqual(count_call, [1, 1])
@@ -859,6 +956,10 @@ class TestProcessAgent(BaseTestCase):
         jobs = [simple_job]
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         self.assertEqual(self._pa.is_shutdown(), False)
         self.assertEqual(len(self._pa.get_jobs()), 1)
 
@@ -906,6 +1007,10 @@ class TestProcessAgent(BaseTestCase):
         jobs = [simple_job, simple_job2, simple_job3]
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         job = self._pa.get_jobs_by_name(simple_job3.name)[0]
         self.assertEqual(job.state, State.RUNNING.value)
 
@@ -916,6 +1021,10 @@ class TestProcessAgent(BaseTestCase):
         jobs = [simple_job, simple_job2, simple_job3]
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         job = self._pa.get_jobs_by_name(simple_job3.name)[0]
         self.assertEqual(job.state, State.INTERRUPTED.value)
 
@@ -946,6 +1055,10 @@ class TestProcessAgent(BaseTestCase):
         jobs = [simple_job, simple_job2, simple_job3]
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         job = self._pa.get_jobs_by_name(simple_job3.name)[0]
         self.assertEqual(job.state, State.RUNNING.value)
 
@@ -956,6 +1069,10 @@ class TestProcessAgent(BaseTestCase):
         jobs = [simple_job, simple_job2, simple_job3]
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         job = self._pa.get_jobs_by_name(simple_job3.name)[0]
         self.assertEqual(job.state, State.INTERRUPTED.value)
 
@@ -986,6 +1103,10 @@ class TestProcessAgent(BaseTestCase):
         jobs = [simple_job, simple_job2, simple_job3]
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         job = self._pa.get_jobs_by_name(simple_job3.name)[0]
         self.assertEqual(job.state, State.RUNNING.value)
 
@@ -996,6 +1117,10 @@ class TestProcessAgent(BaseTestCase):
         jobs = [simple_job, simple_job2, simple_job3]
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         job = self._pa.get_jobs_by_name(simple_job3.name)[0]
         self.assertEqual(job.state, State.INTERRUPTED.value)
 
@@ -1031,6 +1156,10 @@ class TestProcessAgent(BaseTestCase):
         jobs = [simple_job, simple_job2, simple_job3]
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         job = self._pa.get_jobs_by_name(simple_job3.name)[0]
         self.assertEqual(job.state, State.RUNNING.value)
 
@@ -1041,6 +1170,10 @@ class TestProcessAgent(BaseTestCase):
         jobs = [simple_job, simple_job2, simple_job3]
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         job = self._pa.get_jobs_by_name(simple_job3.name)[0]
         self.assertEqual(job.state, State.INTERRUPTED.value)
 
@@ -1143,6 +1276,9 @@ class TestProcessAgent(BaseTestCase):
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
 
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         job = self._pa.get_job_by_id(simple_job.id)
         self.assertIsNotNone(job)
         self.assertEqual(job.name, 'same-job-name')
@@ -1209,6 +1345,9 @@ class TestProcessAgent(BaseTestCase):
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
 
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         job = self._pa.get_job_by_id(simple_job.id)
         self.assertIsNotNone(job)
         self.assertEqual(job.name, 'same-job-name')
@@ -1235,6 +1374,10 @@ class TestProcessAgent(BaseTestCase):
         jobs = [simple_job, simple_job2, simple_job3]
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         job = self._pa.get_jobs_by_name(simple_job3.name)[0]
         self.assertEqual(job.state, State.RUNNING.value)
 
@@ -1280,6 +1423,10 @@ class TestProcessAgent(BaseTestCase):
         jobs = [simple_job, simple_job2, simple_job3]
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         job = self._pa.get_jobs_by_name(simple_job3.name)[0]
         self.assertEqual(job.state, State.RUNNING.value)
 
@@ -1338,6 +1485,10 @@ class TestProcessAgent(BaseTestCase):
         jobs = [simple_job, simple_job2, simple_job3]
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         job = self._pa.get_jobs_by_name(simple_job3.name)[0]
         self.assertEqual(job.state, State.RUNNING.value)
 
@@ -1376,6 +1527,9 @@ class TestProcessAgent(BaseTestCase):
         jobs = [simple_job4]
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
 
         # Start a thread to get jobs
         # Should get an empty array and don't prepare jobs in parallel (already running)
@@ -1430,6 +1584,10 @@ class TestProcessAgent(BaseTestCase):
         jobs = [simple_job, simple_job2, simple_job3]
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         job = self._pa.get_jobs_by_name(simple_job3.name)[0]
         self.assertEqual(job.state, State.RUNNING.value)
 
@@ -1470,6 +1628,9 @@ class TestProcessAgent(BaseTestCase):
         response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
 
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         # Should get an empty array and don't prepare jobs in parallel (already running)
         # Stress with 100 threads
         threads = []
@@ -1498,6 +1659,96 @@ class TestProcessAgent(BaseTestCase):
         self.assertIn('submit', jobs_ops)
         jobs_to_submit = jobs_ops['submit']
         self.assertEqual(len(jobs_to_submit), 1)
+
+    def test_pa_parallel_push_jobs_update_stress(self):
+        """Test case when there are parallel calls of PUT /v1/jobs
+        """
+        count_call = [0, 0]
+
+        def get_slow_job(pa):
+            time.sleep(1)
+            count_call[0] += 1
+            return {
+                'name': 'my-job'
+            }
+
+        def get_job_update_slow(event):
+            time.sleep(0.2)
+            count_call[0] += 1
+            return {
+                'name': 'my-job'
+            }
+
+        self._pa.clear_jobs_in_creation()
+
+        # Set callback for new jobs
+        self._pa.set_callback_jobs_provider(get_slow_job)
+
+        # Insert fake jobs in ProcessAgent
+        simple_job = MockJob(name='gsm1', state=State.QUEUED.value).get_job()
+        simple_job2 = MockJob(name='gsm1', state=State.QUEUED.value).get_job()
+        simple_job3 = MockJob(name='gsm3', state=State.RUNNING.value).get_job()
+        simple_job4 = MockJob(name='gsm4', state=State.RUNNING.value).get_job()
+        jobs = [simple_job, simple_job2, simple_job3]
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
+        job = self._pa.get_jobs_by_name(simple_job3.name)[0]
+        self.assertEqual(job.state, State.RUNNING.value)
+
+        governor_jobs_push = json.dumps([simple_job, simple_job2, simple_job3, simple_job4])
+
+        def governor_push_job():
+            response = self.client.open('/v1/jobs', method='PUT', content_type='application/json',
+                                        data=governor_jobs_push)
+            self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        # Set callback for jobs update
+        self._pa.subscribe_jobs_update(get_job_update_slow)
+
+        # Stress call with 100 threads
+        threads = []
+        for _ in range(100):
+            thread = threading.Thread(target=governor_push_job)
+            thread.setDaemon(True)
+            thread.start()
+            threads.append(thread)
+
+        for thread in threads:
+            thread.join()
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
+        # The callback should be called just one time because there is no update after the first update
+        self.assertEqual(count_call[0], 1)
+
+        # Create a new job for each PUT call
+        def governor_push_job_new(jobs_json):
+            response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=jobs_json)
+            self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        count_call = [0, 0]
+
+        # Stress call with 100 threads
+        threads = []
+        for _ in range(100):
+            jobs_json = json.dumps([MockJob(name='gsm4', state=State.RUNNING.value).get_job()])
+            thread = threading.Thread(target=governor_push_job_new, args=(jobs_json,))
+            thread.setDaemon(True)
+            thread.start()
+            threads.append(thread)
+
+        for thread in threads:
+            thread.join()
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
+        # The callback should be called just 100 times
+        self.assertEqual(count_call[0], 100)
 
     def test_pa_create_too_much_jobs(self):
         """Test case when the callback to create jobs return too much jobs

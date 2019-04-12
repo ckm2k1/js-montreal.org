@@ -27,7 +27,7 @@ def convert_duration(value):
 configs = {
     'job_service_url': {
         'description': 'Job service URL',
-        'default': 'https://job-service.borgy.elementai.lan',
+        'default': 'https://job-service.borgy.elementai.net',
         'type': str
     },
     'job_service_certificate': {

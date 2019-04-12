@@ -105,6 +105,9 @@ class TestFlow(BaseTestCase):
                                     content_type='application/json', data=json.dumps(jobs_sent))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
 
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         # Governor call /v1/jobs to launch jobs preparation
         response = self.client.open('/v1/jobs', method='GET')
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
@@ -131,6 +134,9 @@ class TestFlow(BaseTestCase):
         response = self.client.open('/v1/jobs', method='PUT',
                                     content_type='application/json', data=json.dumps(jobs_sent))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
 
         # Check job created
         jobs_created = self._pa.get_jobs()
@@ -269,6 +275,9 @@ class TestFlow(BaseTestCase):
                                     content_type='application/json', data=json.dumps(jobs_sent))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
 
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
         # Check job in creation in PA
         # Should still have 2 jobs in creation
         jobs_in_creation = self._pa.get_jobs_in_creation()
@@ -288,6 +297,9 @@ class TestFlow(BaseTestCase):
         response = self.client.open('/v1/jobs', method='PUT',
                                     content_type='application/json', data=json.dumps(jobs_sent))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
 
         # Check job in creation in PA
         # Should still have 2 jobs in creation
@@ -321,6 +333,9 @@ class TestFlow(BaseTestCase):
         response = self.client.open('/v1/jobs', method='PUT',
                                     content_type='application/json', data=json.dumps(jobs_sent))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
 
         # Governor call /v1/jobs to launch jobs preparation
         response = self.client.open('/v1/jobs', method='GET')
@@ -381,6 +396,9 @@ class TestFlow(BaseTestCase):
         response = self.client.open('/v1/jobs', method='PUT',
                                     content_type='application/json', data=json.dumps(jobs_sent))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
 
         # Check job in creation in PA
         jobs_in_creation = self._pa.get_jobs_in_creation()

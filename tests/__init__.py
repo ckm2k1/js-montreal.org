@@ -33,6 +33,11 @@ class BaseTestCase(TestCase):
     def tearDown(self):
         if self._pa:
             self._pa._remove()
+            # Stop thread
+            self._pa._push_job_thread_running = False
+            self._pa._push_job_queue.put([])
+            if self._pa._push_job_thread:
+                self._pa._push_job_thread.join()
         self._pa = None
 
 
@@ -54,4 +59,9 @@ class BaseTestCaseDocker(BaseTestCase):
         if self._pa:
             self._pa._run_job = self._run_job_fct
             self._pa._remove()
+            # Stop thread
+            self._pa._push_job_thread_running = False
+            self._pa._push_job_queue.put([])
+            if self._pa._push_job_thread:
+                self._pa._push_job_thread.join()
         self._pa = None

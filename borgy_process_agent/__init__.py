@@ -8,15 +8,21 @@
 import os
 import copy
 import uuid
+import time
+import queue
+import logging
 import threading
 from enum import Enum
-from typing import List, Dict, Tuple
+from typing import List, Dict
 from dictdiffer import diff
 from borgy_process_agent.event import Observable, CallbackOrder
 from borgy_process_agent.job import Restart, State
 from borgy_process_agent.exceptions import NotReadyError
 from borgy_process_agent_api_server.models.job import Job
 from borgy_process_agent_api_server.models.job_spec import JobSpec
+
+
+logger = logging.getLogger(__name__)
 
 
 class JobEventState(Enum):
@@ -63,6 +69,9 @@ class ProcessAgentBase():
         self._prepare_job_thread = None
         self._prepare_job_thread_lock = threading.Lock()
         self._prepare_job_error = None
+        self._push_job_thread = None
+        self._push_job_thread_running = False
+        self._push_job_queue = queue.Queue()
         self.reset()
         self.set_autokill(autokill)
         self.set_autorerun_interrupted_jobs(autorerun_interrupted_jobs)
@@ -73,8 +82,34 @@ class ProcessAgentBase():
         self._pa_job_id = pa_job_id
         self._pa_user = pa_user
 
+    def join_pushed_jobs(self):
+        """Wait until all pushed jobs are processed
+
+        :rtype: NoReturn
+        """
+        self._push_job_queue.join()
+
     def _push_jobs(self, jobs: List[Job]):
-        """Call when PUT API receives jobs
+        """Call when PUT API receives jobs. Put jobs in the queue
+
+        :rtype: NoReturn
+        """
+        self._push_job_queue.put(jobs)
+
+    def _push_jobs_thread(self):
+        """Get jobs from the queue and process the jobs
+
+        :rtype: NoReturn
+        """
+        while self._push_job_thread_running:
+            jobs = self._push_job_queue.get()
+            start_time = time.time()
+            self._push_jobs_process(jobs)
+            self._push_job_queue.task_done()
+            logger.info("Process {} jobs for jobs update in {} seconds".format(len(jobs), time.time() - start_time))
+
+    def _push_jobs_process(self, jobs: List[Job]):
+        """Process a jobs update and call the user callback
 
         :rtype: NoReturn
         """
@@ -157,10 +192,26 @@ class ProcessAgentBase():
         # Wait end of thread
         if self._prepare_job_thread:
             self._prepare_job_thread.join()
+        # Wait for end of empty queue
+        self._push_job_queue.join()
+        # Stop thread
+        self._push_job_thread_running = False
+        self._push_job_queue.put([])
+        if self._push_job_thread:
+            self._push_job_thread.join()
         self._process_agent_jobs = {}
         self._process_agent_jobs_in_creation = []
         self._process_agent_jobs_to_rerun = []
         self._shutdown = False
+
+        # Start push jobs thread
+        self._push_job_thread_running = True
+        self._push_job_thread = threading.Thread(
+            name='PushUpdateJobs',
+            target=self._push_jobs_thread
+        )
+        self._push_job_thread.setDaemon(True)
+        self._push_job_thread.start()
 
     def is_shutdown(self) -> bool:
         """Return if process agent is shutdown or not
@@ -226,17 +277,17 @@ class ProcessAgentBase():
             self._observable_jobs_update.unsubscribe(callback=self.__class__.pa_autorerun_interrupted_jobs)
         self._autorerun_interrupted_jobs = autorerun_interrupted_jobs
 
-    def kill_job(self, job_id: str) -> Tuple[Job, bool]:
+    def kill_job(self, job_id: str) -> bool:
         """Kill a job
 
-        :rtype: Tuple[Job, bool]
+        :rtype: bool
         """
         raise NotImplementedError
 
-    def rerun_job(self, job_id: str) -> Tuple[Job, bool]:
+    def rerun_job(self, job_id: str) -> bool:
         """Rerun a job
 
-        :rtype: Tuple[Job, bool]
+        :rtype: bool
         """
         if job_id in self._process_agent_jobs:
             is_updated = False
@@ -245,8 +296,8 @@ class ProcessAgentBase():
                                                               State.INTERRUPTED.value]):
                 self._process_agent_jobs_to_rerun.append(job_id)
                 is_updated = True
-            return (copy.deepcopy(self._process_agent_jobs[job_id]), is_updated)
-        return (None, False)
+            return is_updated
+        return False
 
     def clear_jobs_in_creation(self):
         """Clear all jobs in creation by the process agent

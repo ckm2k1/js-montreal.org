@@ -6,19 +6,16 @@
 #
 
 import os
-import copy
 import connexion
 import logging
 import threading
 import pkg_resources
-from typing import Tuple
 from werkzeug.serving import make_server
 from borgy_process_agent import controllers, ProcessAgentBase
 from borgy_process_agent.job import State
 from borgy_process_agent.config import Config
 import borgy_process_agent_api_server
 from borgy_process_agent_api_server import encoder
-from borgy_process_agent_api_server.models.job import Job
 from borgy_process_agent.exceptions import EnvironmentVarError
 import borgy_job_service_client
 
@@ -66,7 +63,8 @@ class ProcessAgent(ProcessAgentBase):
         """
         config = borgy_job_service_client.Configuration()
         config.host = Config.get('job_service_url')
-        config.ssl_ca_cert = Config.get('job_service_certificate')
+        if Config.get('job_service_certificate'):
+            config.ssl_ca_cert = Config.get('job_service_certificate')
 
         api_client = borgy_job_service_client.ApiClient(config)
         api_client.set_default_header('X-User', self._pa_user)
@@ -75,20 +73,19 @@ class ProcessAgent(ProcessAgentBase):
         # create an instance of the API class
         self._job_service = borgy_job_service_client.JobsApi(api_client)
 
-    def kill_job(self, job_id: str) -> Tuple[Job, bool]:
+    def kill_job(self, job_id: str) -> bool:
         """Kill a job
 
-        :rtype: Tuple[Job, bool]
+        :rtype: bool
         """
         if job_id in self._process_agent_jobs:
             is_updated = False
             if self._process_agent_jobs[job_id].state in [State.QUEUING.value, State.QUEUED.value, State.RUNNING.value]:
-                job = self._job_service.v1_jobs_job_id_delete(job_id, self._pa_user)
+                self._job_service.v1_jobs_job_id_delete(job_id, self._pa_user)
                 # Push job event
-                self._push_jobs([job])
                 is_updated = True
-            return (copy.deepcopy(self._process_agent_jobs[job_id]), is_updated)
-        return (None, False)
+            return is_updated
+        return False
 
     def get_app(self):
         """Return current server application

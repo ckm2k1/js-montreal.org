@@ -12,7 +12,7 @@ import uuid
 import docker
 import logging
 import pkg_resources
-from typing import Tuple, List
+from typing import List
 from dateutil.parser import parse
 from borgy_process_agent import ProcessAgentBase, process_agents
 from borgy_process_agent.controllers import jobs_controller
@@ -48,18 +48,18 @@ class ProcessAgent(ProcessAgentBase):
         self._running = False
         self._governor_jobs = {}
 
-    def kill_job(self, job_id: str) -> Tuple[Job, bool]:
+    def kill_job(self, job_id: str) -> bool:
         """Kill a job
 
-        :rtype: Tuple[Job, bool]
+        :rtype: bool
         """
         if job_id in self._process_agent_jobs:
             is_updated = False
             if self._process_agent_jobs[job_id].state in [State.QUEUING.value, State.QUEUED.value, State.RUNNING.value]:
                 self._update_job_state(job_id, State.CANCELLING)
                 is_updated = True
-            return (copy.deepcopy(self._process_agent_jobs[job_id]), is_updated)
-        return (None, False)
+            return is_updated
+        return False
 
     def _run_job(self, job: Job):
         """Run a job in docker
@@ -306,6 +306,10 @@ class ProcessAgent(ProcessAgentBase):
             logger.debug(' - Push update to PA')
             for pa in process_agents:
                 pa._push_jobs(updated_jobs)
+
+            # Wait for push processing
+            for pa in process_agents:
+                pa.join_pushed_jobs()
 
             logger.debug("--- run loop: %s seconds ---" % (timer() - start_time))
             # Check if self._running was updated after push update

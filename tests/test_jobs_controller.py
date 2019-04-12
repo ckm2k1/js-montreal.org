@@ -274,6 +274,9 @@ class TestJobsController(BaseTestCase):
             self.assertStatus(response, 200, 'Should return 200. Value is: ' + str(v)
                               + '. Response body is : ' + response.data.decode('utf-8'))
 
+            # Waiting for end of processing jobs update
+            self._pa.join_pushed_jobs()
+
             # Check job in creation in PA
             jobs_in_creation = self._pa.get_jobs_in_creation()
             self.assertEqual(len(jobs_in_creation), 0)
@@ -302,6 +305,9 @@ class TestJobsController(BaseTestCase):
                                         content_type='application/json', data=json.dumps(v['jobs']))
             self.assertStatus(response, 200, 'Should return 200. Value is: ' + str(v)
                               + '. Response body is : ' + response.data.decode('utf-8'))
+
+            # Waiting for end of processing jobs update
+            self._pa.join_pushed_jobs()
 
             # Check job in creation in PA
             jobs_in_creation = self._pa.get_jobs_in_creation()
@@ -442,6 +448,9 @@ class TestJobsController(BaseTestCase):
                                         content_type='application/json', data=json.dumps(v['jobs']))
             self.assertStatus(response, 200, 'Should return 200. Value is: ' + str(v)
                               + '. Response body is : ' + response.data.decode('utf-8'))
+
+            # Waiting for end of processing jobs update
+            self._pa.join_pushed_jobs()
 
         # Check if callback was called
         for v in values:
