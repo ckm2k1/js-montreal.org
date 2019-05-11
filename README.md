@@ -20,7 +20,7 @@ pip install git+ssh://git@github.com/ElementAI/borgy-process-agent.git
 You can also install from the distribution server:
 
 ```sh
-pip install http://distrib.borgy.elementai.lan/python/borgy-process-agent/borgy-process-agent-[version].tar.gz
+pip install https://distrib.borgy.elementai.net/python/borgy-process-agent/borgy-process-agent-[version].tar.gz
 ```
 
 Finally, it is also possible to install from our private pypi repository:
@@ -31,7 +31,7 @@ pip install --extra-index-url https://pypi.elmt.io/repo/eai-core borgy-process-a
 
 ### Setuptools
 
-Install via [Setuptools](http://pypi.python.org/pypi/setuptools).
+Install via [Setuptools](https://pypi.python.org/pypi/setuptools).
 
 ```sh
 python setup.py install --user
@@ -41,7 +41,7 @@ python setup.py install --user
 ### Getting Started
 
 
-Please follow the [installation procedure](#installation--usage) and then here is a python 3 example:
+Please follow the [installation procedure](#installation--usage) and then here is a Python 3 example:
 
 ```python
 from borgy_process_agent import ProcessAgent
@@ -132,4 +132,4 @@ Once merged in the dev branch - after appropriate pull request process - a tag w
 release the package through drone. Release notes will be added to the repo on github,
 a source distribution will be made available in:
 
-http://distrib.borgy.elementai.lan/python/borgy-process-agent/
+https://distrib.borgy.elementai.net/python/borgy-process-agent/
