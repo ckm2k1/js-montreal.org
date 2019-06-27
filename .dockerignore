@@ -2,6 +2,7 @@
 !borgy-job-service.crt
 !borgy_process_agent
 !requirements.txt
+!requirements-tests.txt
 !setup.py
 !setup.cfg
 !runner_borgy.py
