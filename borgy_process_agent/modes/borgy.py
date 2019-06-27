@@ -136,7 +136,7 @@ class ProcessAgent(ProcessAgentBase):
         :rtype: FlaskApp
         """
         controllers.overwrite_api_controllers()
-        app = connexion.App(__name__, specification_dir=borgy_process_agent_api_server.__path__[0]+'/swagger/')
+        app = connexion.App(__name__, specification_dir=borgy_process_agent_api_server.__path__[0]+'/openapi/')
         app.app.json_encoder = encoder.JSONEncoder
-        app.add_api('swagger.yaml', arguments={'title': 'Borgy Process Agent'})
+        app.add_api('openapi.yaml', arguments={'title': 'Borgy Process Agent'})
         return app
