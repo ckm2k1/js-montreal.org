@@ -66,6 +66,48 @@ process_agent.subscribe_jobs_update(jobs_update)
 process_agent.start()
 ```
 
+Another example to launch a set of jobs:
+```python
+process_agent = ProcessAgent()
+
+jobs_idx = 0
+jobs_to_submit = [
+{'command': ['sleep', 5]},
+{'command': ['sleep', 5]},
+{'command': ['sleep', 5]},
+{'command': ['sleep', 5]}
+]
+
+def return_new_jobs(pa):
+    global jobs_idx, jobs_to_submit
+    specs = jobs_to_submit[jobs_idx:jobs_idx+100]
+    if not specs:
+        return None
+    jobs_idx = jobs_idx + 100
+    return specs
+
+process_agent.set_callback_jobs_provider(return_new_jobs)
+
+def jobs_update(event):
+    print(event.pa)
+    print(event.jobs)
+
+process_agent.subscribe_jobs_update(jobs_update)
+
+process_agent.start()
+```
+
+### Submit the process agent job
+
+To submit the job, you need to use the `pa` subset of commands in borgy CLI.
+
+Example to submit a jobs:
+
+```sh
+borgy pa submit -e PA_TESTER_CHILDREN=3 -i images.borgy.elementai.net/borgy/process-agent:1.16.0
+```
+
+
 ## Contributing
 
 ### Install requirements
