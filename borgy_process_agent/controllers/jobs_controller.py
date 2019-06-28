@@ -22,9 +22,11 @@ def v1_jobs_get():
     try:
         jobs = []
         jobs_rerun = []
+        jobs_kill = []
         pa_state = []
         for pa in process_agents:
             jobs_rerun += pa.get_jobs_to_rerun()
+            jobs_kill += pa.get_jobs_to_kill()
             try:
                 j = pa.get_job_to_create()
             except NotReadyError:
@@ -44,7 +46,7 @@ def v1_jobs_get():
         return {
             'submit': jobs,
             'rerun': jobs_rerun,
-            'kill': [],
+            'kill': jobs_kill,
         }
     except Exception as e:
         print('|'+str(e)+'|')

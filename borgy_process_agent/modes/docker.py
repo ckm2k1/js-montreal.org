@@ -48,19 +48,6 @@ class ProcessAgent(ProcessAgentBase):
         self._running = False
         self._governor_jobs = {}
 
-    def kill_job(self, job_id: str) -> bool:
-        """Kill a job
-
-        :rtype: bool
-        """
-        if job_id in self._process_agent_jobs:
-            is_updated = False
-            if self._process_agent_jobs[job_id].state in [State.QUEUING.value, State.QUEUED.value, State.RUNNING.value]:
-                self._update_job_state(job_id, State.CANCELLING)
-                is_updated = True
-            return is_updated
-        return False
-
     def _run_job(self, job: Job):
         """Run a job in docker
 
@@ -119,6 +106,11 @@ class ProcessAgent(ProcessAgentBase):
 
     def _rerun_job(self, job_id: str) -> Job:
         job = self._update_job_state(job_id, State.QUEUING)
+        logger.debug('\t\tRerun job {} (name: {})'.format(job_id, job['job'].name))
+        return job
+
+    def _kill_job(self, job_id: str) -> Job:
+        job = self._update_job_state(job_id, State.CANCELLING)
         logger.debug('\t\tRerun job {} (name: {})'.format(job_id, job['job'].name))
         return job
 
@@ -289,6 +281,9 @@ class ProcessAgent(ProcessAgentBase):
                 if isinstance(jobs['rerun'], list):
                     for j in jobs['rerun']:
                         self._rerun_job(j)
+                if isinstance(jobs['kill'], list):
+                    for j in jobs['kill']:
+                        self._kill_job(j)
 
             # Start queuing jobs
             logger.debug(' - Start queuing jobs')

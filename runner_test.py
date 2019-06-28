@@ -1,4 +1,5 @@
 from borgy_process_agent import ProcessAgent, ProcessAgentMode
+from borgy_process_agent.job import State
 import json
 import logging
 import os
@@ -17,6 +18,12 @@ def main():
         iteration = 0
 
         n_children = int(os.getenv('PA_TESTER_CHILDREN', '0'))
+
+        job_idx_to_kill = int(os.getenv('PA_TESTER_CHILD_IDX_TO_KILL', '-1'))
+        job_id_to_kill = None
+
+        if job_idx_to_kill > -1:
+            assert job_idx_to_kill < n_children, "PA_TESTER_CHILD_IDX_TO_KILL needs a value between 0 and (PA_TESTER_CHILDREN - 1)"  # noqa
 
         def get_json(name, default_value, types):
             json_str = os.getenv(name, default_value)
@@ -90,18 +97,29 @@ def main():
             return None
 
         def jobs_update(event):
-            nonlocal iteration
+            nonlocal iteration, job_idx_to_kill, job_id_to_kill
             iteration += 1
 
             logger.info("{}: job update".format(iteration))
             for job in event['jobs']:
                 logger.info("{}: {} {}".format(iteration, job['job'].id, job['job'].state))
 
+            jobs = list(event.pa.get_jobs().values())
+            if (job_idx_to_kill > -1 and job_idx_to_kill < len(jobs)
+               and jobs[job_idx_to_kill].state == State.RUNNING.value):
+                job_id_to_kill = jobs[job_idx_to_kill].id
+                logger.info("{}: job update - Kill job {}".format(iteration, job_id_to_kill))
+                event.pa.kill_job(job_id_to_kill)
+                job_idx_to_kill = -1
+
         process_agent = ProcessAgent(mode=ProcessAgentMode.AUTO)
         process_agent.set_callback_jobs_provider(return_new_jobs)
         process_agent.subscribe_jobs_update(jobs_update)
         logger.info("Starting")
         process_agent.start()
+
+        if job_id_to_kill:
+            assert process_agent.get_job_by_id(job_id_to_kill).state in [State.CANCELLING.value, State.CANCELLED.value], "This job {} should be cancelled or in cancelling state".format(job_id_to_kill)  # noqa
 
     except Exception as e:
         logger.exception(e)

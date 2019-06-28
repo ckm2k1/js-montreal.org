@@ -102,59 +102,66 @@ class TestProcessAgent(BaseTestCase):
         # Waiting for end of processing jobs update
         self._pa.join_pushed_jobs()
 
-        print(self._pa._process_agent_jobs)
-
-        # Mock
-        count_call = [0]
-
-        def mock_jobs_delete(s, job_id, user):
-            count_call[0] += 1
-            simple_job2.state = State.CANCELLING.value
-            print(simple_job2.state)
-            return simple_job2
-
-        mock_method = 'borgy_job_service_client.api.jobs_api.JobsApi.v1_jobs_job_id_delete'
-        job_service_call_delete = patch(mock_method, mock_jobs_delete).start()
-
-        # Should not call job_service
+        # Should not add job in jobs to kill
         is_updated = self._pa.kill_job('random')
         self.assertEqual(is_updated, False)
-        self.assertEqual(count_call[0], 0)
 
-        # Should not call job_service
+        # Should not add job in jobs to kill
         is_updated = self._pa.kill_job(simple_job.id)
         self.assertEqual(is_updated, False)
-        self.assertEqual(count_call[0], 0)
 
-        # Should call job_service
+        # Should add job in jobs to kill
         is_updated = self._pa.kill_job(simple_job2.id)
         self.assertEqual(is_updated, True)
-        self.assertEqual(count_call[0], 1)
+        self.assertEqual(self._pa.get_jobs_to_kill(), [simple_job2.id])
 
-        # Governor call PUT /v1/jobs to update state with the cancelling job
-        job = copy.deepcopy(simple_job2)
-        job.state = State.CANCELLING.value
-        jobs_sent = [job]
-        response = self.client.open('/v1/jobs', method='PUT',
-                                    content_type='application/json', data=json.dumps(jobs_sent))
+        # Should not add job in jobs to kill
+        is_updated = self._pa.kill_job(simple_job2.id)
+        self.assertEqual(is_updated, False)
+        self.assertEqual(self._pa.get_jobs_to_kill(), [simple_job2.id])
+
+        # Check kill list provided by PA
+        self._pa.set_callback_jobs_provider(lambda pa: [])
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('kill', jobs_ops)
+        jobs_to_kill = jobs_ops['kill']
+        self.assertEqual(jobs_to_kill, [simple_job2.id])
+
+        # Governor push job updated
+        simple_job2.state = State.CANCELLING.value
+        simple_job2.runs.append({
+            'id': str(uuid.uuid4()),
+            'jobId': simple_job2.id,
+            'createdOn': get_now_isoformat(),
+            'state': State.CANCELLING.value,
+            'info': {},
+            'ip': '127.0.0.1',
+            'nodeName': 'local',
+        })
+        jobs = [simple_job2]
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json', data=json.dumps(jobs))
         self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
 
         # Waiting for end of processing jobs update
         # New job state is pushed in PA
         self._pa.join_pushed_jobs()
 
+        # Check if it is removed from jobs to kill
+        self.assertEqual(self._pa.get_jobs_to_kill(), [])
+
         # Test if state is updated to CANCELLING
         job = self._pa.get_job_by_id(simple_job2.id)
         self.assertEqual(job.state, State.CANCELLING.value)
 
-        # Call a second time should not call job service
+        # Call a second time should not add job in kill list
         is_updated = self._pa.kill_job(simple_job2.id)
+        self.assertEqual(job.id, simple_job2.id)
         self.assertEqual(is_updated, False)
+        self.assertEqual(job.state, State.CANCELLING.value)
         job = self._pa.get_job_by_id(simple_job2.id)
         self.assertEqual(job.state, State.CANCELLING.value)
-        # Test if job service was called only one time
-        self.assertEqual(count_call[0], 1)
-        del job_service_call_delete
 
     def test_pa_set_callbacks_are_callable(self):
         with self.assertRaises(ValueError):

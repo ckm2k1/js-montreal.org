@@ -24,18 +24,7 @@ def convert_duration(value):
     return (date - date_now).total_seconds()
 
 
-configs = {
-    'job_service_url': {
-        'description': 'Job service URL',
-        'default': 'https://job-service.borgy.elementai.net',
-        'type': str
-    },
-    'job_service_certificate': {
-        'description': 'Job service certificates',
-        'default': './borgy-job-service.crt',
-        'type': str
-    }
-}
+configs = {}
 
 
 class Config:

@@ -23,37 +23,46 @@ class TestProcessAgentDocker(BaseTestCaseDocker):
         """Test case for kill_job
         """
         # Insert fake jobs in ProcessAgent
-        simple_job_spec = MockJob(name='gsm1', state=State.INTERRUPTED.value).get_job()
+        simple_job_spec = MockJob(name='gsm1', state=State.QUEUING.value).get_job()
         simple_job_spec2 = MockJob(name='gsm2', state=State.INTERRUPTED.value).get_job()
-        simple_job_spec3 = MockJob(name='gsm3', state=State.INTERRUPTED.value).get_job()
+        simple_job_spec3 = MockJob(name='gsm3', state=State.QUEUING.value).get_job()
         jobs = [simple_job_spec, simple_job_spec2, simple_job_spec3]
         for i, j in enumerate(jobs):
             jobs[i] = self._pa._create_job(j)
-        self._pa._push_jobs(jobs)
+        self._pa._push_jobs(copy.deepcopy(jobs))
 
         # Waiting for end of processing jobs update
         self._pa.join_pushed_jobs()
 
-        # Should not call job_service
+        # Start jobs[1]
+        self._pa._update_job_state(jobs[1].id, State.QUEUING)
+        self._pa._update_job_state(jobs[1].id, State.QUEUED)
+        self._pa._update_job_state(jobs[1].id, State.RUNNING)
+        self._pa._push_jobs(copy.deepcopy([jobs[1]]))
+        self._pa.join_pushed_jobs()
+
+        # Should not add job in jobs to kill
         is_updated = self._pa.kill_job('random')
         self.assertEqual(is_updated, False)
 
-        # Should not call job_service
+        # Should not add job in jobs to kill
         is_updated = self._pa.kill_job(jobs[0].id)
         self.assertEqual(is_updated, True)
 
-        # Should call job_service
+        # Should not add job in jobs to kill
         is_updated = self._pa.kill_job(jobs[1].id)
         self.assertEqual(is_updated, True)
 
         # Waiting for end of processing jobs update
+        self._pa._update_job_state(jobs[1].id, State.CANCELLING)
+        self._pa._push_jobs(copy.deepcopy([jobs[1]]))
         self._pa.join_pushed_jobs()
 
         # Test if state is directly updated to CANCELLING
         job = self._pa.get_job_by_id(jobs[1].id)
         self.assertEqual(job.state, State.CANCELLING.value)
 
-        # Call a second time should not call job service
+        # Call a second time should not add job in jobs to kill
         is_updated = self._pa.kill_job(jobs[1].id)
         self.assertEqual(is_updated, False)
         job = self._pa.get_job_by_id(jobs[1].id)

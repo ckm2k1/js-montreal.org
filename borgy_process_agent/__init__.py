@@ -130,6 +130,9 @@ class ProcessAgentBase():
                     # There is a new run
                     if len(j.runs) == nb_runs:
                         self._process_agent_jobs_to_rerun.remove(j.id)
+                # Check for kill
+                elif j.id in self._process_agent_jobs_to_kill:
+                    self._process_agent_jobs_to_kill.remove(j.id)
 
                 ddiff = list(diff(self._process_agent_jobs[j.id].to_dict(), j.to_dict()))
                 if ddiff:
@@ -202,6 +205,7 @@ class ProcessAgentBase():
         self._process_agent_jobs = {}
         self._process_agent_jobs_in_creation = []
         self._process_agent_jobs_to_rerun = []
+        self._process_agent_jobs_to_kill = []
         self._shutdown = False
 
         # Start push jobs thread
@@ -282,21 +286,23 @@ class ProcessAgentBase():
 
         :rtype: bool
         """
-        raise NotImplementedError
+        if (job_id in self._process_agent_jobs and job_id not in self._process_agent_jobs_to_kill
+            and self._process_agent_jobs[job_id].state in [State.QUEUING.value, State.QUEUED.value,
+                                                           State.RUNNING.value]):
+            self._process_agent_jobs_to_kill.append(job_id)
+            return True
+        return False
 
     def rerun_job(self, job_id: str) -> bool:
         """Rerun a job
 
         :rtype: bool
         """
-        if job_id in self._process_agent_jobs:
-            is_updated = False
-            if (job_id not in self._process_agent_jobs_to_rerun
-               and self._process_agent_jobs[job_id].state in [State.FAILED.value, State.CANCELLED.value,
-                                                              State.INTERRUPTED.value]):
-                self._process_agent_jobs_to_rerun.append(job_id)
-                is_updated = True
-            return is_updated
+        if (job_id in self._process_agent_jobs and job_id not in self._process_agent_jobs_to_rerun
+            and self._process_agent_jobs[job_id].state in [State.FAILED.value, State.CANCELLED.value,
+                                                           State.INTERRUPTED.value]):
+            self._process_agent_jobs_to_rerun.append(job_id)
+            return True
         return False
 
     def clear_jobs_in_creation(self):
@@ -342,6 +348,13 @@ class ProcessAgentBase():
         :rtype: List[str]
         """
         return copy.deepcopy(self._process_agent_jobs_to_rerun)
+
+    def get_jobs_to_kill(self) -> List[str]:
+        """Get all jobs to kill by the process agent and waiting for a return of the governor
+
+        :rtype: List[str]
+        """
+        return copy.deepcopy(self._process_agent_jobs_to_kill)
 
     def get_jobs_in_creation(self) -> List[JobSpec]:
         """Get all jobs in creation by the process agent and waiting for a return of the governor
