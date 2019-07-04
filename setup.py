@@ -13,7 +13,9 @@ install_requires = [
     "python-dateutil>=2.6.0,<3.0.0",
     "dictdiffer>=0.7.1,<1.0.0",
     "docker>=3.4.0,<4.0.0",
-    "connexion[swagger-ui]>=2.0.0,<3.0.0"
+    "connexion[swagger-ui]>=2.0.0,<3.0.0",
+    "blinker>=1.4,<2.0.0",
+    "prometheus_client>=0.6.0,<1.0.0"
 ]
 
 setup(

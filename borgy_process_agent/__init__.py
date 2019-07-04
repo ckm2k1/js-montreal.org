@@ -61,6 +61,7 @@ class ProcessAgentBase():
 
         :rtype: NoReturn
         """
+        self._mode = None
         self._autokill = None
         self._autorerun_interrupted_jobs = None
         self._options = kwargs
@@ -81,6 +82,13 @@ class ProcessAgentBase():
 
         self._pa_job_id = pa_job_id
         self._pa_user = pa_user
+
+    def get_mode(self):
+        """Return the current mode
+
+        :rtype: ProcessAgentMode
+        """
+        return self._mode
 
     def join_pushed_jobs(self):
         """Wait until all pushed jobs are processed
@@ -518,4 +526,6 @@ class ProcessAgent(ProcessAgentBase):
                 mode = ProcessAgentMode.BORGY
         pa_module = __import__(__name__ + '.modes.' + mode.value, fromlist=['ProcessAgent'])
 
-        return pa_module.ProcessAgent(**kwargs)
+        instance = pa_module.ProcessAgent(**kwargs)
+        instance._mode = mode
+        return instance

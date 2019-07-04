@@ -15,6 +15,7 @@ from borgy_process_agent import controllers, ProcessAgentBase
 import borgy_process_agent_api_server
 from borgy_process_agent_api_server import encoder
 from borgy_process_agent.exceptions import EnvironmentVarError
+from borgy_process_agent.metrics import expose_metrics
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +48,7 @@ class ProcessAgent(ProcessAgentBase):
 
         super().__init__(pa_job_id=pa_job_id, pa_user=pa_user, **kwargs)
 
-        self._server_app = None
+        self._server_app = kwargs.get('app', None)
         self._server_srv = None
         self._stop_error = None
 
@@ -64,8 +65,11 @@ class ProcessAgent(ProcessAgentBase):
         :rtype: NoReturn
         """
         self._insert()
-        self._server_app = ProcessAgent.get_server_app()
+        if self._server_app is None:
+            self._server_app = ProcessAgent.get_server_app()
         self._server_srv = make_server('0.0.0.0', self._options.get('port', 8666), self._server_app)
+        if self._options.get('metrics_enabled', True):
+            expose_metrics(self, self._options.get('metrics_port', 9080))
         logger.info('Start Process Agent server')
         self._server_srv.serve_forever()
         self._remove()

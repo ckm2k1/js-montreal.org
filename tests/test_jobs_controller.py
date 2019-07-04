@@ -81,7 +81,8 @@ class TestJobsController(BaseTestCase):
             self.assertIsInstance(kwargs.get('error'), TypeError)
 
         mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.stop'
-        borgy_process_agent_stop = patch(mock_method, mock_borgy_process_agent_stop).start()
+        borgy_process_agent_stop = patch(mock_method, mock_borgy_process_agent_stop)
+        borgy_process_agent_stop.start()
 
         for i, v in enumerate(failing_values):
             self._pa.set_callback_jobs_provider(lambda pa: v['value'])
@@ -119,6 +120,7 @@ class TestJobsController(BaseTestCase):
             self.assertStatus(response, 200, 'Should return 200. Value is: ' + str(v)
                               + '. Response body is : ' + response.data.decode('utf-8'))
 
+        borgy_process_agent_stop.stop()
         del borgy_process_agent_stop
 
     def test_v1_jobs_get_stop_jobs_provider(self):
