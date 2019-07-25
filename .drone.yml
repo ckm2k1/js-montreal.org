@@ -1,9 +1,9 @@
-pipeline:
-
+clone:
   clone:
     image: plugins/git
     tags: true
 
+pipeline:
   test:
     image: images.borgy.elementai.lan/borgy/plugin-pythons-testenv:latest
     secrets: [ COVERALLS_REPO_TOKEN, TWINE_USERNAME, TWINE_PASSWORD ]
