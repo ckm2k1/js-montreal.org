@@ -3,6 +3,10 @@
 [![Drone](https://drone.elementai.com:8443/api/badges/ElementAI/borgy-process-agent/status.svg?branch=dev)](https://drone.elementai.com:8443/ElementAI/borgy-process-agent)
 [![Coverage Status](https://coveralls.io/repos/github/ElementAI/borgy-process-agent/badge.svg?branch=master&t=zqIPKC)](https://coveralls.io/github/ElementAI/borgy-process-agent)
 
+Process agents allow submission of a single job to Borgy which is composed of many jobs and can evolve based on results from previously submitted jobs.
+
+![Process agent schema](./docs/process-agent.png)
+
 ## Requirements.
 
 Python 3.3+
