@@ -36,7 +36,7 @@ ARG PROJECT_CODE_LOCATION_NAME
 # According to the BD documentation
 # https://blackducksoftware.atlassian.net/wiki/spaces/INTDOCS/pages/49131875/Hub+Detect#HubDetect-DownloadingandrunningHubDetect
 WORKDIR /hub-detect
-RUN curl -s https://blackducksoftware.github.io/hub-detect/hub-detect.sh > hub-detect.sh && chmod +x hub-detect.sh
+RUN curl -s https://detect.synopsys.com/detect.sh > hub-detect.sh && chmod +x hub-detect.sh
 
 COPY --from=base / /
 
