@@ -466,7 +466,7 @@ class ProcessAgentBase():
             'command': [],
             'createdBy': self._pa_user,
             'environmentVars': [],
-            'image': "images.borgy.elementai.lan/borsh:latest",
+            'image': "images.borgy.elementai.net/borsh:latest",
             'interactive': False,
             'labels': [],
             'maxRunTimeSecs': 0,

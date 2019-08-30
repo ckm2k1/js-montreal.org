@@ -5,7 +5,7 @@ clone:
 
 pipeline:
   test:
-    image: images.borgy.elementai.lan/borgy/plugin-pythons-testenv:latest
+    image: images.borgy.elementai.net/borgy/plugin-pythons-testenv:latest
     secrets: [ COVERALLS_REPO_TOKEN, TWINE_USERNAME, TWINE_PASSWORD ]
     environment:
       - BORGY_RAM=8
@@ -29,7 +29,7 @@ pipeline:
         exclude: [ refs/tags/latest, refs/tags/latest_test ]
 
   publish:
-    image: images.borgy.elementai.lan/borgy/plugin-python-release:latest
+    image: images.borgy.elementai.net/borgy/plugin-python-release:latest
     secrets: [ github_token ]
     environment:
     - GITHUB_REPO=${DRONE_REPO_NAME}
@@ -39,7 +39,7 @@ pipeline:
     - export DPZ_DISTRIB_BASE=/distrib/python
     - make DPZ_RELEASE=1 package.distrib.process-agent
     - echo "Install using:" >> /tmp/notes.txt
-    - echo "pip install $(make package.distrib.process-agent.path)" | sed -e 's|/distrib|http://distrib.borgy.elementai.lan|' >> /tmp/notes.txt
+    - echo "pip install $(make package.distrib.process-agent.path)" | sed -e 's|/distrib|http://distrib.borgy.elementai.net|' >> /tmp/notes.txt
     - echo "OR" >> /tmp/notes.txt
     - echo "pip install --extra-index-url https://pypi.elmt.io/repo/eai-core  borgy-process-agent-api-server" >> /tmp/notes.txt
     - echo "" >> /tmp/notes.txt
@@ -59,7 +59,7 @@ pipeline:
         exclude: [ refs/tags/latest, refs/tags/latest_test ]
 
   publish_image:
-    image: images.borgy.elementai.lan/borgy/plugin-k8s-deploy:latest
+    image: images.borgy.elementai.net/borgy/plugin-k8s-deploy:latest
     secrets: [ TWINE_USERNAME, TWINE_PASSWORD ]
     commands:
     # Publish docker image
@@ -101,7 +101,7 @@ pipeline:
       ref: refs/tags/latest
 
   publish_pypi:
-    image: images.borgy.elementai.lan/borgy/plugin-pypi-release:latest
+    image: images.borgy.elementai.net/borgy/plugin-pypi-release:latest
     secrets: [ TWINE_USERNAME, TWINE_PASSWORD ]
     commands:
     # Upload to pypi
@@ -115,7 +115,7 @@ pipeline:
         exclude: [ refs/tags/latest, refs/tags/latest_test ]
 
   update_latest:
-    image: images.borgy.elementai.lan/borgy/plugin-python-release:latest
+    image: images.borgy.elementai.net/borgy/plugin-python-release:latest
     commands:
     - export DPZ_DISTRIB_BASE=/distrib/python
     - make DPZ_RELEASE=1 DPZ_VERSION=${DRONE_TAG} package.distrib.process-agent.latest
@@ -142,7 +142,7 @@ pipeline:
       event: tag
 
   black_duck_scan:
-   image: images.borgy.elementai.lan/borgy/plugin-k8s-deploy:latest
+   image: images.borgy.elementai.net/borgy/plugin-k8s-deploy:latest
    pull: true
    secrets: [ black_duck_api_key, TWINE_USERNAME, TWINE_PASSWORD ]
    volumes:
