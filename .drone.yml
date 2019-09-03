@@ -151,7 +151,5 @@ pipeline:
      - export PIP_EXTRA_INDEX_URL="https://$TWINE_USERNAME:$TWINE_PASSWORD@pypi.elmt.io/repo/eai-core"
      - make DPZ_BRANCH_NAME=$DRONE_BRANCH image.scan.process-agent
    when:
-     event: [ push, tag ]
-     ref:
-       include: [ refs/heads/dev, refs/tags/* ]
-       exclude: [ refs/tags/latest, refs/tags/latest_test ]
+     event: push
+     ref: refs/heads/dev
