@@ -11,7 +11,7 @@ import logging
 
 from flask_testing import TestCase
 from borgy_process_agent import ProcessAgent, ProcessAgentMode
-from borgy_process_agent.modes import borgy
+from borgy_process_agent.modes import eai
 
 
 class BaseTestCase(TestCase):
@@ -19,14 +19,14 @@ class BaseTestCase(TestCase):
         self._base_dir = os.path.dirname(os.path.realpath(__file__))
         self._pa = None
         logging.getLogger('connexion.operation').setLevel('ERROR')
-        self._app = borgy.ProcessAgent.get_server_app()
+        self._app = eai.ProcessAgent.get_server_app()
         return self._app.app
 
     def setUp(self):
-        os.environ['BORGY_JOB_ID'] = str(uuid.uuid4())
-        os.environ['BORGY_USER'] = 'guillaume_smaha'
+        os.environ['EAI_JOB_ID'] = str(uuid.uuid4())
+        os.environ['EAI_USER'] = 'guillaume_smaha'
         if not self._pa:
-            self._pa = ProcessAgent(mode=ProcessAgentMode.BORGY, port=1234, app=self._app)
+            self._pa = ProcessAgent(mode=ProcessAgentMode.EAI, port=1234, app=self._app)
             self._pa.set_autokill(False)
             self._pa._insert()
 

@@ -331,9 +331,9 @@ class TestProcessAgent(BaseTestCase):
         def mock_borgy_process_agent_stop(s, **kwargs):
             count_call[1] += 1
 
-        mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.start'
+        mock_method = 'borgy_process_agent.modes.eai.ProcessAgent.start'
         borgy_process_agent_start = patch(mock_method, mock_borgy_process_agent_start).start()
-        mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.stop'
+        mock_method = 'borgy_process_agent.modes.eai.ProcessAgent.stop'
         borgy_process_agent_stop = patch(mock_method, mock_borgy_process_agent_stop).start()
 
         def get_no_job(pa):
@@ -425,9 +425,9 @@ class TestProcessAgent(BaseTestCase):
         def mock_borgy_process_agent_stop(s, **kwargs):
             count_call[1] += 1
 
-        mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.start'
+        mock_method = 'borgy_process_agent.modes.eai.ProcessAgent.start'
         borgy_process_agent_start = patch(mock_method, mock_borgy_process_agent_start).start()
-        mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.stop'
+        mock_method = 'borgy_process_agent.modes.eai.ProcessAgent.stop'
         borgy_process_agent_stop = patch(mock_method, mock_borgy_process_agent_stop).start()
 
         def get_no_job(pa):
@@ -519,9 +519,9 @@ class TestProcessAgent(BaseTestCase):
         def mock_borgy_process_agent_stop(s, **kwargs):
             count_call[1] += 1
 
-        mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.start'
+        mock_method = 'borgy_process_agent.modes.eai.ProcessAgent.start'
         borgy_process_agent_start = patch(mock_method, mock_borgy_process_agent_start).start()
-        mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.stop'
+        mock_method = 'borgy_process_agent.modes.eai.ProcessAgent.stop'
         borgy_process_agent_stop = patch(mock_method, mock_borgy_process_agent_stop).start()
 
         def get_no_job(pa):
@@ -638,9 +638,9 @@ class TestProcessAgent(BaseTestCase):
         def mock_borgy_process_agent_stop(s, **kwargs):
             count_call[1] += 1
 
-        mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.start'
+        mock_method = 'borgy_process_agent.modes.eai.ProcessAgent.start'
         borgy_process_agent_start = patch(mock_method, mock_borgy_process_agent_start).start()
-        mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.stop'
+        mock_method = 'borgy_process_agent.modes.eai.ProcessAgent.stop'
         borgy_process_agent_stop = patch(mock_method, mock_borgy_process_agent_stop).start()
 
         def get_no_job(pa):
@@ -714,9 +714,9 @@ class TestProcessAgent(BaseTestCase):
         def mock_borgy_process_agent_stop(s, **kwargs):
             count_call[1] += 1
 
-        mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.start'
+        mock_method = 'borgy_process_agent.modes.eai.ProcessAgent.start'
         borgy_process_agent_start = patch(mock_method, mock_borgy_process_agent_start).start()
-        mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.stop'
+        mock_method = 'borgy_process_agent.modes.eai.ProcessAgent.stop'
         borgy_process_agent_stop = patch(mock_method, mock_borgy_process_agent_stop).start()
 
         def get_no_job(pa):
@@ -823,9 +823,9 @@ class TestProcessAgent(BaseTestCase):
         def mock_borgy_process_agent_stop(s, **kwargs):
             count_call[1] += 1
 
-        mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.start'
+        mock_method = 'borgy_process_agent.modes.eai.ProcessAgent.start'
         borgy_process_agent_start = patch(mock_method, mock_borgy_process_agent_start).start()
-        mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.stop'
+        mock_method = 'borgy_process_agent.modes.eai.ProcessAgent.stop'
         borgy_process_agent_stop = patch(mock_method, mock_borgy_process_agent_stop).start()
 
         def get_no_job(pa):
@@ -1225,13 +1225,13 @@ class TestProcessAgent(BaseTestCase):
     def test_pa_auto_mode(self):
         """Test case when auto mode is selected
         """
-        pa_module_borgy = __import__('borgy_process_agent.modes.borgy', fromlist=['ProcessAgent'])
+        pa_module_borgy = __import__('borgy_process_agent.modes.eai', fromlist=['ProcessAgent'])
         pa_module_docker = __import__('borgy_process_agent.modes.docker', fromlist=['ProcessAgent'])
         pa = ProcessAgent(mode=ProcessAgentMode.AUTO)
         self.assertIsInstance(pa, pa_module_borgy.ProcessAgent)
 
-        del os.environ['BORGY_JOB_ID']
-        del os.environ['BORGY_USER']
+        del os.environ['EAI_JOB_ID']
+        del os.environ['EAI_USER']
         pa = ProcessAgent(mode=ProcessAgentMode.AUTO)
         self.assertIsInstance(pa, pa_module_docker.ProcessAgent)
 
@@ -1306,8 +1306,8 @@ class TestProcessAgent(BaseTestCase):
         ]
 
         envs_final = [
-            'BORGY_PROCESS_AGENT_INDEX=0',
-            'BORGY_PROCESS_AGENT='+os.environ['BORGY_JOB_ID']
+            'EAI_PROCESS_AGENT_INDEX=0',
+            'EAI_PROCESS_AGENT='+os.environ['EAI_JOB_ID'],
         ] + envs
 
         def get_new_jobs(pa):

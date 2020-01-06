@@ -12,8 +12,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:45:36.879276+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=0",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=0",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646174",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -75,8 +75,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:45:36.954862+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=1",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=1",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646175",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -138,8 +138,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:45:37.024634+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=2",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=2",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646176",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -201,8 +201,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:45:37.095269+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=3",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=3",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646177",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -264,8 +264,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:45:37.185499+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=4",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=4",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646178",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -327,8 +327,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:45:37.263873+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=5",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=5",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646179",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -390,8 +390,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:45:37.338130+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=6",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=6",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646180",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -453,8 +453,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:45:37.411454+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=7",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=7",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646181",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -516,8 +516,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:45:37.486660+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=8",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=8",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646182",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -579,8 +579,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:45:37.574484+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=9",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=9",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646183",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -680,8 +680,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:45:37.649658+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=10",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=10",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646184",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -781,8 +781,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:45:40.785801+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=11",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=11",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646185",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -844,8 +844,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:45:43.813697+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=12",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=12",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646186",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -907,8 +907,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:45:48.371110+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=13",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=13",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646187",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -1008,8 +1008,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:45:55.759916+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=14",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=14",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646188",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -1071,8 +1071,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:46:08.677759+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=15",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=15",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646189",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -1134,8 +1134,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:46:20.235546+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=16",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=16",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646190",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -1197,8 +1197,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:46:20.316037+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=17",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=17",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646191",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -1260,8 +1260,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:50:37.916469+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=18",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=18",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646192",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -1323,8 +1323,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:50:37.989848+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=19",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=19",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646193",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -1386,8 +1386,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:50:38.062452+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=20",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=20",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646194",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -1449,8 +1449,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:50:38.134838+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=21",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=21",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646195",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -1512,8 +1512,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:50:38.206328+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=22",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=22",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646196",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -1575,8 +1575,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:50:38.277430+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=23",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=23",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646197",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -1676,8 +1676,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:50:38.350056+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=24",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=24",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646198",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -1758,8 +1758,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:50:38.425424+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=25",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=25",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646199",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -1859,8 +1859,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:50:38.505385+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=26",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=26",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646200",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -1941,8 +1941,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:51:07.558390+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=27",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=27",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646201",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -2004,8 +2004,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:51:31.315992+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=28",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=28",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646202",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -2124,8 +2124,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:51:50.839548+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=29",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=29",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646203",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -2206,8 +2206,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:52:11.875870+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=30",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=30",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646204",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -2269,8 +2269,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:52:20.030898+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=31",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=31",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646205",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -2332,8 +2332,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:52:46.745713+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=32",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=32",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646206",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -2509,8 +2509,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:53:56.803183+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=33",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=33",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646207",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -2610,8 +2610,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:54:27.426282+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=34",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=34",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646208",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -2730,8 +2730,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:54:41.136077+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=35",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=35",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646209",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -2850,8 +2850,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:54:50.897707+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=36",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=36",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646210",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -2989,8 +2989,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:55:39.364998+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=37",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=37",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646211",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -3166,8 +3166,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T19:55:39.534803+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=38",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=38",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646212",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -3267,8 +3267,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T20:04:05.490892+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=39",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=39",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646213",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -3379,8 +3379,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T22:24:49.986311+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=40",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=40",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646237",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -3461,8 +3461,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T22:25:10.070299+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=41",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=41",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646238",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -3535,8 +3535,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T22:25:50.248235+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=42",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=42",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646239",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -3617,8 +3617,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T22:27:22.002337+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=43",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=43",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646240",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -3699,8 +3699,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T23:01:21.148367+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=44",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=44",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646241",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -3857,8 +3857,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T23:35:24.364091+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=45",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=45",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646242",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -3939,8 +3939,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-09T23:41:49.622839+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=46",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=46",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646243",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -4021,8 +4021,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T00:29:47.959280+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=47",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=47",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646244",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -4103,8 +4103,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T01:12:18.670346+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=48",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=48",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646245",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -4185,8 +4185,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T01:29:10.909143+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=49",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=49",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646246",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -4248,8 +4248,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T01:29:10.990618+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=50",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=50",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646247",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -4330,8 +4330,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T02:09:14.272110+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=51",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=51",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646248",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -4393,8 +4393,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T02:09:20.715487+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=52",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=52",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646249",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -4475,8 +4475,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T02:09:22.748151+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=53",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=53",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646250",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -4557,8 +4557,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T02:09:22.891903+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=54",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=54",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646251",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -4620,8 +4620,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T02:10:41.446630+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=55",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=55",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646252",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -4683,8 +4683,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T02:10:41.522628+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=56",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=56",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646253",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -4746,8 +4746,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T02:11:16.234727+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=57",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=57",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646254",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -4809,8 +4809,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T02:11:16.312090+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=58",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=58",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646255",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -4872,8 +4872,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T02:11:21.696189+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=59",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=59",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646256",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -4935,8 +4935,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T02:11:28.799995+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=60",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=60",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646257",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -4998,8 +4998,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T02:11:54.386635+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=61",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=61",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646258",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -5061,8 +5061,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T02:12:04.030433+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=62",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=62",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646259",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -5181,8 +5181,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T02:13:07.082631+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=63",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=63",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646260",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -5244,8 +5244,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T02:14:26.831332+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=64",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=64",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646261",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -5326,8 +5326,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T02:14:26.909011+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=65",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=65",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646262",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -5408,8 +5408,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T02:14:56.775837+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=66",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=66",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646263",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -5471,8 +5471,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T02:17:06.534322+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=67",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=67",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646264",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -5534,8 +5534,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T08:41:26.995183+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=68",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=68",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646603",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -5597,8 +5597,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T08:41:30.703502+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=69",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=69",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646604",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -5660,8 +5660,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T08:41:34.581788+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=70",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=70",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646605",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -5723,8 +5723,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T08:41:38.536330+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=71",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=71",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646606",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -5805,8 +5805,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T08:41:42.430357+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=72",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=72",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646607",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -5868,8 +5868,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T08:41:47.645554+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=73",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=73",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646608",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -5931,8 +5931,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T08:41:53.060075+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=74",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=74",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646609",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -5994,8 +5994,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T08:41:58.073666+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=75",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=75",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646610",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -6057,8 +6057,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T08:41:58.144131+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=76",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=76",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646611",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -6120,8 +6120,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T09:58:22.210181+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=77",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=77",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646620",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -6202,8 +6202,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T09:58:28.888260+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=78",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=78",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646621",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -6303,8 +6303,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T09:58:32.565761+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=79",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=79",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646622",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -6366,8 +6366,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T09:58:36.191195+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=80",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=80",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646623",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -6448,8 +6448,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T09:58:40.234818+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=81",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=81",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646624",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -6549,8 +6549,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T09:58:43.732931+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=82",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=82",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646625",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -6612,8 +6612,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T09:58:47.651287+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=83",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=83",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646626",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -6675,8 +6675,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T09:58:51.067097+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=84",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=84",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646627",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -6738,8 +6738,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T09:58:55.830737+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=85",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=85",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646628",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -6801,8 +6801,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T09:58:55.900798+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=86",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=86",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646629",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -6864,8 +6864,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T09:59:00.311478+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=87",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=87",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646630",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -6927,8 +6927,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T09:59:00.390384+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=88",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=88",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646631",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -6990,8 +6990,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T12:28:33.120834+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=89",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=89",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646648",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -7110,8 +7110,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T12:28:37.869846+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=90",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=90",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646669",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -7192,8 +7192,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T12:28:43.576935+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=91",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=91",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646670",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -7293,8 +7293,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T12:28:43.657468+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=92",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=92",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646671",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -7432,8 +7432,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T12:34:14.126689+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=93",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=93",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646672",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -7533,8 +7533,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T12:34:14.234558+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=94",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=94",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646673",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -7615,8 +7615,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T14:44:14.543761+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=95",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=95",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646832",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -7733,8 +7733,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T14:44:30.374775+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=96",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=96",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646833",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -7794,8 +7794,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T14:44:30.526552+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=97",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=97",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646834",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -7855,8 +7855,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T14:44:30.671089+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=98",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=98",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646842",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],
@@ -7916,8 +7916,8 @@
     "createdBy": "thomas@elementai.com",
     "createdOn": "2019-05-10T14:44:30.741876+00:00",
     "environmentVars": [
-      "BORGY_PROCESS_AGENT_INDEX=99",
-      "BORGY_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "EAI_PROCESS_AGENT_INDEX=99",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
       "SHK_TRIAL_ID=646843",
       "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
     ],

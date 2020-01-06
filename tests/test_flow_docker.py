@@ -161,7 +161,7 @@ class TestFlowDocker(BaseTestCase):
 
         idx_job = [0]
         commands = [
-            'echo "step 1";trap "echo trap ; exit $(( 1 - $BORGY_RUN_INDEX ))" SIGUSR1;echo "wait";read -t 120',
+            'echo "step 1";trap "echo trap ; exit $(( 1 - $EAI_RUN_INDEX ))" SIGUSR1;echo "wait";read -t 120',
             'echo "step 2";trap "echo trap ; exit" SIGUSR1;echo "wait";read -t 120',
         ]
 
@@ -302,12 +302,12 @@ class TestFlowDocker(BaseTestCase):
         self.assertEqual(job.state, State.SUCCEEDED.value)
 
         envs = {
-            'BORGY_CPU_LIMIT': cpu,
-            'BORGY_JOB_ID': job.id,
-            'BORGY_MEMORY_LIMIT': memory_bytes,
-            'BORGY_RUN_INDEX': 0,
-            'BORGY_TARGET_NODE': 'docker',
-            'BORGY_USER': 'MyUser',
+            'EAI_CPU_LIMIT': cpu,
+            'EAI_JOB_ID': job.id,
+            'EAI_MEMORY_LIMIT': memory_bytes,
+            'EAI_RUN_INDEX': 0,
+            'EAI_TARGET_NODE': 'docker',
+            'EAI_USER': 'MyUser',
             'PRETEND_CPUS': cpu,
             'PRETEND_MEM': memory_bytes,
             'OMP_NUM_THREADS': cpu,
@@ -340,7 +340,7 @@ class TestFlowDocker(BaseTestCase):
                 'reqCores': 2,
                 'reqGpus': 4,
                 'environmentVars': [
-                    'BORGY_JOB_ID=aaaaaa',  # Should be NOT overwrite
+                    'EAI_JOB_ID=aaaaaa',  # Should be NOT overwrite
                     'NVIDIA_VISIBLE_DEVICES=5',  # Should be overwrite
                 ]
             }
@@ -357,7 +357,7 @@ class TestFlowDocker(BaseTestCase):
         self.assertEqual(job.state, State.SUCCEEDED.value)
 
         envs = {
-            'BORGY_JOB_ID': job.id,
+            'EAI_JOB_ID': job.id,
             'NVIDIA_VISIBLE_DEVICES': '5',
         }
         result = str(job.runs[-1].result)

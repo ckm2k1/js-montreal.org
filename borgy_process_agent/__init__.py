@@ -43,8 +43,8 @@ class ProcessAgentMode(Enum):
     """
     # Choose automatically the "good" mode
     AUTO = 'auto'
-    # Borgy (default)
-    BORGY = 'borgy'
+    # EAI (default)
+    EAI = 'eai'
     # Tasks will be launched in docker environnement
     DOCKER = 'docker'
 
@@ -123,8 +123,8 @@ class ProcessAgentBase():
         """
         def get_pa_index(job):
             for e in job.environment_vars:
-                if e.startswith('BORGY_PROCESS_AGENT_INDEX='):
-                    return int(e[26:])
+                if e.startswith('EAI_PROCESS_AGENT_INDEX='):
+                    return int(e[24:])
             return None
 
         # Check for jobs update
@@ -400,8 +400,10 @@ class ProcessAgentBase():
             for i, job in enumerate(jobs):
                 if jobs[i].environment_vars is None:
                     jobs[i].environment_vars = []
-                jobs[i].environment_vars = ["BORGY_PROCESS_AGENT_INDEX="+str(base_pa_index + i),
-                                            "BORGY_PROCESS_AGENT="+self._pa_job_id] + jobs[i].environment_vars
+                jobs[i].environment_vars = [
+                    "EAI_PROCESS_AGENT_INDEX="+str(base_pa_index + i),
+                    "EAI_PROCESS_AGENT="+self._pa_job_id,
+                    ] + jobs[i].environment_vars
 
             self._process_agent_jobs_in_creation = jobs
         except Exception as e:
@@ -522,8 +524,8 @@ class ProcessAgent(ProcessAgentBase):
     def __new__(cls, mode=ProcessAgentMode.AUTO, **kwargs):
         if mode == ProcessAgentMode.AUTO:
             mode = ProcessAgentMode.DOCKER
-            if 'BORGY_JOB_ID' in os.environ and 'BORGY_USER' in os.environ:
-                mode = ProcessAgentMode.BORGY
+            if 'EAI_JOB_ID' in os.environ and 'EAI_USER' in os.environ:
+                mode = ProcessAgentMode.EAI
         pa_module = __import__(__name__ + '.modes.' + mode.value, fromlist=['ProcessAgent'])
 
         instance = pa_module.ProcessAgent(**kwargs)

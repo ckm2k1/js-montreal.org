@@ -23,7 +23,7 @@ borgy_process_agent_version = pkg_resources.get_distribution('borgy_process_agen
 
 
 class ProcessAgent(ProcessAgentBase):
-    """Process Agent for Borgy
+    """Process Agent for EAI
     """
     def __init__(self, **kwargs):
         """Constructor
@@ -39,8 +39,8 @@ class ProcessAgent(ProcessAgentBase):
                 missing_env.append(name)
             return value
 
-        pa_job_id = check_env_var('BORGY_JOB_ID')
-        pa_user = check_env_var('BORGY_USER')
+        pa_job_id = check_env_var('EAI_JOB_ID')
+        pa_user = check_env_var('EAI_USER')
 
         if missing_env:
             raise EnvironmentVarError('Env var(s) {} not defined or empty. Are you running in borgy ?'.
@@ -106,5 +106,5 @@ class ProcessAgent(ProcessAgentBase):
         controllers.overwrite_api_controllers()
         app = connexion.App(__name__, specification_dir=borgy_process_agent_api_server.__path__[0]+'/openapi/')
         app.app.json_encoder = encoder.JSONEncoder
-        app.add_api('openapi.yaml', arguments={'title': 'Borgy Process Agent'})
+        app.add_api('openapi.yaml', arguments={'title': 'EAI Process Agent'})
         return app

@@ -24,7 +24,7 @@ class MockJob(object):
             'createdBy': 'guillaume.smaha@elementai.com',
             'createdOn': get_now_isoformat(),
             'environmentVars': [
-                "BORGY_PROCESS_AGENT_INDEX="+str(mock_pa_index),
+                "EAI_PROCESS_AGENT_INDEX="+str(mock_pa_index),
             ],
             'evictOthersIfNeeded': False,
             'image': "images.borgy.elementai.net/borgy/borsh:latest",
@@ -66,10 +66,10 @@ class MockJob(object):
             for k, v in kwargs.items():
                 if k == "paIndex":
                     for e in self._job['environmentVars']:
-                        if e.startswith('BORGY_PROCESS_AGENT_INDEX='):
+                        if e.startswith('EAI_PROCESS_AGENT_INDEX='):
                             self._job['environmentVars'].remove(e)
                             break
-                    self._job['environmentVars'].append("BORGY_PROCESS_AGENT_INDEX="+str(v))
+                    self._job['environmentVars'].append("EAI_PROCESS_AGENT_INDEX="+str(v))
                 else:
                     self._job[k] = v
 

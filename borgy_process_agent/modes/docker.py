@@ -60,12 +60,12 @@ class ProcessAgent(ProcessAgentBase):
             'NVIDIA_VISIBLE_DEVICES': gpus_list,
         }
         envs_injected_after = {
-            'BORGY_CPU_LIMIT': cpu_count,
-            'BORGY_JOB_ID': job.id,
-            'BORGY_MEMORY_LIMIT': mem,
-            'BORGY_RUN_INDEX': (len(job.runs) - 1),
-            'BORGY_TARGET_NODE': 'docker',
-            'BORGY_USER': job.created_by,
+            'EAI_CPU_LIMIT': cpu_count,
+            'EAI_JOB_ID': job.id,
+            'EAI_MEMORY_LIMIT': mem,
+            'EAI_RUN_INDEX': (len(job.runs) - 1),
+            'EAI_TARGET_NODE': 'docker',
+            'EAI_USER': job.created_by,
             'PRETEND_CPUS': cpu_count,
             'PRETEND_MEM': mem,
             'OMP_NUM_THREADS': cpu_count,

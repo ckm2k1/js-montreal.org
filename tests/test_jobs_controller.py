@@ -80,7 +80,7 @@ class TestJobsController(BaseTestCase):
             count_call[0] += 1
             self.assertIsInstance(kwargs.get('error'), TypeError)
 
-        mock_method = 'borgy_process_agent.modes.borgy.ProcessAgent.stop'
+        mock_method = 'borgy_process_agent.modes.eai.ProcessAgent.stop'
         borgy_process_agent_stop = patch(mock_method, mock_borgy_process_agent_stop)
         borgy_process_agent_stop.start()
 

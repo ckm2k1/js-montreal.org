@@ -22,7 +22,7 @@ def expose_metrics(pa, port=9080, get_now=None):
     """
     collect_process_agent_metrics(pa, get_now_fn=get_now)
 
-    if pa.get_mode() == ProcessAgentMode.BORGY:
+    if pa.get_mode() == ProcessAgentMode.EAI:
         app = pa.get_app()
         if app is not None:
             collect_flask_metrics(app.app)
