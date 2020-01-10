@@ -165,6 +165,12 @@ class ProcessAgentBase():
                                 'update': list(diff(jc.to_dict(), j.to_dict())),
                                 'state': JobEventState.CREATED
                             })
+                            if pa_index not in self._process_agent_jobs_idx:
+                                logger.warning(f'Unknown PA index {pa_index} for job {j.id}')
+                            elif self._process_agent_jobs_idx[pa_index] is not None:
+                                dup_job = self._process_agent_jobs_idx[pa_index]
+                                logger.warning(f'Duplicate PA index {pa_index} for job {j.id} vs job {dup_job}')
+                            self._process_agent_jobs_idx[pa_index] = j.id
                             self._process_agent_jobs_in_creation.remove(jc)
                             fnd = True
                             break
@@ -211,6 +217,7 @@ class ProcessAgentBase():
         if self._push_job_thread:
             self._push_job_thread.join()
         self._process_agent_jobs = {}
+        self._process_agent_jobs_idx = {}
         self._process_agent_jobs_in_creation = []
         self._process_agent_jobs_to_rerun = []
         self._process_agent_jobs_to_kill = []
@@ -396,12 +403,14 @@ class ProcessAgentBase():
             # Add default fields
             jobs = [self.get_default_job(j) for j in jobs]
             # Set job specIndex
-            base_pa_index = len(self._process_agent_jobs)
+            base_pa_index = len(self._process_agent_jobs_idx)
             for i, job in enumerate(jobs):
+                pa_index = base_pa_index + i
+                self._process_agent_jobs_idx[pa_index] = None
                 if jobs[i].environment_vars is None:
                     jobs[i].environment_vars = []
                 jobs[i].environment_vars = [
-                    "EAI_PROCESS_AGENT_INDEX="+str(base_pa_index + i),
+                    "EAI_PROCESS_AGENT_INDEX="+str(pa_index),
                     "EAI_PROCESS_AGENT="+self._pa_job_id,
                     ] + jobs[i].environment_vars
 
@@ -424,22 +433,31 @@ class ProcessAgentBase():
             raise error
 
         # Prepare new jobs when the list is empty
-        if not self._process_agent_jobs_in_creation:
-            acquired = self._prepare_job_thread_lock.acquire(blocking=False)
-            if acquired:
-                try:
+        jobs = []
+        acquired = self._prepare_job_thread_lock.acquire(blocking=False)
+        if acquired:
+            try:
+                # No push processing
+                if self._push_job_queue.empty():
+                    # No running thread
                     if not (self._prepare_job_thread and self._prepare_job_thread.is_alive()):
-                        self._prepare_job_thread = threading.Thread(
-                            name='PrepareNewJobs',
-                            target=self._prepare_job_to_create
-                        )
-                        self._prepare_job_thread.setDaemon(True)
-                        self._prepare_job_thread.start()
-                finally:
-                    self._prepare_job_thread_lock.release()
-            return []
+                        # No job in creation: start thread
+                        if not self._process_agent_jobs_in_creation:
+                            self._prepare_job_thread = threading.Thread(
+                                name='PrepareNewJobs',
+                                target=self._prepare_job_to_create
+                            )
+                            self._prepare_job_thread.setDaemon(True)
+                            self._prepare_job_thread.start()
+                        else:
+                            # jobs in creation: return list
+                            jobs = self.get_jobs_in_creation()
 
-        return self.get_jobs_in_creation()
+                    # Running thread
+                    # Return empty array
+            finally:
+                self._prepare_job_thread_lock.release()
+        return jobs
 
     def start(self):
         """Start process agent

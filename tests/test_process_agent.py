@@ -1768,6 +1768,81 @@ class TestProcessAgent(BaseTestCase):
         self._pa._prepare_job_to_create()
         self.assertIsInstance(self._pa._prepare_job_error, ValueError)
 
+    def test_pa_slow_callback_push(self):
+        """Test case when user callback is slow to process calls of PUT /v1/jobs
+           and governor GET jobs before push processing ended
+        """
+        def get_jobs(pa):
+            jobs = [{
+                'name': 'my-job-1',
+            }, {
+                'name': 'my-job-2',
+            }]
+            return jobs
+
+        def get_job_update_slow(event):
+            time.sleep(0.5)
+            return {
+                'name': 'my-job'
+            }
+
+        self._pa.clear_jobs_in_creation()
+
+        # Set callback for new jobs
+        self._pa.set_callback_jobs_provider(get_jobs)
+
+        # Jobs
+        new_job_1 = MockJob(name='my-job-1', paIndex=0, state=State.QUEUING.value).get_job()
+
+        # Set callback for jobs update
+        self._pa.subscribe_jobs_update(get_job_update_slow)
+
+        # Governor get jobs: first call: start thread
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs_to_create = jobs_ops['submit']
+        self.assertEqual(len(jobs_to_create), 0)
+
+        # Wait for thread
+        self._pa._prepare_job_thread.join()
+
+        # Governor get jobs
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs_to_create = jobs_ops['submit']
+        print(jobs_to_create)
+        print(new_job_1)
+        self.assertEqual(len(jobs_to_create), 2)
+
+        # Governor push one job
+        governor_jobs_push = json.dumps([new_job_1])
+        response = self.client.open('/v1/jobs', method='PUT', content_type='application/json',
+                                    data=governor_jobs_push)
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+
+        # When push processing is still running, Governor get jobs
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs_to_create = jobs_ops['submit']
+        self.assertEqual(len(jobs_to_create), 0)
+
+        # Waiting for end of processing jobs update
+        self._pa.join_pushed_jobs()
+
+        # When push processing is ended, Governor get jobs
+        response = self.client.open('/v1/jobs', method='GET')
+        self.assertStatus(response, 200, 'Should return 200. Response body is : ' + response.data.decode('utf-8'))
+        jobs_ops = response.get_json()
+        self.assertIn('submit', jobs_ops)
+        jobs_to_create = jobs_ops['submit']
+        self.assertEqual(len(jobs_to_create), 1)
+
 
 if __name__ == '__main__':
     import unittest
