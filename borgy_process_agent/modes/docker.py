@@ -46,6 +46,7 @@ class ProcessAgent(ProcessAgentBase):
         """
         super().reset()
         self._running = False
+        self._stop_error = None
         self._governor_jobs = {}
 
     def _run_job(self, job: Job):
@@ -313,11 +314,16 @@ class ProcessAgent(ProcessAgentBase):
                 logger.debug(' - Wait')
                 time.sleep(self._poll_interval)
         self._remove()
+        if self._stop_error:
+            raise self._stop_error
 
-    def stop(self):
+    def stop(self, **kwargs):
         """Stop process agent
 
         :rtype: NoReturn
         """
         logger.debug('Shutdown Process Agent server')
         self._running = False
+        error = kwargs.get('error')
+        if error:
+            self._stop_error = error
