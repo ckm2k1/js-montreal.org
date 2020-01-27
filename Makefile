@@ -25,3 +25,24 @@ package.build.%:
 	mv dist/*.tar.gz $(DPZ_PACKAGE_NAME)
 
 .PHONY: test test.full
+
+
+build:
+	docker build -t asyncagent --build-arg PIP_EXTRA_INDEX_URL=$(PIP_EXTRA_INDEX_URL) .
+
+build.vol:
+	docker build -t volatile-images.borgy.elementai.net/asyncagent/asyncagent --build-arg PIP_EXTRA_INDEX_URL=$(PIP_EXTRA_INDEX_URL) .
+
+run:
+	docker run -it -p 8080:8666 asyncagent python main.py -d docker
+
+publish:
+	docker push volatile-images.borgy.elementai.net/asyncagent/asyncagent:latest
+
+run.ork:
+	borgy pa submit -i volatile-images.borgy.elementai.net/asyncagent/asyncagent:latest -- python main.py -d ork
+
+run.local:
+	python main.py $(args)
+
+bpl: build.vol publish

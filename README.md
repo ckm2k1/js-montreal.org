@@ -9,7 +9,7 @@ Process agents allow submission of a single job to EAI which is composed of many
 
 ## Requirements.
 
-Python 3.3+
+Python 3.7+
 
 ## Installation & Usage
 

@@ -1,0 +1,77 @@
+html {
+    height: 100%;
+}
+
+body {
+    font-size: 16px;
+    font-family: Helvetica, Ariel, Sans-Serif;
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+    height: 100%;
+}
+
+header {
+    color: #333;
+    border-bottom: 1px solid #d1d1d1;
+    box-shadow: 0 1px 3px #f1f1f1;
+    background: rgb(226,226,226);
+    background: linear-gradient(0deg, rgba(226,226,226,1) 0%, rgba(233,233,233,1) 43%, rgba(240,240,240,1) 100%);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 10px;
+}
+header .title {
+    font-size: 16px;
+    margin: 0;
+}
+header .jid {
+    font-size: 16px;
+    margin: 0;
+}
+header .username {
+    font-size: 16px;
+    margin: 0;
+}
+
+.container {
+    margin: 0 auto 0;
+    font-size: 16px;
+    padding: 20px;
+}
+
+
+.overview-table {
+    border: 1px solid #d3d3d3;
+    border-collapse: collapse;
+    width: 100%;
+    padding: 0;
+    margin: 15px 0;
+}
+
+.overview-table caption {
+    text-align: left;
+    font-size: 18px;
+    font-weight: bold;
+}
+.overview-table td, .overview-table th {
+    padding: 5px;
+    border: 1px solid #d3d3d3;
+    text-align: center;
+}
+.overview-table td.failed {
+    background-color: red;
+}
+.overview-table td.acked {
+    background-color: lightblue;
+}
+.overview-table td.submitted {
+    background-color: yellow;
+}
+.overview-table td.succeeded {
+    background-color: green;
+}
+.overview-table td.cancelled {
+    background-color: orange;
+}

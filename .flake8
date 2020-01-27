@@ -1,16 +1,18 @@
 [flake8]
-max-line-length = 120
+max-line-length = 99
+ignore = E261, W503
 exclude =
-	.git,
-	.vscode,
-	lib,
-	ptvsd,
-	virtualenv,
-	.ropeproject,
-	env,
-	.env,
-	venv,
-	py27,
-	py353,
-	py361,
-	.tox,
+    .git,
+    .vscode,
+    lib,
+    ptvsd,
+    virtualenv,
+    .ropeproject,
+    env,
+    .env,
+    venv,
+    py27,
+    py353,
+    py361,
+    .tox,
+    tests

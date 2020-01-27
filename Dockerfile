@@ -1,24 +1,14 @@
-FROM python:alpine3.7
+FROM python:3.7.6
+ARG SERVER_PORT=8666
+ARG PIP_EXTRA_INDEX_URL
 
-WORKDIR /usr/src/app
-
-RUN apk update \
- && apk upgrade
-
+WORKDIR /app
 ADD requirements.txt ./
 ADD setup.cfg ./
 ADD setup.py ./
-
-ARG PIP_EXTRA_INDEX_URL
 RUN pip install -r requirements.txt
-
-COPY requirements-tests.txt ./
-RUN pip install -r requirements-tests.txt
 
 ARG DPZ_VERSION
 ENV VERSION ${DPZ_VERSION}
 
 ADD . .
-RUN pip install -e .
-
-CMD /usr/local/bin/python3 /usr/src/app/runner_test.py

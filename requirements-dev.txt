@@ -1,0 +1,5 @@
+pudb==2019.2
+ipython==7.11.1
+python-language-server==0.31.7
+python-language-server[flake8]
+python-language-server[yapf]
