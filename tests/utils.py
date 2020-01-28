@@ -1,12 +1,20 @@
 import uuid
 from borgy_process_agent.job import Restart
 from borgy_process_agent.utils import get_now_isoformat
-from borgy_process_agent_api_server.models.job import Job
+from borgy_process_agent_api_server.models import Job, JobSpec
 
 mock_pa_index = 0
 
+DEFAULT_COMMAND = ['bash', '-c', 'sleep 10']
+
+
+def make_spec(*args, **kwargs):
+    kwargs['command'] = kwargs.get('command', DEFAULT_COMMAND)
+    return JobSpec(*args, **kwargs)
+
 
 class MockJob():
+
     def __init__(self, **kwargs):
         global mock_pa_index
         job_id = str(uuid.uuid4())
@@ -16,9 +24,7 @@ class MockJob():
             'command': [],
             'createdBy': 'guillaume.smaha@elementai.com',
             'createdOn': get_now_isoformat(),
-            'environmentVars': [
-                "EAI_PROCESS_AGENT_INDEX="+str(mock_pa_index),
-            ],
+            'environmentVars': [f'EAI_PROCESS_AGENT_INDEX={mock_pa_index}'],
             'evictOthersIfNeeded': False,
             'image': "images.borgy.elementai.net/borgy/borsh:latest",
             'id': job_id,
@@ -33,17 +39,15 @@ class MockJob():
             'reqGpus': 0,
             'reqRamGbytes': 1,
             'restart': Restart.NO.value,
-            'runs': [
-                {
-                    'id': str(uuid.uuid4()),
-                    'jobId': job_id,
-                    'createdOn': get_now_isoformat(),
-                    'state': 'QUEUING',
-                    'info': {},
-                    'ip': '127.0.0.1',
-                    'nodeName': 'local',
-                }
-            ],
+            'runs': [{
+                'id': str(uuid.uuid4()),
+                'jobId': job_id,
+                'createdOn': get_now_isoformat(),
+                'state': 'QUEUING',
+                'info': {},
+                'ip': '127.0.0.1',
+                'nodeName': 'local',
+            }],
             'state': 'QUEUING',
             'stateInfo': '',
             'stdin': False,
@@ -62,7 +66,7 @@ class MockJob():
                         if e.startswith('EAI_PROCESS_AGENT_INDEX='):
                             self._job['environmentVars'].remove(e)
                             break
-                    self._job['environmentVars'].append("EAI_PROCESS_AGENT_INDEX="+str(v))
+                    self._job['environmentVars'].append("EAI_PROCESS_AGENT_INDEX=" + str(v))
                 else:
                     self._job[k] = v
 
