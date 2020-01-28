@@ -135,9 +135,9 @@ class BaseAgent():
         self.jobs.submit_jobs_to_rerun()
         self.jobs.submit_jobs_to_kill()
 
-        ops = JobsOps(submit=[j.to_spec() for j in self.jobs.get_by_type('submitted')],
-                      rerun=[j.jid for j in self.jobs.get_by_type('rerun')],
-                      kill=[j.jid for j in self.jobs.get_by_type('kill')])
+        ops = JobsOps(submit=[j.to_spec() for j in self.jobs.get_submitted()],
+                      rerun=[j.jid for j in self.jobs.get_rerun()],
+                      kill=[j.jid for j in self.jobs.get_kill()])
         return ops.to_dict()
 
     def create_jobs(self) -> asyncio.Future:

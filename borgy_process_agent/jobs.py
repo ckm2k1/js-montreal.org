@@ -105,6 +105,24 @@ class Jobs:
     def get_by_type(self, type: str) -> List[Job]:
         return [j.copy() for j in getattr(self, f'{type}_jobs').values()]
 
+    def get_pending(self):
+        return self.get_by_type('pending')
+
+    def get_submitted(self):
+        return self.get_by_type('submitted')
+
+    def get_acked(self):
+        return self.get_by_type('acked')
+
+    def get_kill(self):
+        return self.get_by_type('kill')
+
+    def get_rerun(self):
+        return self.get_by_type('rerun')
+
+    def get_finished(self):
+        return self.get_by_type('finished')
+
     def get_by_state(self, state) -> List[Job]:
         return [j for j in self.all_jobs.values() if j.state == state]
 
