@@ -54,7 +54,7 @@ class Jobs:
             'acked': [j.to_dict() for j in self.acked_jobs.values()],
             'succeeded': [j.to_dict() for j in self.get_by_state(State.SUCCEEDED)],
             'failed': [j.to_dict() for j in self.get_by_state(State.FAILED)],
-            'cancelled': [j.to_dict() for j in self.get_by_state(State.CANCELLED)()]
+            'cancelled': [j.to_dict() for j in self.get_by_state(State.CANCELLED)],
         }
 
         return obj

@@ -81,7 +81,7 @@ class BaseAgent():
             action.fail(exc=ex)
             raise
 
-        if not self.jobs._no_new:
+        if self.jobs._no_new:
             logger.info('User code is finished producing jobs.')
             self._finish()
 
