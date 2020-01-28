@@ -160,7 +160,7 @@ class Jobs:
         return self._no_new and not (self.pending_jobs or self.submitted_jobs or self.acked_jobs
                                      or self.kill_jobs or self.rerun_jobs)
 
-    def update_jobs(self, jobs: List[OrkJob]) -> List[Mapping[str, Any]]:
+    def update_jobs(self, jobs: List[Mapping]) -> List[Mapping[str, Any]]:
         updated = []
         for oj in jobs:
             job = self._update_job(OrkJob.from_dict(oj))
