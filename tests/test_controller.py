@@ -24,6 +24,7 @@ class TestAgentController:
             print('update')
 
         async def create(agent):
+            print('running create')
             out = []
             if not jobs:
                 return None
@@ -39,7 +40,11 @@ class TestAgentController:
             'submit': [],
             'kill': [],
             'rerun': [],
-            'submit_parallel': False
+            'submit_parallel': False,
         }
 
-        await agent.run()
+        # event_loop.create_task(agent.run())
+        # event_loop.call_soon(agent.create_jobs)
+        # event_loop.call_soon(agent.create_jobs)
+
+        # await agent.run()
