@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-#
-# utils.py
-# Guillaume Smaha, 2018-05-01
-# Copyright (c) 2018 ElementAI. All rights reserved.
-#
-
 import uuid
 from borgy_process_agent.job import Restart
 from borgy_process_agent.utils import get_now_isoformat
@@ -13,7 +6,7 @@ from borgy_process_agent_api_server.models.job import Job
 mock_pa_index = 0
 
 
-class MockJob(object):
+class MockJob():
     def __init__(self, **kwargs):
         global mock_pa_index
         job_id = str(uuid.uuid4())

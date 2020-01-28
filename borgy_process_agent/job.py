@@ -160,7 +160,8 @@ class Job:
         return self._diff
 
     def __repr__(self):
-        return f'<Job index={self.index}, created={self.created}, updated={self.updated}, state={self.state.value}, jid={self.jid}>'
+        return f'<Job index={self.index}, created={self.created}, '
+        f'updated={self.updated}, state={self.state.value}, jid={self.jid}>'
 
     def __eq__(self, job):
         if self.jid is not None and job.jid is not None and self.jid == job.jid:

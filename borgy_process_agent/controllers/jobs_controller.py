@@ -5,7 +5,6 @@
 # Copyright (c) 2018 ElementAI. All rights reserved.
 #
 
-
 import connexion
 import operator
 import functools
@@ -49,7 +48,7 @@ def v1_jobs_get():
             'kill': jobs_kill,
         }
     except Exception as e:
-        print('|'+str(e)+'|')
+        print('|' + str(e) + '|')
         return str(e), 500
 
 

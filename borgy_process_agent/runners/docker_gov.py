@@ -10,7 +10,7 @@ import docker
 import borgy_process_agent_api_client
 from borgy_process_agent.enums import State, Restart
 from borgy_process_agent.runners.docker_utils import (get_now, cpu_str_to_ncpu, get_now_isoformat,
-                                        memory_str_to_nbytes)
+                                                      memory_str_to_nbytes)
 from borgy_process_agent_api_server.models import Job, JobRuns, JobsOps, JobSpec
 
 logger = logging.getLogger(__name__)
@@ -296,8 +296,8 @@ class DockerGovernor:
     def _check_jobs_update(self) -> List[Job]:
         containers = self._docker.containers.list(all=True, ignore_removed=True)
         job_ids_succedded = [
-            c.name for c in containers if c.attrs['State']['ExitCode'] == 0 and
-            not c.attrs['State']['Running'] and not c.attrs['State']['Dead']
+            c.name for c in containers if c.attrs['State']['ExitCode'] == 0
+            and not c.attrs['State']['Running'] and not c.attrs['State']['Dead']
         ]
 
         updates = {}

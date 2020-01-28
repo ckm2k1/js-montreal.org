@@ -10,7 +10,7 @@ test:
 	@tox
 
 test.full:
-	@tox -e 'flake8,cov-init,py36,py37,coverage'
+	@tox -e 'flake8,cov-init,py37,coverage'
 
 flake8:
 	python -m flake8
@@ -44,5 +44,3 @@ run.ork:
 
 run.local:
 	python main.py $(args)
-
-bpl: build.vol publish
