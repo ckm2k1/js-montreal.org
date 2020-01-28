@@ -1,7 +1,11 @@
 import uuid
+from typing import Mapping
+
+from borgy_process_agent_api_server.models import Job, JobSpec
+from borgy_process_agent_api_server.models.base_model_ import Model
+
 from borgy_process_agent.job import Restart
 from borgy_process_agent.utils import get_now_isoformat
-from borgy_process_agent_api_server.models import Job, JobSpec
 
 mock_pa_index = 0
 
@@ -105,3 +109,11 @@ class MockJob():
 
     def __setstate__(self, job):
         self._job = job
+
+
+def model_to_json(model: Model) -> Mapping:
+    mdict = model.to_dict()
+    out = {}
+    for k, v in mdict.items():
+        out[model.attribute_map[k]] = v
+    return out

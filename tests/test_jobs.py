@@ -6,7 +6,7 @@ from borgy_process_agent_api_server.models import JobSpec, Job as OrkJob
 
 from borgy_process_agent.jobs import Jobs
 from borgy_process_agent.job import Job
-from tests.utils import make_spec
+from tests.utils import make_spec, model_to_json, MockJob
 
 
 @pytest.fixture
@@ -55,13 +55,13 @@ class TestJobs:
         jobs.create([s.to_dict() for s in specs])
         ojs = []
         for job in jobs.get_pending():
-            ork = OrkJob(**job.spec.to_dict())
+            ork = OrkJob.from_dict({**job.spec.to_dict(), 'labels': []})
             ork.state = 'RUNNING'
-            ojs.append(ork.to_dict())
-        # jobs.update_jobs(ojs)
-        # assert jobs.has_pending() is False
-        # assert len(jobs.get_submitted()) == 0
-        # assert len(jobs.acked_jobs) == 20
+            ojs.append(model_to_json(ork))
+        jobs.update_jobs(ojs)
+        assert jobs.has_pending() is False
+        assert len(jobs.get_submitted()) == 0
+        assert len(jobs.acked_jobs) == 20
 
     def test_kill(self, jobs: Jobs):
         pass
