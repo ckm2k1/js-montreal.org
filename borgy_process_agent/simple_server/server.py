@@ -66,9 +66,6 @@ async def websocket_handler(request: web.Request):
 @routes.get('/jobs/{job_id}')
 async def job_view(request: web.Request):
     jid = request.match_info['job_id']
-    # job = request.app['agent'].get_job_by_jid(jid)
-    # if job is None:
-    #     raise web.HTTPNotFound(f'Job {jid} was not found in this agent.')
 
     context = {
         'id': request.app['pa_id'],
@@ -83,11 +80,12 @@ async def job_view(request: web.Request):
 
 @routes.get('/v1/health')
 async def health(request: web.Request):
-    stats = request.app['agent'].get_stats()
+    stats = request.app['agent'].get_health()
+    logger.info('Agent health stats: %s', stats)
 
     return web.json_response({
-        'isReady': stats.get('isReady'),
-        'isShutdown': stats.get('isShutdown')
+        'isReady': stats['is_ready'],
+        'isShutdown': stats['is_shutdown'],
     })
 
 
@@ -143,7 +141,8 @@ def init(agent: BaseAgent, on_cleanup: Callable[[web.Application], None]):
     global app
 
     app = web.Application()
-    aiohttp_jinja2.setup(app, loader=jinja2.PackageLoader('borgy_process_agent.simple_server', 'static'))
+    tmpl_loader = jinja2.PackageLoader('borgy_process_agent.simple_server', 'static')
+    aiohttp_jinja2.setup(app, loader=tmpl_loader)
     app.router.add_static('/static/', path=pathlib.Path(__file__).parent / 'static', name='static')
     app['agent']: BaseAgent = agent
     app['events']: Signal = Signal(app)

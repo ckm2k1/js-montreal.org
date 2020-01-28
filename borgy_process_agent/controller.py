@@ -163,13 +163,14 @@ class BaseAgent():
         else:
             raise Exception(f'Invalid callback type: {type}')
 
-    def get_stats(self):
+    def get_health(self):
         return {
-            'jobs': self.jobs.get_stats(),
-            'queue': self.queue.qsize(),
-            'isReady': self._ready,
-            'isShutdown': self.is_finished,
+            'is_ready': self._ready,
+            'is_shutdown': self._ready_to_exit(),
         }
+
+    def get_stats(self):
+        return {'jobs': self.jobs.get_stats(), 'queue': self.queue.qsize(), **self.get_health()}
 
     async def run(self):
         self._ready = True
