@@ -31,6 +31,9 @@ JOB_SPEC_DEFAULTS = {
 
 diffop = namedtuple('diffop', ('op', 'prop', 'values'))
 
+JobSpecDict = Mapping
+OrkJobDict = Mapping
+
 
 class Job:
 
@@ -38,10 +41,10 @@ class Job:
                  index: int,
                  user: str,
                  pa_id: str,
-                 spec: JobSpec = None,
-                 jid: str = None,
-                 name_prefix='pa_child_job',
-                 ork_job=None):
+                 spec: Optional[JobSpecDict] = None,
+                 jid: Optional[str] = None,
+                 name_prefix: str = 'pa_child_job',
+                 ork_job: Optional[OrkJob] = None):
         self.jid = None
         self.index: int = index
         self.user: str = user
@@ -51,7 +54,7 @@ class Job:
         self._name_prefix: str = name_prefix
         self.pa_id: str = pa_id
         self.ork_job: OrkJob = OrkJob.from_dict(ork_job) if ork_job is not None else OrkJob()
-        if spec:
+        if spec is not None:
             self.spec: JobSpec = self._make_spec(spec)
         else:
             if ork_job:
@@ -98,7 +101,7 @@ class Job:
     def _get_job_name(self):
         return f'{self._name_prefix}-{str(self.index)}'
 
-    def _make_base_spec(self):
+    def _make_base_spec(self) -> JobSpecDict:
         spec = copy.deepcopy(JOB_SPEC_DEFAULTS)
         spec.update({
             'createdBy': self.user,
@@ -106,7 +109,7 @@ class Job:
         })
         return spec
 
-    def _make_spec(self, spec):
+    def _make_spec(self, spec: JobSpecDict) -> JobSpec:
         base_spec = self._make_base_spec()
         base_spec.update(spec)
 
@@ -124,7 +127,7 @@ class Job:
 
         return JobSpec.from_dict(base_spec)
 
-    def to_spec(self):
+    def to_spec(self) -> Optional[JobSpecDict]:
         # The JSONEncoder subclass in borgy-process-agent-api
         # already does this operation for Connexion apps,
         # but we do it manually here since we're not using
@@ -137,7 +140,7 @@ class Job:
             return res
         return None
 
-    def update_from_ork(self, oj: Union[OrkJob, Mapping]):
+    def update_from_ork(self, oj: Union[OrkJob, OrkJobDict]):
         if isinstance(oj, dict):
             oj = OrkJob.from_dict(oj)
 
@@ -159,14 +162,14 @@ class Job:
     def diff(self):
         return self._diff
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'<Job index={self.index}, created={self.created}, '
         f'updated={self.updated}, state={self.state.value}, jid={self.jid}>'
 
-    def __eq__(self, job):
+    def __eq__(self, job) -> bool:
         if self.jid is not None and job.jid is not None and self.jid == job.jid:
             return True
         return self.index == job.index
 
-    def copy(self):
+    def copy(self) -> 'Job':
         return copy.deepcopy(self)

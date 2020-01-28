@@ -81,7 +81,7 @@ class BaseAgent():
             action.fail(exc=ex)
             raise
 
-        if self.jobs.no_new:
+        if not self.jobs._no_new:
             logger.info('User code is finished producing jobs.')
             self._finish()
 
@@ -98,9 +98,6 @@ class BaseAgent():
             return await self.loop.run_in_executor(None, partial(fn, *args, **kwargs))
 
         return coro_wrapper
-
-    def get_pending(self):
-        return self.jobs.get_by_type('pending')
 
     def _should_create(self):
         # Don't submit new create actions if we have user code running, PA is done or

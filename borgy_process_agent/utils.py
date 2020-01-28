@@ -5,17 +5,22 @@ import uuid
 import importlib.util
 from datetime import datetime, timedelta, timezone
 from collections import ChainMap, UserDict
-from typing import Any, Union, Callable, Generator, Tuple, List, Iterator
+from typing import Any, Union, Callable, Generator, Tuple, List, Iterator, Mapping
 from types import ModuleType
 
 SENTINEL = object()
 
+KeyPairGenerator = Generator[Tuple[Any, Any], None, None]
 
-def taketimes(iterable: List, times: int) -> Generator[Tuple[int, Any], None, None]:
-    for i, v in enumerate(iterable):
-        if not times:
-            break
-        yield i, v
+
+def taketimes(iterable: Union[List, Mapping], times: int = None) -> KeyPairGenerator:
+    times = len(iterable) if times is None else times
+    gen = enumerate(iterable) if isinstance(iterable, list) else iterable.items().__iter__()
+    while times:
+        try:
+            yield next(gen)
+        except StopIteration:
+            return
         times -= 1
 
 

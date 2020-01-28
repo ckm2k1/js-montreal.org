@@ -9,7 +9,7 @@ from tests.utils import make_spec
 
 
 @pytest.mark.asyncio
-class TestAgentController:
+class TestController:
 
     async def test_init(self, event_loop: asyncio.AbstractEventLoop):
         agent = init('user', uuid.uuid4(), event_loop, debug=True)
@@ -24,7 +24,6 @@ class TestAgentController:
             print('update')
 
         async def create(agent):
-            print('running create')
             out = []
             if not jobs:
                 return None
@@ -43,8 +42,15 @@ class TestAgentController:
             'submit_parallel': False,
         }
 
-        # event_loop.create_task(agent.run())
-        # event_loop.call_soon(agent.create_jobs)
-        # event_loop.call_soon(agent.create_jobs)
+        shutdown = await agent._process_action()
+        assert shutdown is not True
 
-        # await agent.run()
+        assert len(agent.jobs.get_pending()) == 10
+        assert agent._finished is False
+        assert agent.jobs.has_pending()
+
+        ops = JobsOps.from_dict(agent.create_jobs())
+        assert len(ops.submit) == 10
+        assert len(agent.jobs.get_submitted()) == 10
+        shutdown = await agent._process_action()
+        assert agent._finished is True
