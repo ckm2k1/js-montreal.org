@@ -126,6 +126,12 @@ class Jobs:
     def get_pending(self):
         return [j.copy() for j in self.pending_jobs]
 
+    def get_submitted(self):
+        return [j.copy() for j in self.submitted_jobs_jobs]
+
+    def get_by_type(self, jtype):
+        return [j.copy() for j in getattr(self, f'{jtype}_jobs').values()]
+
     def has_pending(self):
         return bool(self.pending_jobs)
 

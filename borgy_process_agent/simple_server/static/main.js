@@ -89,19 +89,6 @@ function fmtDate(ts) {
     return new Date(ts * 1000).toLocaleString();
 }
 
-function jobStateToCss(state) {
-    state = state.toLowerCase();
-    switch (state) {
-        case "queuing":
-        case "queued":
-        case "running":
-        case "cancelling":
-            return "acked";
-        default:
-            return state;
-    }
-}
-
 function JobTableCell(props) {
     return (
         <tr>
@@ -111,7 +98,7 @@ function JobTableCell(props) {
                     {props.jid}
                 </a>
             </td>
-            <td className={jobStateToCss(props.state)}>{props.state}</td>
+            <td className={props.state.toLowerCase()}>{props.state}</td>
             <td>{fmtDate(props.created)}</td>
             <td>{props.updated && fmtDate(props.updated)}</td>
             <td>{props.spec.name}</td>
@@ -164,6 +151,5 @@ socket.addEventListener("close", function(event) {
     console.log("Process agent disconnected!");
 });
 
-console.log("OH YEAH");
 const domContainer = document.querySelector(".data");
 ReactDOM.render(<Data socket={socket} />, domContainer);

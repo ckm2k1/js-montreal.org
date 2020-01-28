@@ -75,7 +75,7 @@ async def job_view(request: web.Request):
         'user': request.app['user'],
         'js_entrypoint': 'job_view.js',
         'stylesheets': ['job_view.css'],
-        'inline_js': f'window.__job = "{jid}";'
+        'inline_js': f'window.__jid = "{jid}";'
     }
 
     return aiohttp_jinja2.render_template('index.html', request, context)

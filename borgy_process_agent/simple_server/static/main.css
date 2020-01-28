@@ -15,8 +15,13 @@ header {
     color: #333;
     border-bottom: 1px solid #d1d1d1;
     box-shadow: 0 1px 3px #f1f1f1;
-    background: rgb(226,226,226);
-    background: linear-gradient(0deg, rgba(226,226,226,1) 0%, rgba(233,233,233,1) 43%, rgba(240,240,240,1) 100%);
+    background: rgb(226, 226, 226);
+    background: linear-gradient(
+        0deg,
+        rgba(226, 226, 226, 1) 0%,
+        rgba(233, 233, 233, 1) 43%,
+        rgba(240, 240, 240, 1) 100%
+    );
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -41,7 +46,6 @@ header .username {
     padding: 20px;
 }
 
-
 .overview-table {
     border: 1px solid #d3d3d3;
     border-collapse: collapse;
@@ -55,7 +59,8 @@ header .username {
     font-size: 18px;
     font-weight: bold;
 }
-.overview-table td, .overview-table th {
+.overview-table td,
+.overview-table th {
     padding: 5px;
     border: 1px solid #d3d3d3;
     text-align: center;
@@ -66,12 +71,18 @@ header .username {
 .overview-table td.acked {
     background-color: lightblue;
 }
-.overview-table td.submitted {
+.overview-table td.running {
+    background-color: lightgreen;
+}
+.overview-table td.submitted,
+.overview-table td.queued,
+.overview-table td.queuing {
     background-color: yellow;
 }
 .overview-table td.succeeded {
     background-color: green;
 }
-.overview-table td.cancelled {
+.overview-table td.cancelled,
+.overview-table td.cancelling {
     background-color: orange;
 }

@@ -29,13 +29,13 @@ function OutputView() {
             response = await getOutput(jid);
             jobLog = parseLog(response);
         } catch (err) {
-            output = err.message;
+            jobLog = [err.message];
         }
         setState(jobLog);
     }
 
     async function getSocket(jid) {
-        const socket = new WebSocket(`${k8sProxy}/${jid}/logs`);
+        const socket = new WebSocket(`${k8sProxy}/${jid}/logs=follow=1`);
 
         socket.addEventListener("open", event => {
             console.log("Connected to k8s proxy.");
@@ -65,7 +65,6 @@ function OutputView() {
     }
 
     React.useEffect(() => {
-        console.warn("RUNNING EFFECT");
         if (window.__jid) {
             getSocket(window.__jid);
         }
