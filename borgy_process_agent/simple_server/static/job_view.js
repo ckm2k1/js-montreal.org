@@ -1,6 +1,9 @@
 // Create WebSocket connection.
-const draveurUrl = "https://draveur.borgy.elementai.net/v1/jobs/logs";
-const k8sProxy = "wss://k8s-proxy.borgy.elementai.net/jobs";
+const pageProto = window.location.protcol;
+const socketProto = pageProto === "https:" ? "wss:" : "ws:";
+const draveurUrl = `${pageProto}//draveur.borgy.elementai.net/v1/jobs/logs`;
+const k8sProxy = `${socketProto}//k8s-proxy.borgy.elementai.net/jobs`;
+
 async function getOutput(jid) {
     const res = await window.fetch(`${draveurUrl}/${jid}`);
     if (!res.ok) {
@@ -54,7 +57,9 @@ function OutputView() {
         });
 
         socket.addEventListener("error", event => {
-            console.log("Error fetching from K8S Proxy. Trying Draveur instead.");
+            console.log(
+                "Error fetching from K8S Proxy. Trying Draveur instead."
+            );
             getDraveur(jid);
         });
     }

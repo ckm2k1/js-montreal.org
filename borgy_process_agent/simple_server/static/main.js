@@ -139,7 +139,7 @@ function JobTable(props) {
 }
 
 // Create WebSocket connection.
-const proto = window.location.protocol === "https" ? "wss" : "ws";
+const proto = window.location.protocol === "https:" ? "wss" : "ws";
 window.socket = new WebSocket(`${proto}://${window.location.host}/ws`);
 // Connection opened
 socket.addEventListener("open", function(event) {
