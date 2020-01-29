@@ -40,7 +40,7 @@ publish:
 	docker push volatile-images.borgy.elementai.net/asyncagent/asyncagent:latest
 
 run.ork:
-	borgy pa submit -i volatile-images.borgy.elementai.net/asyncagent/asyncagent:latest -- python main.py -d ork
+	borgy pa submit -i volatile-images.borgy.elementai.net/borgy/borgy-process-agent:async -- python main.py -d ork
 
 run.local:
 	python main.py $(args)
