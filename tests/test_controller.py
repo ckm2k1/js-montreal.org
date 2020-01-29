@@ -52,5 +52,5 @@ class TestController:
         ops = JobsOps.from_dict(agent.create_jobs())
         assert len(ops.submit) == 10
         assert len(agent.jobs.get_submitted()) == 10
-        shutdown = await agent._process_action()
-        assert agent._finished is True
+        assert agent.queue.empty()
+        assert agent._finished is False

@@ -81,7 +81,7 @@ class BaseAgent():
             action.fail(exc=ex)
             raise
 
-        if self.jobs._no_new:
+        if not self.jobs.has_more():
             logger.info('User code is finished producing jobs.')
             self._finish()
 
@@ -131,13 +131,9 @@ class BaseAgent():
         if self._usercode_running():
             return JobsOps(submit=[], rerun=[], kill=[]).to_dict()
 
-        self.jobs.submit_pending()
-        self.jobs.submit_jobs_to_rerun()
-        self.jobs.submit_jobs_to_kill()
-
-        ops = JobsOps(submit=[j.to_spec() for j in self.jobs.get_submitted()],
-                      rerun=[j.jid for j in self.jobs.get_rerun()],
-                      kill=[j.jid for j in self.jobs.get_kill()])
+        ops = JobsOps(submit=[j.to_spec() for j in self.jobs.submit_pending(count=100)],
+                      rerun=[j.jid for j in self.jobs.submit_reruns()],
+                      kill=[j.jid for j in self.jobs.submit_kills()])
         return ops.to_dict()
 
     def create_jobs(self) -> asyncio.Future:

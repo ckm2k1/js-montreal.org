@@ -17,6 +17,7 @@ class State(Enum):
     # agent and does not exist on the ork
     # side.
     PENDING = 'PENDING'
+    SUBMITTED = 'SUBMITTED'
     QUEUING = 'QUEUING'
     QUEUED = 'QUEUED'
     RUNNING = 'RUNNING'
@@ -25,9 +26,13 @@ class State(Enum):
     SUCCEEDED = 'SUCCEEDED'
     FAILED = 'FAILED'
     INTERRUPTED = 'INTERRUPTED'
+    # This state is reserved for jobs
+    # that were killed before ever being
+    # acknowledged by the governor.
+    KILLED = 'KILLED'
 
-    def is_finished(self, state):
-        return state in [self.CANCELLED, self.FAILED, self.SUCCEEDED]
+    def is_finished(self):
+        return self in [self.CANCELLED, self.FAILED, self.SUCCEEDED]
 
-    def is_acked(self, state):
-        return state not in [self.PENDING, self.SUBMITTED]
+    def is_acked(self):
+        return self in [self.QUEUED, self.QUEUING, self.RUNNING, self.CANCELLING]

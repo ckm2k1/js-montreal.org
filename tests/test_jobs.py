@@ -29,7 +29,7 @@ class TestJobs:
         assert jobs._pa_id == id_
         assert jobs._job_name_prefix == 'myprefix'
         assert jobs._auto_rerun is True
-        assert jobs._no_new is False
+        assert jobs.has_more() is True
 
     def test_create(self, jobs: Jobs, specs: List[JobSpec]):
         jobs.create([s.to_dict() for s in specs])
@@ -38,7 +38,7 @@ class TestJobs:
         assert len(pending) == 20
         assert all(map(lambda j: isinstance(j, Job), pending))
         jobs.create(None)
-        assert jobs._no_new is True
+        assert jobs.has_more() is False
         assert jobs.all_done() is False
 
     def test_submitted(self, jobs: Jobs, specs: List[JobSpec]):

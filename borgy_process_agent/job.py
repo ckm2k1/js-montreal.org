@@ -152,6 +152,27 @@ class Job:
         self._diff = [diffop(*e) for e in list(diff(oj.to_dict(), self.ork_job.to_dict()))]
         self.ork_job = copy.deepcopy(oj)
 
+    def is_pending(self) -> bool:
+        return self.state == State.PENDING
+
+    def is_submitted(self) -> bool:
+        return self.state == State.SUBMITTED
+
+    def is_finished(self) -> bool:
+        return self.state.is_finished()
+
+    def is_acked(self) -> bool:
+        return self.state.is_acked()
+
+    def is_interrupted(self) -> bool:
+        return self.state == State.INTERRUPTED
+
+    def submit(self):
+        self.state = State.SUBMITTED
+
+    def kill(self):
+        self.state = State.KILLED
+
     def has_changed(self, prop: str) -> bool:
         for d in self._diff:
             if d.prop == prop:
