@@ -55,13 +55,15 @@ class TestJobs:
         jobs.create([s.to_dict() for s in specs])
         ojs = []
         for job in jobs.get_pending():
-            ork = OrkJob.from_dict({**job.spec.to_dict(), 'labels': []})
-            ork.state = 'RUNNING'
-            ojs.append(model_to_json(ork))
+            ork = MockJob(index=job.index, **model_to_json(job.spec))
+            ork = ork.get()
+            ork['state'] = 'RUNNING'
+            ojs.append(ork)
         jobs.update_jobs(ojs)
         assert jobs.has_pending() is False
         assert len(jobs.get_submitted()) == 0
         assert len(jobs.acked_jobs) == 20
+        assert all(map(lambda j: j.state.value == 'RUNNING', jobs.get_acked()))
 
     def test_kill(self, jobs: Jobs):
         pass

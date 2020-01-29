@@ -25,3 +25,9 @@ class State(Enum):
     SUCCEEDED = 'SUCCEEDED'
     FAILED = 'FAILED'
     INTERRUPTED = 'INTERRUPTED'
+
+    def is_finished(self, state):
+        return state in [self.CANCELLED, self.FAILED, self.SUCCEEDED]
+
+    def is_acked(self, state):
+        return state not in [self.PENDING, self.SUBMITTED]

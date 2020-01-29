@@ -35,8 +35,8 @@ class Jobs:
         # If auto_rerun is set, this will contain rerunable jobs.
         self.rerun_jobs = {}
         # ChainMap that allows access to jobs via their index.
-        self.all_jobs = DeepChainMap(self.submitted_jobs, self.rerun_jobs, self.acked_jobs,
-                                     self.kill_jobs, self.finished_jobs)
+        self.all_jobs = DeepChainMap(self.pending_jobs, self.submitted_jobs, self.rerun_jobs,
+                                     self.acked_jobs, self.kill_jobs, self.finished_jobs)
         # Child jobs will be prefixed with this string.
         self._job_name_prefix = job_name_prefix
         # If true, PA will automatically resubmit INTERRUPTED
@@ -98,9 +98,11 @@ class Jobs:
         return jobs
 
     def kill_job(self, job: Job):
-        if not job.jid:
-            return
-        self.kill_jobs[job.index] = self.all_jobs.pop(job.index)
+        # Pending jobs go straight to finished
+        if job.index in self.pending_jobs:
+            self.finished_jobs[job.index] = self.all_jobs.pop(job.index)
+        else:
+            self.kill_jobs[job.index] = self.all_jobs.pop(job.index)
 
     def get_by_type(self, type: str) -> List[Job]:
         return [j.copy() for j in getattr(self, f'{type}_jobs').values()]
@@ -147,13 +149,13 @@ class Jobs:
         # receiving updates for running jobs that are running in
         # the cluster but don't exist in our internal state yet.
         if job is None:
-            job = Job.from_ork_job(index,
-                                   self._user,
-                                   self._pa_id,
-                                   jid=oj.id,
-                                   name_prefix=self._job_name_prefix,
-                                   ork_job=oj)
-            self.submitted_jobs[index] = job
+            job = Job(index,
+                      self._user,
+                      self._pa_id,
+                      jid=oj.id,
+                      name_prefix=self._job_name_prefix,
+                      ork_job=oj)
+            self.acked_jobs[index] = job
 
         job.update_from_ork(oj)
         if job.has_changed('state'):

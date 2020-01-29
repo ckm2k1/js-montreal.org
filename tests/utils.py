@@ -1,26 +1,43 @@
 import uuid
+import copy
 from typing import Mapping
 
 from borgy_process_agent_api_server.models import Job, JobSpec
 from borgy_process_agent_api_server.models.base_model_ import Model
 
 from borgy_process_agent.job import Restart
-from borgy_process_agent.utils import get_now_isoformat
+from borgy_process_agent.utils import get_now_isoformat, Indexer
 
-mock_pa_index = 0
+SPEC_DEFAULTS = {
+    'command': ['bash', '-c', 'sleep 10'],
+    'createdBy': '',
+    'environmentVars': [],
+    'interactive': False,
+    'labels': [],
+    'maxRunTimeSecs': 0,
+    'name': '',
+    'options': {},
+    'preemptable': True,
+    'reqCores': 1,
+    'reqGpus': 0,
+    'reqRamGbytes': 1,
+    'restart': Restart.NO.value,
+    'stdin': False,
+    'volumes': [],
+    'workdir': ''
+}
 
-DEFAULT_COMMAND = ['bash', '-c', 'sleep 10']
 
-
-def make_spec(*args, **kwargs):
-    kwargs['command'] = kwargs.get('command', DEFAULT_COMMAND)
-    return JobSpec(*args, **kwargs)
+def make_spec(*args, **kwargs) -> JobSpec:
+    spec = copy.deepcopy(SPEC_DEFAULTS)
+    spec.update(kwargs)
+    return JobSpec.from_dict(spec)
 
 
 class MockJob():
 
-    def __init__(self, **kwargs):
-        global mock_pa_index
+    def __init__(self, index=None, **kwargs):
+        self._idx = Indexer()
         job_id = str(uuid.uuid4())
         self._job = {
             'alive': False,
@@ -28,9 +45,9 @@ class MockJob():
             'command': [],
             'createdBy': 'guillaume.smaha@elementai.com',
             'createdOn': get_now_isoformat(),
-            'environmentVars': [f'EAI_PROCESS_AGENT_INDEX={mock_pa_index}'],
+            'environmentVars': [f'EAI_PROCESS_AGENT_INDEX={self._idx.next()}'],
             'evictOthersIfNeeded': False,
-            'image': "images.borgy.elementai.net/borgy/borsh:latest",
+            'image': 'images.borgy.elementai.net/borgy/borsh:latest',
             'id': job_id,
             'interactive': False,
             'isProcessAgent': False,
@@ -58,24 +75,26 @@ class MockJob():
             'volumes': [],
             'workdir': ""
         }
-        mock_pa_index += 1
 
         if 'state' in kwargs:
+            self._job['state'] = kwargs['state']
             self._job['runs'][0]['state'] = kwargs['state']
 
-        if kwargs and isinstance(kwargs, dict):
-            for k, v in kwargs.items():
-                if k == "paIndex":
-                    for e in self._job['environmentVars']:
-                        if e.startswith('EAI_PROCESS_AGENT_INDEX='):
-                            self._job['environmentVars'].remove(e)
-                            break
-                    self._job['environmentVars'].append("EAI_PROCESS_AGENT_INDEX=" + str(v))
-                else:
-                    self._job[k] = v
+        if index is not None:
+            self._set_index(index)
+
+        for k, v in kwargs.items():
+            self._job[k] = v
 
     def get(self):
         return self._job
+
+    def _set_index(self, index):
+        for var in self._job['environmentVars']:
+            if var.startswith('EAI_PROCESS_AGENT_INDEX='):
+                self._job['environmentVars'].remove(var)
+                break
+        self._job['environmentVars'].append(f"EAI_PROCESS_AGENT_INDEX={index}")
 
     def get_job(self):
         return Job.from_dict(self._job)
