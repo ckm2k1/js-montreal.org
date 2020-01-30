@@ -80,7 +80,10 @@ class Jobs:
                       pa_id=self._pa_id,
                       spec=j,
                       name_prefix=self._job_name_prefix)
-            self.pending_jobs[job.index] = job
+            if job in self.all_jobs.values():
+                continue
+            else:
+                self.pending_jobs[job.index] = job
 
     def kill_job(self, job: Job):
         # Pending jobs go straight to finished
