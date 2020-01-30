@@ -42,5 +42,8 @@ publish:
 run.ork:
 	borgy pa submit -i volatile-images.borgy.elementai.net/borgy/borgy-process-agent:async -- python main.py -d ork
 
+run.ork.inter:
+	borgy pa submit --preemptable -a interrupts=3 -a interrupt-after=20 -i volatile-images.borgy.elementai.net/borgy/borgy-process-agent:inter -- python main.py -d ork -v
+
 run.local:
 	python main.py $(args)
