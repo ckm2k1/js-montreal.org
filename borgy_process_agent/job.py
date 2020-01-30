@@ -53,7 +53,7 @@ class Job:
         self.state: State = State.PENDING
         self._name_prefix: str = name_prefix
         self.pa_id: str = pa_id
-        self.ork_job: OrkJob = OrkJob.from_dict(ork_job) if ork_job is not None else OrkJob()
+        self.ork_job: OrkJob = ork_job if ork_job is not None else OrkJob()
         if spec is not None:
             self.spec: JobSpec = self._make_spec(spec)
         else:

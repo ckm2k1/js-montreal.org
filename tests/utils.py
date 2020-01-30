@@ -80,11 +80,11 @@ class MockJob():
             self._job['state'] = kwargs['state']
             self._job['runs'][0]['state'] = kwargs['state']
 
-        if index is not None:
-            self._set_index(index)
-
         for k, v in kwargs.items():
             self._job[k] = v
+
+        if index is not None:
+            self._set_index(index)
 
     def get(self):
         return self._job

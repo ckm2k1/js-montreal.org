@@ -190,3 +190,7 @@ class Jobs:
                 updated.append({'job': job.to_dict(), 'update': job.diff})
 
         return updated
+
+    def __repr__(self):
+        from pprint import pprint
+        return pprint(self.get_counts(), indent=4)

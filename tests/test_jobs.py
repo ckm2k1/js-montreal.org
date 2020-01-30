@@ -65,6 +65,20 @@ class TestJobs:
         assert len(jobs.acked_jobs) == 20
         assert all(map(lambda j: j.state.value == 'RUNNING', jobs.get_acked()))
 
+    def test_update_non_existant(self, jobs: Jobs, specs: List[JobSpec]):
+        ojs = []
+        for i, spec in enumerate(specs):
+            ork = MockJob(index=i, **model_to_json(spec))
+            ork = ork.get()
+            ork['state'] = 'RUNNING'
+            ojs.append(ork)
+        jobs.update_jobs(ojs)
+        assert jobs.has_pending() is False
+        assert len(jobs.get_submitted()) == 0
+        assert len(jobs.acked_jobs) == 20
+        # print(jobs)
+        assert all(map(lambda j: j.state.value == 'RUNNING', jobs.get_acked()))
+
     def test_kill(self, jobs: Jobs):
         pass
 
