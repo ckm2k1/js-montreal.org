@@ -27,7 +27,6 @@ function Data(props) {
     });
 
     function handleUpdate(event) {
-        console.log("DATA", event.data);
         setState(JSON.parse(event.data));
     }
 

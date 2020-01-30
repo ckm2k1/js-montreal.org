@@ -1,5 +1,5 @@
 // Create WebSocket connection.
-const pageProto = window.location.protcol;
+const pageProto = window.location.protocol;
 const socketProto = pageProto === "https:" ? "wss:" : "ws:";
 const draveurUrl = `${pageProto}//draveur.borgy.elementai.net/v1/jobs/logs`;
 const k8sProxy = `${socketProto}//k8s-proxy.borgy.elementai.net/jobs`;
@@ -38,7 +38,7 @@ function OutputView() {
     }
 
     async function getSocket(jid) {
-        const socket = new WebSocket(`${k8sProxy}/${jid}/logs=follow=1`);
+        const socket = new WebSocket(`${k8sProxy}/${jid}/logs?follow=1`);
 
         socket.addEventListener("open", event => {
             console.log("Connected to k8s proxy.");
