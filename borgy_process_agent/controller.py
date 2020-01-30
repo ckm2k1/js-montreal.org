@@ -48,12 +48,12 @@ class BaseAgent():
     async def _update(self, data: List[OrkJob]):
         async with self._jobs_lock:
             updated = self.jobs.update_jobs(data)
-            await self.update_callback(self, updated)
+            await self.update_callback(self.jobs, updated)
             logger.info(self.jobs.get_counts())
 
     async def _create(self):
         async with self._jobs_lock:
-            jobs = await self.create_callback(self)
+            jobs = await self.create_callback(self.jobs)
             self.jobs.create(jobs)
             logger.info(self.jobs.get_counts())
 

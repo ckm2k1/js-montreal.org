@@ -16,12 +16,16 @@ base_job: dict = {
     'reqGpus': 1
 }
 
-jobs = deque([copy.deepcopy(base_job) for i in range(50)])
+jobs = deque([copy.deepcopy(base_job) for i in range(30)])
 
 
 async def user_update(agent, jobs):
     for j in jobs:
-        logger.debug('Updating job %s', j['job']['index'])
+        job = j['job']
+        logger.debug('Updating job %s', job.index)
+        if not job.index % 5:
+            logger.debug('*********KILLING JOB***********: %s -- %s', job.index, job.jid)
+            agent.kill_job(job)
 
 
 async def user_create(agent):

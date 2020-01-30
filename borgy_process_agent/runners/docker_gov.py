@@ -228,39 +228,41 @@ class DockerGovernor:
                 ended_on = get_now_isoformat()
                 if job['container']:
                     ended_on = job['container'].attrs['State']['FinishedAt']
-                job['job'].runs[-1].cancelled_on = ended_on
-                job['job'].runs[-1].ended_on = ended_on
+                last_run = job['job'].runs[-1]
+                last_run.cancelled_on = ended_on
+                last_run.ended_on = ended_on
             elif state == State.FAILED:
                 ended_on = get_now_isoformat()
                 if job['container']:
                     ended_on = job['container'].attrs['State']['FinishedAt']
-                job['job'].runs[-1].ended_on = ended_on
-                job['job'].runs[-1].exit_code = 255
+                last_run = job['job'].runs[-1]
+                last_run.ended_on = ended_on
+                last_run.exit_code = 255
                 if job['container']:
-                    job['job'].runs[-1].result = job['container'].logs(
-                        stdout=True, stderr=True).decode('utf8', errors='replace')
+                    logs = job['container'].logs(stdout=True, stderr=True)
+                    last_run.result = logs.decode('utf8', errors='replace')
                     if self._options.get('docker_remove', True):
                         job['container'].remove()
             elif state == State.SUCCEEDED:
                 ended_on = get_now_isoformat()
                 if job['container']:
                     ended_on = job['container'].attrs['State']['FinishedAt']
-                job['job'].runs[-1].ended_on = ended_on
-                job['job'].runs[-1].exit_code = 0
+                last_run = job['job'].runs[-1]
+                last_run.ended_on = ended_on
+                last_run.exit_code = 0
                 if job['container']:
-                    job['job'].runs[-1].result = job['container'].logs(
-                        stdout=True, stderr=True).decode('utf8', errors='replace')
+                    logs = job['container'].logs(stdout=True, stderr=True)
+                    last_run.result = logs.decode('utf8', errors='replace')
                     if self._options.get('docker_remove', True):
                         job['container'].remove()
             elif state == State.INTERRUPTED:
                 if job['job'].restart == Restart.ON_INTERRUPTION.value:
-                    job['job'].runs[-1].state = State.INTERRUPTED.value
-                    job['job'].runs[-1].ended_on = get_now_isoformat()
+                    last_run = job['job'].runs[-1]
+                    last_run.state = State.INTERRUPTED.value
+                    last_run.ended_on = get_now_isoformat()
                     if job['container']:
-                        job['job'].runs[-1].result = job['container'].logs(stdout=True,
-                                                                           stderr=True).decode(
-                                                                               'utf8',
-                                                                               errors='replace')
+                        logs = job['container'].logs(stdout=True, stderr=True)
+                        last_run.result = logs.decode('utf8', errors='replace')
                     new_run = {
                         'createdOn': get_now_isoformat(),
                         'jobId': job_id,

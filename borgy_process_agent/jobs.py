@@ -84,7 +84,7 @@ class Jobs:
 
     def kill_job(self, job: Job):
         # Pending jobs go straight to finished
-        if job.index in self.pending_jobs:
+        if job.is_pending():
             job.kill()
             self.finished_jobs[job.index] = self.all_jobs.pop(job.index)
         else:
@@ -187,7 +187,7 @@ class Jobs:
         for oj in jobs:
             job = self._update_job(OrkJob.from_dict(oj))
             if job.diff:
-                updated.append({'job': job.to_dict(), 'update': job.diff})
+                updated.append({'job': job, 'update': job.diff})
 
         return updated
 
