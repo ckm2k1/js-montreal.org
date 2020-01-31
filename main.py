@@ -43,6 +43,10 @@ parser.add_argument('-k',
                     default=False,
                     help='Keep the API server alive after all jobs complete. '
                     'Allows to keep using the UI for exploring jobs.')
+parser.add_argument('--disable-auto-rerun',
+                    action='store_true',
+                    default=False,
+                    help='Do not automatically rerun INTERRUPTED jobs.')
 
 
 def import_runner(module):
@@ -66,7 +70,12 @@ if runner_name == 'auto':
 Runner: BaseRunner = import_runner(runner_name)
 logger.info('Loading user code module: %s', args.code)
 usercode = load_module_from_path(args.code)
-runner = Runner(api_host=api_host, api_port=api_port, debug=debug, keep_alive=args.keep_alive)
+auto_rerun = not args.disable_auto_rerun
+runner = Runner(api_host=api_host,
+                api_port=api_port,
+                debug=debug,
+                keep_alive=args.keep_alive,
+                auto_rerun=auto_rerun)
 runner.register_callback('create', usercode.user_create)
 runner.register_callback('update', usercode.user_update)
 runner.start()

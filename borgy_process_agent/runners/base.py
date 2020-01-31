@@ -15,7 +15,8 @@ class BaseRunner():
                  debug=None,
                  api_host='0.0.0.0',
                  api_port=8666,
-                 keep_alive=False):
+                 keep_alive=False,
+                 auto_rerun=True):
         self._pa_job_id = pa_jid
         self._pa_user = pa_user
         self._debug = debug
@@ -27,6 +28,7 @@ class BaseRunner():
         self._app = server.init(self._agent, self._on_cleanup)
         self._tasks = []
         self._exc_exit = False
+        self._auto_rerun
         if debug is not None:
             self._loop.set_debug(debug)
 

@@ -30,43 +30,43 @@ class Jobs:
 
         # New jobs and jobs that have been submitted to the governor
         # but have not yet been acknoledged by the governor.
-        self.pending_jobs: JobMap = {}
+        self._pending_jobs: JobMap = {}
         # Jobs that have been acked but have not finished running.
-        self.acked_jobs: JobMap = {}
+        self._acked_jobs: JobMap = {}
         # Jobs that finished their run for either of the
         # following reasons: success, failure, interrupted, cancelled.
-        self.finished_jobs: JobMap = {}
+        self._finished_jobs: JobMap = {}
         # Jobs that should be killed on the next
         # round of job creation.
-        self.kill_jobs: Set[JobIndex] = set()
+        self._kill_jobs: Set[JobIndex] = set()
         # If auto_rerun is set, this will contain rerunable jobs.
-        self.rerun_jobs: Set[JobIndex] = set()
+        self._rerun_jobs: Set[JobIndex] = set()
         # ChainMap that allows access to jobs via their index.
-        self.all_jobs = DeepChainMap(self.pending_jobs, self.acked_jobs, self.finished_jobs)
+        self._all_jobs = DeepChainMap(self._pending_jobs, self._acked_jobs, self._finished_jobs)
 
     def get_pending(self) -> List[Job]:
-        return [j for j in self.pending_jobs.values() if j.is_pending()]
+        return [j for j in self._pending_jobs.values() if j.is_pending()]
 
     def get_submitted(self) -> List[Job]:
-        return [j for j in self.pending_jobs.values() if j.is_submitted()]
+        return [j for j in self._pending_jobs.values() if j.is_submitted()]
 
     def get_acked(self) -> List[Job]:
-        return list(self.acked_jobs.values())
+        return list(self._acked_jobs.values())
 
     def get_finished(self) -> List[Job]:
-        return list(self.finished_jobs.values())
+        return list(self._finished_jobs.values())
 
     def get_kill(self) -> List[Job]:
-        return [self.all_jobs[i] for i in self.kill_jobs]
+        return [self._all_jobs[i] for i in self._kill_jobs]
 
     def get_rerun(self) -> List[Job]:
-        return [self.all_jobs[i] for i in self.rerun_jobs]
+        return [self._all_jobs[i] for i in self._rerun_jobs]
 
     def get_by_state(self, state: State) -> List[Job]:
-        return [j for j in self.all_jobs.values() if j.state == state]
+        return [j for j in self._all_jobs.values() if j.state == state]
 
     def has_pending(self) -> bool:
-        return bool(self.pending_jobs)
+        return bool(self._pending_jobs)
 
     def submit_reruns(self) -> List[Job]:
         return self.get_rerun()
@@ -75,8 +75,8 @@ class Jobs:
         return self.get_kill()
 
     def submit_pending(self, count: Optional[int] = None) -> List[Job]:
-        count = len(self.pending_jobs) if count is None else count
-        to_submit = [v for _, v in taketimes(self.pending_jobs, times=count)]
+        count = len(self._pending_jobs) if count is None else count
+        to_submit = [v for _, v in taketimes(self._pending_jobs, times=count)]
         for s in to_submit:
             s.submit()
         return to_submit
@@ -93,17 +93,17 @@ class Jobs:
             # to see that a pending job was kill'd before
             # ever running.
             job.kill()
-            self.finished_jobs[job.index] = self.all_jobs.pop(job.index)
+            self._finished_jobs[job.index] = self._all_jobs.pop(job.index)
             return
 
-        self.kill_jobs.add(job.index)
+        self._kill_jobs.add(job.index)
 
     def rerun_job(self, job: Job):
         # Doesn't make sense to rerun something
         # that hasn't finished yet.
         if not (job.is_finished() or job.is_interrupted()):
             return
-        self.rerun_jobs.add(job.index)
+        self._rerun_jobs.add(job.index)
 
     def get_stats(self):
         obj = {
@@ -118,17 +118,16 @@ class Jobs:
         return obj
 
     def get_counts(self):
-        obj = {
-            'pending': len(self.pending_jobs),
-            'submitted': len(self.pending_jobs),
-            'acked': len(self.acked_jobs),
-            'succeeded': len([j for j in self.get_by_state(State.SUCCEEDED)]),
-            'failed': len([j for j in self.get_by_state(State.FAILED)]),
-            'cancelled': len([j for j in self.get_by_state(State.CANCELLED)]),
-        }
-        obj['total'] = obj['submitted'] + obj['acked'] + obj['succeeded'] + obj['failed'] + obj[
-            'cancelled']
-        return obj
+        stats = self.get_stats()
+        stats['pending'] = len(stats['pending'])
+        stats['submitted'] = len(stats['submitted'])
+        stats['acked'] = len(stats['acked'])
+        stats['succeeded'] = len(stats['succeeded'])
+        stats['failed'] = len(stats['failed'])
+        stats['cancelled'] = len(stats['cancelled'])
+        stats['total'] = (stats['submitted'] + stats['acked'] + stats['succeeded'] +
+                          stats['failed'] + stats['cancelled'])
+        return stats
 
     def create(self, new_jobs: Optional[List[JobSpec]]):
         if new_jobs is None:
@@ -141,14 +140,14 @@ class Jobs:
                       pa_id=self._pa_id,
                       spec=j,
                       name_prefix=self._job_name_prefix)
-            if job.index in self.all_jobs:
+            if job.index in self._all_jobs:
                 continue
             else:
-                self.pending_jobs[job.index] = job
+                self._pending_jobs[job.index] = job
 
     def _update_job(self, oj: OrkJob) -> Job:
         index: int = Job.get_index(oj)
-        job: Optional[Job] = self.all_jobs.get(index)
+        job: Optional[Job] = self._all_jobs.get(index)
 
         # The PA was restarted most likely (or governor) and we're
         # receiving updates for running jobs that are running in
@@ -160,35 +159,35 @@ class Jobs:
                       jid=oj.id,
                       name_prefix=self._job_name_prefix,
                       spec=Job.spec_from_ork_job(oj))
-            self.acked_jobs[index] = job
+            self._acked_jobs[index] = job
 
         job.update_from_ork(oj)
         if job.has_changed('state'):
-            self.all_jobs.pop(index)
+            self._all_jobs.pop(index)
 
             # Getting an update for a rerun job
             # means the gov is dealing with it
             # and we don't have to resubmit it.
-            if index in self.rerun_jobs:
-                self.rerun_jobs.remove(index)
+            if index in self._rerun_jobs:
+                self._rerun_jobs.remove(index)
 
             if job.is_acked():
-                self.acked_jobs[index] = job
+                self._acked_jobs[index] = job
 
             elif job.is_interrupted():
                 if self._auto_rerun:
                     self.rerun_job(job)
-                    self.acked_jobs[index] = job
+                    self._acked_jobs[index] = job
                 else:
-                    self.finished_jobs[index] = job
+                    self._finished_jobs[index] = job
 
             elif job.is_finished():
-                self.finished_jobs[index] = job
+                self._finished_jobs[index] = job
 
         # Updates for kill jobs with any acked or finished
         # states can be safely removed from the kill queue.
-        if index in self.kill_jobs and (job.is_finished() or job.is_acked()):
-            self.kill_jobs.remove(index)
+        if index in self._kill_jobs and (job.is_finished() or job.is_acked()):
+            self._kill_jobs.remove(index)
 
         return job
 
@@ -202,7 +201,7 @@ class Jobs:
         return updated
 
     def all_done(self) -> bool:
-        return not self.has_more() and len(self.finished_jobs) == len(self.all_jobs)
+        return not self.has_more() and len(self._finished_jobs) == len(self._all_jobs)
 
     def has_more(self):
         return self._has_more_new_jobs

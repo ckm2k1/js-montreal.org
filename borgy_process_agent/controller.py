@@ -20,7 +20,14 @@ def raiser(fut: asyncio.Future):
 
 class BaseAgent():
 
-    def __init__(self, loop, pa_id, user, debug=None, queue=None, job_name_prefix='pa_child_job'):
+    def __init__(self,
+                 loop,
+                 pa_id,
+                 user,
+                 debug=None,
+                 queue=None,
+                 job_name_prefix='pa_child_job',
+                 auto_rerun=True):
         self.user: str = user
         self.id: UUID = pa_id
         self.loop: asyncio.AbstractEventLoop = loop
@@ -29,7 +36,7 @@ class BaseAgent():
         self._ready: bool = False
         self.update_callback: Callable[[BaseAgent, List[Mapping]], None] = None
         self.create_callback: Callable[[BaseAgent], List[JobSpec]] = None
-        self.jobs: Jobs = Jobs(user, pa_id, job_name_prefix=job_name_prefix)
+        self.jobs: Jobs = Jobs(user, pa_id, job_name_prefix=job_name_prefix, auto_rerun=auto_rerun)
         self._finished: bool = False
         self._debug: bool = debug
         self._task_prio = Indexer(initial=1)
@@ -186,9 +193,10 @@ def init(user: str,
          loop: asyncio.AbstractEventLoop,
          queue: Optional[asyncio.Queue] = None,
          agent: Optional[BaseAgent] = None,
-         debug: Optional[bool] = None) -> BaseAgent:
+         debug: Optional[bool] = None,
+         auto_rerun: Optional[bool] = True) -> BaseAgent:
 
     if agent is None:
-        agent = BaseAgent(loop, user, pa_id, queue=queue, debug=debug)
+        agent = BaseAgent(loop, user, pa_id, queue=queue, debug=debug, auto_rerun=auto_rerun)
 
     return agent

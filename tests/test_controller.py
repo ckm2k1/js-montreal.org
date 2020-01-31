@@ -15,7 +15,7 @@ class TestController:
         agent = init('user', uuid.uuid4(), event_loop, debug=True)
         assert isinstance(agent, BaseAgent)
 
-    async def test_run(self, event_loop: asyncio.AbstractEventLoop):
+    async def test_create_action(self, event_loop: asyncio.AbstractEventLoop):
         pa_id = uuid.uuid4()
         agent = init('user', pa_id, event_loop, debug=True)
         jobs = [make_spec().to_dict() for i in range(10)]

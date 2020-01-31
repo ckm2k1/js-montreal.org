@@ -62,7 +62,7 @@ class TestJobs:
         jobs.update(ojs)
         assert jobs.has_pending() is False
         assert len(jobs.get_submitted()) == 0
-        assert len(jobs.acked_jobs) == 20
+        assert len(jobs._acked_jobs) == 20
         assert all(map(lambda j: j.state == State.RUNNING, jobs.get_acked()))
 
     def test_update_non_existant(self, jobs: Jobs, specs: SpecList):
@@ -74,7 +74,7 @@ class TestJobs:
         jobs.update(ojs)
         assert jobs.has_pending() is False
         assert len(jobs.get_submitted()) == 0
-        assert len(jobs.acked_jobs) == 20
+        assert len(jobs._acked_jobs) == 20
         assert all(map(lambda j: j.state == State.RUNNING, jobs.get_acked()))
 
     def test_duplicate_jobs_after_restart(self, jobs: Jobs, specs: SpecList):
@@ -121,12 +121,16 @@ class TestJobs:
         jobs.kill_job(a1)
         # Finished jobs don't need any killin'
         jobs.kill_job(f1)
-        assert len(jobs.kill_jobs) == 1
-        assert not jobs.kill_jobs.difference(set([a1.index]))
+        assert len(jobs._kill_jobs) == 1
+        assert not jobs._kill_jobs.difference(set([a1.index]))
         assert p1.is_finished() is True and p1.state == State.KILLED
-        assert p1 in jobs.get_finished() and p1.index not in jobs.kill_jobs
-        assert f1 in jobs.get_finished() and f1.index not in jobs.kill_jobs
+        assert p1 in jobs.get_finished() and p1.index not in jobs._kill_jobs
+        assert f1 in jobs.get_finished() and f1.index not in jobs._kill_jobs
         assert [a1] == jobs.submit_kills() and a1.jid == jobs.submit_kills()[0].jid
+        jobs.update([mock_job_from_job(a1, state=State.CANCELLED.value).get()])
+        assert len(jobs._kill_jobs) == 0
+        assert a1.is_finished()
+        assert a1 in jobs.get_finished()
 
     def test_rerun(self, jobs: Jobs, specs: SpecList):
         jobs.create(s.to_dict() for s in specs)
@@ -145,7 +149,7 @@ class TestJobs:
         for job in jobs.get_finished():
             jobs.rerun_job(job)
         assert len(jobs.get_rerun()) == 10
-        assert not jobs.rerun_jobs.difference(set(j.index for j in jobs.get_finished()))
+        assert not jobs._rerun_jobs.difference(set(j.index for j in jobs.get_finished()))
         assert len(jobs.submit_reruns()) == 10
         # Make all rerun jobs
         ojs = [
@@ -154,7 +158,12 @@ class TestJobs:
         jobs.update(ojs)
         assert len(jobs.get_finished()) == 0
         assert len(jobs.get_acked()) == 10
-        assert len(jobs.rerun_jobs) == 0
+        assert len(jobs.get_rerun()) == 0
+
+        # Reruning non (interrupted or finished) jobs is a no-op.
+        jobs.rerun_job(jobs.get_by_state(State.RUNNING)[0])
+        jobs.rerun_job(jobs.get_by_state(State.PENDING)[0])
+        assert len(jobs.get_rerun()) == 0
 
     def test_auto_rerun(self, jobs: Jobs, specs: SpecList):
         jobs.create(s.to_dict() for s in specs)
@@ -169,7 +178,7 @@ class TestJobs:
         oj = mock_job_from_job(job, state=State.INTERRUPTED.value).get()
         jobs.update([oj])
         assert job.is_interrupted()
-        assert job.index in jobs.acked_jobs and job.index in jobs.rerun_jobs
+        assert job.index in jobs._acked_jobs and job.index in jobs._rerun_jobs
         oj['state'] = State.RUNNING.value
         jobs.update([oj])
         assert job.is_acked()
@@ -195,3 +204,54 @@ class TestJobs:
             for job in jobs.get_submitted())
         jobs.create(None)
         assert jobs.has_more() is False
+
+    def test_by_state(self, jobs: Jobs, specs: SpecList):
+        jobs.create(s.to_dict() for s in specs)
+        assert len(jobs.get_by_state(State.PENDING)) == 20
+        jobs.submit_pending(10)
+        assert len(jobs.get_by_state(State.SUBMITTED)) == 10
+        assert len(jobs.get_by_state(State.PENDING)) == 10
+        assert len(jobs.get_by_state(State.SUCCEEDED)) == 0
+        assert len(jobs.get_by_state(State.RUNNING)) == 0
+        jobs.update(
+            mock_job_from_job(job, state=State.RUNNING.value).get()
+            for job in jobs.get_submitted())
+        assert len(jobs.get_by_state(State.RUNNING)) == 10
+
+    def test_stats(self, jobs: Jobs, specs: SpecList):
+        stats = jobs.get_counts()
+        assert stats == {
+            'pending': 0,
+            'submitted': 0,
+            'acked': 0,
+            'succeeded': 0,
+            'failed': 0,
+            'cancelled': 0,
+            'total': 0
+        }
+        jobs.create(s.to_dict() for s in specs)
+        assert jobs.get_counts()['pending'] == 20
+        jobs.submit_pending(5)
+
+        counts = jobs.get_counts()
+        assert counts['pending'] == 15
+        assert counts['submitted'] == 5
+
+        jobs.update(
+            mock_job_from_job(job, state=State.SUCCEEDED.value).get()
+            for job in jobs.get_submitted())
+        counts = jobs.get_counts()
+        assert counts['pending'] == 15
+        assert counts['submitted'] == 0
+        assert counts['succeeded'] == 5
+
+        jobs.submit_pending(5)
+        assert len(jobs.get_submitted()) == 5
+        jobs.update(
+            mock_job_from_job(job, state=State.FAILED.value).get()
+            for job in jobs.get_submitted())
+        counts = jobs.get_counts()
+        assert counts['pending'] == 10
+        assert counts['submitted'] == 0
+        assert counts['failed'] == 5
+        assert counts['succeeded'] == 5
