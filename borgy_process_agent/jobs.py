@@ -86,12 +86,21 @@ class Jobs:
                 self.pending_jobs[job.index] = job
 
     def kill_job(self, job: Job):
+        if job.is_finished():
+            return
         # Pending jobs go straight to finished
         if job.is_pending():
+            # The .kill() is unique to pending jobs
+            # because they never had a state from the
+            # governor so we give them an internal PA
+            # state. This is handy in the UI for the user
+            # to see that a pending job was kill'd before
+            # ever running.
             job.kill()
             self.finished_jobs[job.index] = self.all_jobs.pop(job.index)
-        else:
-            self.kill_jobs.add(job.index)
+            return
+
+        self.kill_jobs.add(job.index)
 
     def rerun_job(self, job: Job):
         self.rerun_jobs.add(job.index)
