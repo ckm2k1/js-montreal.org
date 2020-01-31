@@ -249,6 +249,7 @@ def load_module_from_path(path: str) -> ModuleType:
     """
     assert path, 'Invalid module path.'
     spec = importlib.util.spec_from_file_location('usercode', location=path)
+    assert spec, f'No valid python module found at path {path}'
     usercode = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(usercode)
     return usercode
