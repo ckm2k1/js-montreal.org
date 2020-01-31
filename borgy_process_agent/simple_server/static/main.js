@@ -113,6 +113,9 @@ function JobTableCell(props) {
 
 function JobTable(props) {
     const { jobs = [], name } = props;
+    jobs.sort((a, b) => {
+        return a.index - b.index;
+    });
 
     return (
         <table className="overview-table">
