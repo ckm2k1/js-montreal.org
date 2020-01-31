@@ -32,7 +32,7 @@ class State(Enum):
     KILLED = 'KILLED'
 
     def is_finished(self):
-        return self in [self.CANCELLED, self.FAILED, self.SUCCEEDED]
+        return self in [self.CANCELLED, self.FAILED, self.SUCCEEDED, self.KILLED]
 
     def is_acked(self):
         return self in [self.QUEUED, self.QUEUING, self.RUNNING, self.CANCELLING]

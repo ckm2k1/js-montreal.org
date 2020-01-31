@@ -45,9 +45,9 @@ class BaseAgent():
     def _ready_to_exit(self) -> bool:
         return self.is_finished and self.queue.empty() and self.jobs.all_done()
 
-    async def _update(self, data: List[OrkJob]):
+    async def _update(self, ork_jobs: List[OrkJob]):
         async with self._jobs_lock:
-            updated = self.jobs.update_jobs(data)
+            updated = self.jobs.update(ork_jobs)
             await self.update_callback(self.jobs, updated)
             logger.info(self.jobs.get_counts())
 

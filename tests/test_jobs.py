@@ -7,7 +7,7 @@ from borgy_process_agent_api_server.models import JobSpec
 from borgy_process_agent.jobs import Jobs
 from borgy_process_agent.job import Job
 from borgy_process_agent.enums import State
-from tests.utils import make_spec, model_to_json, MockJob
+from tests.utils import MockJob, make_spec, model_to_json, mock_job_from_job
 
 SpecList = List[JobSpec]
 
@@ -56,13 +56,10 @@ class TestJobs:
 
     def test_update(self, jobs: Jobs, specs: SpecList):
         jobs.create([s.to_dict() for s in specs])
-        ojs = []
-        for job in jobs.get_pending():
-            ork = MockJob(index=job.index, **model_to_json(job.spec))
-            ork = ork.get()
-            ork['state'] = State.RUNNING.value
-            ojs.append(ork)
-        jobs.update_jobs(ojs)
+        ojs = [
+            mock_job_from_job(job, state=State.RUNNING.value).get() for job in jobs.get_pending()
+        ]
+        jobs.update(ojs)
         assert jobs.has_pending() is False
         assert len(jobs.get_submitted()) == 0
         assert len(jobs.acked_jobs) == 20
@@ -74,7 +71,7 @@ class TestJobs:
             spec = model_to_json(spec)
             spec['state'] = State.RUNNING.value
             ojs.append(MockJob(index=i, **spec).get())
-        jobs.update_jobs(ojs)
+        jobs.update(ojs)
         assert jobs.has_pending() is False
         assert len(jobs.get_submitted()) == 0
         assert len(jobs.acked_jobs) == 20
@@ -86,7 +83,7 @@ class TestJobs:
             spec = model_to_json(spec)
             spec['state'] = State.RUNNING.value
             ojs.append(MockJob(index=i, **spec).get())
-        jobs.update_jobs(ojs)
+        jobs.update(ojs)
         assert len(jobs.get_acked()) == 20
         jobs.create([s.to_dict() for s in specs])
         # We shouldn't have any pending or submitted jobs
@@ -100,12 +97,11 @@ class TestJobs:
         jobs.submit_pending(count=10)
         assert len(jobs.get_pending()) == 10
         assert len(jobs.get_submitted()) == 10
-        ojs = []
-        for i, spec in enumerate(specs[:10]):
-            spec = model_to_json(spec)
-            spec['state'] = State.RUNNING.value
-            ojs.append(MockJob(index=i, **spec).get())
-        jobs.update_jobs(ojs)
+        ojs = [
+            mock_job_from_job(job, state=State.RUNNING.value).get()
+            for job in jobs.get_submitted()[:10]
+        ]
+        jobs.update(ojs)
         assert len(jobs.get_pending()) == 10
         assert len(jobs.get_submitted()) == 0
         assert len(jobs.get_acked()) == 10
@@ -114,7 +110,7 @@ class TestJobs:
         spec = model_to_json(job.spec)
         foj = MockJob(index=job.index, **spec).get()
         foj['state'] = State.FAILED.value
-        jobs.update_jobs([foj])
+        jobs.update([foj])
         assert len(jobs.get_finished()) == 1
 
         p1 = jobs.get_pending()[0]
@@ -127,11 +123,48 @@ class TestJobs:
         jobs.kill_job(f1)
         assert len(jobs.kill_jobs) == 1
         assert not jobs.kill_jobs.difference(set([a1.index]))
+        assert p1.is_finished() is True and p1.state == State.KILLED
         assert p1 in jobs.get_finished() and p1.index not in jobs.kill_jobs
         assert f1 in jobs.get_finished() and f1.index not in jobs.kill_jobs
+        assert [a1] == jobs.submit_kills() and a1.jid == jobs.submit_kills()[0].jid
 
-    def test_rerun(self, jobs: Jobs):
-        pass
+    def test_rerun(self, jobs: Jobs, specs: SpecList):
+        jobs.create([s.to_dict() for s in specs])
+        assert len(jobs.get_pending()) == 20
+        jobs.submit_pending(count=10)
+        assert len(jobs.get_pending()) == 10
+        assert len(jobs.get_submitted()) == 10
+        ojs = [
+            mock_job_from_job(job, state=State.SUCCEEDED.value).get()
+            for job in jobs.get_submitted()
+        ]
+        jobs.update(ojs)
+        assert len(jobs.get_pending()) == 10
+        assert len(jobs.get_submitted()) == 0
+        assert len(jobs.get_finished()) == 10
+        for job in jobs.get_finished():
+            jobs.rerun_job(job)
+        assert len(jobs.get_rerun()) == 10
+        assert not jobs.rerun_jobs.difference(set(j.index for j in jobs.get_finished()))
+        assert len(jobs.submit_reruns()) == 10
+        # Make all rerun jobs
+        ojs = [
+            mock_job_from_job(job, state=State.RUNNING.value).get() for job in jobs.get_finished()
+        ]
+        jobs.update(ojs)
+        assert len(jobs.get_finished()) == 0
+        assert len(jobs.get_acked()) == 10
+        assert len(jobs.rerun_jobs) == 0
+
+    def test_auto_rerun(self, jobs: Jobs, specs: SpecList):
+        jobs.create(s.to_dict() for s in specs)
+        jobs.submit_pending()
+        assert all(map(lambda j: j.is_submitted(), jobs.get_submitted()))
+        ojs = [
+            mock_job_from_job(job, state=State.RUNNING.value).get()
+            for job in jobs.get_submitted()
+        ]
+        jobs.update(ojs)
 
     def test_done(self, jobs: Jobs):
         pass

@@ -44,6 +44,67 @@ class Jobs:
         # ChainMap that allows access to jobs via their index.
         self.all_jobs = DeepChainMap(self.pending_jobs, self.acked_jobs, self.finished_jobs)
 
+    def get_pending(self) -> List[Job]:
+        return [j for j in self.pending_jobs.values() if j.is_pending()]
+
+    def get_submitted(self) -> List[Job]:
+        return [j for j in self.pending_jobs.values() if j.is_submitted()]
+
+    def get_acked(self) -> List[Job]:
+        return list(self.acked_jobs.values())
+
+    def get_finished(self) -> List[Job]:
+        return list(self.finished_jobs.values())
+
+    def get_kill(self) -> List[Job]:
+        return [self.all_jobs[i] for i in self.kill_jobs]
+
+    def get_rerun(self) -> List[Job]:
+        return [self.all_jobs[i] for i in self.rerun_jobs]
+
+    def get_by_state(self, state: State) -> List[Job]:
+        return [j for j in self.all_jobs.values() if j.state == state]
+
+    def has_pending(self) -> bool:
+        return bool(self.pending_jobs)
+
+    def submit_reruns(self) -> List[Job]:
+        return self.get_rerun()
+
+    def submit_kills(self) -> List[Job]:
+        return self.get_kill()
+
+    def submit_pending(self, count: Optional[int] = None) -> List[Job]:
+        count = len(self.pending_jobs) if count is None else count
+        to_submit = [v for _, v in taketimes(self.pending_jobs, times=count)]
+        for s in to_submit:
+            s.submit()
+        return to_submit
+
+    def kill_job(self, job: Job):
+        if job.is_finished():
+            return
+        # Pending jobs go straight to finished
+        if job.is_pending():
+            # The .kill() is unique to pending jobs
+            # because they never had a state from the
+            # governor so we give them an internal PA
+            # state. This is handy in the UI for the user
+            # to see that a pending job was kill'd before
+            # ever running.
+            job.kill()
+            self.finished_jobs[job.index] = self.all_jobs.pop(job.index)
+            return
+
+        self.kill_jobs.add(job.index)
+
+    def rerun_job(self, job: Job):
+        # Doesn't make sense to rerun something
+        # that hasn't finished yet.
+        if not (job.is_finished() or job.is_interrupted()):
+            return
+        self.rerun_jobs.add(job.index)
+
     def get_stats(self):
         obj = {
             'pending': [j.to_dict() for j in self.get_pending()],
@@ -84,63 +145,6 @@ class Jobs:
                 continue
             else:
                 self.pending_jobs[job.index] = job
-
-    def kill_job(self, job: Job):
-        if job.is_finished():
-            return
-        # Pending jobs go straight to finished
-        if job.is_pending():
-            # The .kill() is unique to pending jobs
-            # because they never had a state from the
-            # governor so we give them an internal PA
-            # state. This is handy in the UI for the user
-            # to see that a pending job was kill'd before
-            # ever running.
-            job.kill()
-            self.finished_jobs[job.index] = self.all_jobs.pop(job.index)
-            return
-
-        self.kill_jobs.add(job.index)
-
-    def rerun_job(self, job: Job):
-        self.rerun_jobs.add(job.index)
-
-    def get_pending(self) -> List[Job]:
-        return [j for j in self.pending_jobs.values() if j.is_pending()]
-
-    def get_submitted(self) -> List[Job]:
-        return [j for j in self.pending_jobs.values() if j.is_submitted()]
-
-    def get_acked(self) -> List[Job]:
-        return list(self.acked_jobs.values())
-
-    def get_kill(self) -> List[Job]:
-        return [self.all_jobs[i] for i in self.kill_jobs]
-
-    def get_rerun(self) -> List[Job]:
-        return [self.all_jobs[i] for i in self.rerun_jobs]
-
-    def get_finished(self) -> List[Job]:
-        return list(self.finished_jobs.values())
-
-    def get_by_state(self, state: State) -> List[Job]:
-        return [j for j in self.all_jobs.values() if j.state == state]
-
-    def has_pending(self) -> bool:
-        return bool(self.pending_jobs)
-
-    def submit_reruns(self) -> List[Job]:
-        return [self.all_jobs[idx] for idx in self.rerun_jobs]
-
-    def submit_kills(self) -> List[Job]:
-        return [self.all_jobs[idx] for idx in self.kill_jobs]
-
-    def submit_pending(self, count: Optional[int] = None) -> List[Job]:
-        count = len(self.pending_jobs) if count is None else count
-        to_submit = [v for _, v in taketimes(self.pending_jobs, times=count)]
-        for s in to_submit:
-            s.submit()
-        return to_submit
 
     def _update_job(self, oj: OrkJob) -> Job:
         index: int = Job.get_index(oj)
@@ -188,13 +192,7 @@ class Jobs:
 
         return job
 
-    def all_done(self) -> bool:
-        return not self.has_more() and len(self.finished_jobs) == len(self.all_jobs)
-
-    def has_more(self):
-        return self._has_more_new_jobs
-
-    def update_jobs(self, jobs: List[Mapping]) -> List[Mapping[str, Any]]:
+    def update(self, jobs: List[Mapping]) -> List[Mapping[str, Any]]:
         updated = []
         for oj in jobs:
             job = self._update_job(OrkJob.from_dict(oj))
@@ -202,6 +200,12 @@ class Jobs:
                 updated.append({'job': job, 'update': job.diff})
 
         return updated
+
+    def all_done(self) -> bool:
+        return not self.has_more() and len(self.finished_jobs) == len(self.all_jobs)
+
+    def has_more(self):
+        return self._has_more_new_jobs
 
     def __repr__(self):
         from pprint import pprint
