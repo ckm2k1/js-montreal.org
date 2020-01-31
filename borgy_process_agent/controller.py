@@ -173,6 +173,7 @@ class BaseAgent():
                 if shutdown or self._ready_to_exit():
                     break
             except asyncio.CancelledError:
+                logger.debug('Exiting controller due to CancelledError.')
                 break
             finally:
                 self._ready = False

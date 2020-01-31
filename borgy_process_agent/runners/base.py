@@ -26,6 +26,7 @@ class BaseRunner():
         self._agent = self.init_agent()
         self._app = server.init(self._agent, self._on_cleanup)
         self._tasks = []
+        self._exc_exit = False
         if debug is not None:
             self._loop.set_debug(debug)
 
@@ -45,7 +46,11 @@ class BaseRunner():
 
     async def _run(self):
         self._schedule()
-        return await asyncio.wait(self._tasks, return_when=asyncio.FIRST_COMPLETED)
+        done, pending = await asyncio.wait(self._tasks, return_when=asyncio.FIRST_COMPLETED)
+        for d in done:
+            if d.exception():
+                raise d.exception()
+        return done, pending
 
     def start(self):
         try:
@@ -60,10 +65,13 @@ class BaseRunner():
         except Exception as ex:
             logger.info('Handling unknown exception.')
             logger.exception(ex)
+            self._exc_exit = ex
             self.stop()
         finally:
             if not self._loop.is_closed():
                 self._loop.close()
+            if self._exc_exit:
+                raise self._exc_exit
 
     def _stop_tasks(self):
         pass

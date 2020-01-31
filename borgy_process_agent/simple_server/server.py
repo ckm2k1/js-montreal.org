@@ -116,7 +116,7 @@ async def get_stats(request: web.Request):
 
 @routes.get('/kill')
 async def kill(request: web.Request):
-    get_loop().create_task(shutdown())
+    get_loop().call_soon(shutdown)
     return web.Response(text='Shutting down server.')
 
 

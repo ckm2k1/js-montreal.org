@@ -147,7 +147,7 @@ socket.addEventListener("open", function(event) {
 
 // Disconnect handler.
 socket.addEventListener("close", function(event) {
-    console.log("Process agent disconnected!");
+    alert("Process agent disconnected!");
 });
 
 const domContainer = document.querySelector(".data");

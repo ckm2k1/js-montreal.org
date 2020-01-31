@@ -56,7 +56,7 @@ class Job:
         self.pa_id: str = pa_id
         self.ork_job: OrkJob = ork_job if ork_job is not None else OrkJob()
         if spec is not None:
-            self.spec: JobSpec = self._make_spec(spec)
+            self.spec: JobSpec = self._make_spec(spec) if isinstance(spec, dict) else spec
         else:
             if ork_job:
                 self.spec: JobSpec = Job.spec_from_ork_job(ork_job)
@@ -96,7 +96,7 @@ class Job:
 
     @classmethod
     def spec_from_ork_job(cls, oj: OrkJob) -> JobSpec:
-        spec = {k: getattr(oj, k) for k in JobSpec.attribute_map}
+        spec = {k: getattr(oj, k) for k in JobSpec().attribute_map}
         return JobSpec.from_dict(spec)
 
     def _get_job_name(self):

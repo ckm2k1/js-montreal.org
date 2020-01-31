@@ -80,7 +80,7 @@ class Jobs:
                       pa_id=self._pa_id,
                       spec=j,
                       name_prefix=self._job_name_prefix)
-            if job.index in self.all_jobs.values():
+            if job.index in self.all_jobs:
                 continue
             else:
                 self.pending_jobs[job.index] = job
@@ -146,7 +146,7 @@ class Jobs:
                       self._pa_id,
                       jid=oj.id,
                       name_prefix=self._job_name_prefix,
-                      ork_job=oj)
+                      spec=Job.spec_from_ork_job(oj))
             self.acked_jobs[index] = job
 
         job.update_from_ork(oj)
