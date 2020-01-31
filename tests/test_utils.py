@@ -1,6 +1,6 @@
 import pytest
 
-from datetime import datetime
+from datetime import datetime, timezone
 from borgy_process_agent import utils
 
 
@@ -103,3 +103,8 @@ class TestUtils:
         }
         jstr = json.dumps(obj, cls=utils.ComplexEncoder)
         assert jstr == f'{{"a": "b", "c": "\\ufffd", "uid": "{uid}"}}'
+
+    def test_get_now(self):
+        dt = utils.get_now()
+        assert dt.tzinfo is not None and dt.tzinfo.utcoffset(dt) is not None
+        assert dt.tzinfo == timezone.utc
