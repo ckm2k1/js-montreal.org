@@ -35,7 +35,7 @@ class TestJobs:
         assert jobs.has_more() is True
 
     def test_create(self, jobs: Jobs, specs: SpecList):
-        jobs.create([s.to_dict() for s in specs])
+        jobs.create(s.to_dict() for s in specs)
         assert jobs.has_pending() is True
         pending = jobs.get_pending()
         assert len(pending) == 20
@@ -45,7 +45,7 @@ class TestJobs:
         assert jobs.all_done() is False
 
     def test_submitted(self, jobs: Jobs, specs: SpecList):
-        jobs.create([s.to_dict() for s in specs])
+        jobs.create(s.to_dict() for s in specs)
         jobs.submit_pending(count=10)
         assert len(jobs.get_pending()) == 10
         assert len(jobs.get_submitted()) == 10
@@ -55,7 +55,7 @@ class TestJobs:
         assert jobs.all_done() is False
 
     def test_update(self, jobs: Jobs, specs: SpecList):
-        jobs.create([s.to_dict() for s in specs])
+        jobs.create(s.to_dict() for s in specs)
         ojs = [
             mock_job_from_job(job, state=State.RUNNING.value).get() for job in jobs.get_pending()
         ]
@@ -85,14 +85,14 @@ class TestJobs:
             ojs.append(MockJob(index=i, **spec).get())
         jobs.update(ojs)
         assert len(jobs.get_acked()) == 20
-        jobs.create([s.to_dict() for s in specs])
+        jobs.create(s.to_dict() for s in specs)
         # We shouldn't have any pending or submitted jobs
         # since they're already running from the update.
         assert len(jobs.get_pending()) == 0
         assert len(jobs.get_submitted()) == 0
 
     def test_kill(self, jobs: Jobs, specs: SpecList):
-        jobs.create([s.to_dict() for s in specs])
+        jobs.create(s.to_dict() for s in specs)
         assert len(jobs.get_pending()) == 20
         jobs.submit_pending(count=10)
         assert len(jobs.get_pending()) == 10
@@ -129,7 +129,7 @@ class TestJobs:
         assert [a1] == jobs.submit_kills() and a1.jid == jobs.submit_kills()[0].jid
 
     def test_rerun(self, jobs: Jobs, specs: SpecList):
-        jobs.create([s.to_dict() for s in specs])
+        jobs.create(s.to_dict() for s in specs)
         assert len(jobs.get_pending()) == 20
         jobs.submit_pending(count=10)
         assert len(jobs.get_pending()) == 10
@@ -165,9 +165,33 @@ class TestJobs:
             for job in jobs.get_submitted()
         ]
         jobs.update(ojs)
+        job = jobs.get_acked()[0]
+        oj = mock_job_from_job(job, state=State.INTERRUPTED.value).get()
+        jobs.update([oj])
+        assert job.is_interrupted()
+        assert job.index in jobs.acked_jobs and job.index in jobs.rerun_jobs
+        oj['state'] = State.RUNNING.value
+        jobs.update([oj])
+        assert job.is_acked()
+        assert len(jobs.get_rerun()) == 0
 
-    def test_done(self, jobs: Jobs):
-        pass
+    def test_done(self, jobs: Jobs, specs: SpecList):
+        jobs.create(s.to_dict() for s in specs)
+        jobs.submit_pending()
+        ojs = [
+            mock_job_from_job(job, state=State.SUCCEEDED.value).get()
+            for job in jobs.get_submitted()
+        ]
+        jobs.update(ojs)
+        assert jobs.all_done() is False
+        jobs.create(None)
+        assert jobs.all_done() is True
 
-    def test_nonew(self, jobs: Jobs):
-        pass
+    def test_nonew(self, jobs: Jobs, specs: SpecList):
+        jobs.create(s.to_dict() for s in specs)
+        jobs.submit_pending()
+        jobs.update(
+            mock_job_from_job(job, state=State.SUCCEEDED.value).get()
+            for job in jobs.get_submitted())
+        jobs.create(None)
+        assert jobs.has_more() is False

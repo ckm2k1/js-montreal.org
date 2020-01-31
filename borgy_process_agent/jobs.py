@@ -187,7 +187,7 @@ class Jobs:
 
         # Updates for kill jobs with any acked or finished
         # states can be safely removed from the kill queue.
-        if index in self.kill_jobs and job.is_finished() is job.is_acked():
+        if index in self.kill_jobs and (job.is_finished() or job.is_acked()):
             self.kill_jobs.remove(index)
 
         return job
@@ -208,5 +208,5 @@ class Jobs:
         return self._has_more_new_jobs
 
     def __repr__(self):
-        from pprint import pprint
-        return pprint(self.get_counts(), indent=4)
+        from pprint import pformat
+        return pformat(self.get_counts(), indent=4)
