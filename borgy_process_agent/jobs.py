@@ -181,7 +181,7 @@ class Jobs:
                 else:
                     self._finished_jobs[index] = job
 
-            elif job.is_finished():
+            elif job.is_finished(): # pragma: no branch
                 self._finished_jobs[index] = job
 
         # Updates for kill jobs with any acked or finished
@@ -195,7 +195,10 @@ class Jobs:
         updated = []
         for oj in jobs:
             job = self._update_job(OrkJob.from_dict(oj))
-            if job.diff:
+            # Is there no case where we don't have diff?
+            # It's likely because why send updates for something
+            # that didn't change?
+            if job.diff: # pragma: no branch
                 updated.append({'job': job, 'update': job.diff})
 
         return updated

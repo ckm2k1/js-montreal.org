@@ -7,6 +7,8 @@ omit=
     .tox/*
     tests/*
     setup.py
+    borgy_process_agent/controllers/*
+    borgy_process_agent/metrics/*
 [report]
 # Regexes for lines to exclude from consideration
 exclude_lines =

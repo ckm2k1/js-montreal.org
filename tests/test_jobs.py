@@ -7,22 +7,12 @@ from borgy_process_agent_api_server.models import JobSpec
 from borgy_process_agent.jobs import Jobs
 from borgy_process_agent.job import Job
 from borgy_process_agent.enums import State
-from tests.utils import MockJob, make_spec, model_to_json, mock_job_from_job
+from tests.utils import MockJob, model_to_json, mock_job_from_job
 
 SpecList = List[JobSpec]
 
 
-@pytest.fixture
-def jobs(id_=None) -> Jobs:
-    id_ = id_ if id_ is not None else uuid.uuid4()
-    return Jobs('user', id_, job_name_prefix='myprefix')
-
-
-@pytest.fixture
-def specs(id_=None) -> Jobs:
-    return [make_spec() for i in range(20)]
-
-
+@pytest.mark.usefixtures('jobs', 'specs')
 class TestJobs:
 
     def test_init(self):
@@ -62,8 +52,16 @@ class TestJobs:
         jobs.update(ojs)
         assert jobs.has_pending() is False
         assert len(jobs.get_submitted()) == 0
-        assert len(jobs._acked_jobs) == 20
+        assert len(jobs.get_acked()) == 20
         assert all(map(lambda j: j.state == State.RUNNING, jobs.get_acked()))
+
+        # no change in state
+        job = jobs.get_acked()[0]
+        last_update = job.updated
+        assert job.state == State.RUNNING
+        jobs.update([mock_job_from_job(job, state=State.RUNNING.value).get()])
+        assert job.state == State.RUNNING
+        assert job.updated > last_update
 
     def test_update_non_existant(self, jobs: Jobs, specs: SpecList):
         ojs = []
@@ -184,6 +182,16 @@ class TestJobs:
         assert job.is_acked()
         assert len(jobs.get_rerun()) == 0
 
+        # Disable autorerun, interrupts go to the
+        # finished queue.
+        jobs._auto_rerun = False
+        job = jobs.get_acked()[0]
+        assert job.is_acked()
+        oj = mock_job_from_job(job, state=State.INTERRUPTED.value).get()
+        jobs.update([oj])
+        assert job.is_interrupted()
+        assert job in jobs.get_finished()
+
     def test_done(self, jobs: Jobs, specs: SpecList):
         jobs.create(s.to_dict() for s in specs)
         jobs.submit_pending()
@@ -248,8 +256,7 @@ class TestJobs:
         jobs.submit_pending(5)
         assert len(jobs.get_submitted()) == 5
         jobs.update(
-            mock_job_from_job(job, state=State.FAILED.value).get()
-            for job in jobs.get_submitted())
+            mock_job_from_job(job, state=State.FAILED.value).get() for job in jobs.get_submitted())
         counts = jobs.get_counts()
         assert counts['pending'] == 10
         assert counts['submitted'] == 0

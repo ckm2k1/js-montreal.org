@@ -36,6 +36,8 @@ class BaseAgent():
         self._ready: bool = False
         self.update_callback: Callable[[BaseAgent, List[Mapping]], None] = None
         self.create_callback: Callable[[BaseAgent], List[JobSpec]] = None
+        # TODO: implement
+        # self.done_callback: Callable[[BaseAgent], List[JobSpec]] = None
         self.jobs: Jobs = Jobs(user, pa_id, job_name_prefix=job_name_prefix, auto_rerun=auto_rerun)
         self._finished: bool = False
         self._debug: bool = debug
@@ -160,6 +162,8 @@ class BaseAgent():
             self.update_callback = callback
         elif type == 'create':
             self.create_callback = callback
+        elif type == 'done':
+            self.done_callback = callback
         else:
             raise Exception(f'Invalid callback type: {type}')
 
