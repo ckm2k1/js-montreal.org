@@ -184,9 +184,6 @@ class Job:
     def diff(self):
         return self._diff
 
-    def _spec_eq(self, spec: JobSpec) -> bool:
-        pass
-
     def __repr__(self) -> str:
         return f'<Job index={self.index}, created={self.created}, '
         f'updated={self.updated}, state={self.state.value}, jid={self.jid}>'
@@ -194,42 +191,7 @@ class Job:
     def __eq__(self, job) -> bool:
         if self.jid is not None and job.jid is not None and self.jid == job.jid:
             return True
-        return self.index == job.index and self._spec_eq(job.spec)
+        return self.index == job.index
 
     def copy(self) -> 'Job':
         return copy.deepcopy(self)
-
-
-def compare(s1, s2):
-    pass
-
-
-def vcompare(a, b):
-    return a == b
-
-def compare_vars(self):
-    pass
-
-keys = {
-    'bid': vcompare,
-    'bill_code': vcompare,
-    'command': (lambda a, b: sorted(a) == sorted(b)),
-    'created_by': vcompare,
-    'data': vcompare,
-    'environment_vars': compare_vars,
-    'evict_others_if_needed': vcompare,
-    'image': vcompare,
-    'interactive': vcompare,
-    'labels': vcompare,
-    'max_run_time_secs': vcompare,
-    'name': vcompare,
-    'options': vcompare,
-    'preemptable': vcompare,
-    'req_cores': vcompare,
-    'req_gpus': vcompare,
-    'req_ram_gbytes': vcompare,
-    'restart': vcompare,
-    'stdin': vcompare,
-    'volumes': vcompare,
-    'workdir': vcompare,
-}

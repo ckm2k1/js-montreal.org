@@ -80,7 +80,7 @@ class Jobs:
                       pa_id=self._pa_id,
                       spec=j,
                       name_prefix=self._job_name_prefix)
-            if job in self.all_jobs.values():
+            if job.index in self.all_jobs.values():
                 continue
             else:
                 self.pending_jobs[job.index] = job
