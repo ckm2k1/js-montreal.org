@@ -2,10 +2,12 @@ import os
 import re
 import json
 import uuid
+import asyncio
 import importlib.util
+from functools import partial, wraps
 from datetime import datetime, timedelta, timezone
 from collections import ChainMap, UserDict
-from typing import Any, Union, Callable, Generator, Tuple, List, Iterator, Mapping
+from typing import Any, Union, Callable, Generator, Tuple, List, Iterator, Mapping, Coroutine
 from types import ModuleType
 
 SENTINEL = object()
@@ -311,7 +313,7 @@ def memory_str_to_nbytes(mem_size_str):
     return mem_size_bytes
 
 
-def cpu_str_to_ncpu(cpu_str):
+def cpu_str_to_ncpu(cpu_str: str) -> float:
     m = re.search(r"^([\d.]+)(.*)$", str(cpu_str))
     if not m:
         raise ValueError("No match for cpu allocatable")
@@ -321,3 +323,17 @@ def cpu_str_to_ncpu(cpu_str):
 
     cpu_size = float(m.group(1)) * cpu_size_units[m.group(2)]
     return cpu_size
+
+
+def ensure_coroutine(fn, loop=None) -> Coroutine:
+    if asyncio.iscoroutinefunction(fn):
+        return fn
+
+    if loop is None:
+        loop = asyncio.get_event_loop()
+
+    @wraps(fn)
+    async def coro_wrapper(*args, **kwargs):
+        return await loop.run_in_executor(None, partial(fn, *args, **kwargs))
+
+    return coro_wrapper

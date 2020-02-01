@@ -1,14 +1,14 @@
 import asyncio
 import logging
 from uuid import UUID
-from typing import List, Mapping, Callable, Optional, Awaitable
-from functools import wraps, partial
+from typing import List, Mapping, Callable, Optional, Awaitable, Any
+
+from borgy_process_agent_api_server.models import Job as OrkJob, JobSpec, JobsOps
 
 from borgy_process_agent.jobs import Jobs
 from borgy_process_agent.enums import ActionType
-from borgy_process_agent.utils import Indexer
 from borgy_process_agent.action import Action
-from borgy_process_agent_api_server.models import Job as OrkJob, JobSpec, JobsOps
+from borgy_process_agent.utils import Indexer, ensure_coroutine
 
 logger = logging.getLogger(__name__)
 
@@ -36,8 +36,7 @@ class BaseAgent():
         self._ready: bool = False
         self.update_callback: Callable[[BaseAgent, List[Mapping]], None] = None
         self.create_callback: Callable[[BaseAgent], List[JobSpec]] = None
-        # TODO: implement
-        # self.done_callback: Callable[[BaseAgent], List[JobSpec]] = None
+        self.done_callback: Callable[[BaseAgent], List[JobSpec]] = None
         self.jobs: Jobs = Jobs(user, pa_id, job_name_prefix=job_name_prefix, auto_rerun=auto_rerun)
         self._finished: bool = False
         self._debug: bool = debug
@@ -48,11 +47,11 @@ class BaseAgent():
         self._finished = True
 
     @property
-    def is_finished(self) -> bool:
+    def finished(self) -> bool:
         return self._finished
 
-    def _ready_to_exit(self) -> bool:
-        return self.is_finished and self.queue.empty() and self.jobs.all_done()
+    def _can_shutdown(self) -> bool:
+        return self.finished and self.queue.empty() and self.jobs.all_done()
 
     async def _update(self, ork_jobs: List[OrkJob]):
         async with self._jobs_lock:
@@ -80,7 +79,7 @@ class BaseAgent():
             elif action.type == ActionType.shutdown:
                 self._finish()
                 shutdown = True
-            else:
+            else:  # pragma: no-branch
                 raise Exception('Invalid action type')
 
             self.queue.task_done()
@@ -98,33 +97,23 @@ class BaseAgent():
 
         return shutdown
 
-    def _ensure_coro(self, fn):
-        if asyncio.iscoroutinefunction(fn):
-            return fn
-
-        @wraps(fn)
-        async def coro_wrapper(*args, **kwargs):
-            return await self.loop.run_in_executor(None, partial(fn, *args, **kwargs))
-
-        return coro_wrapper
-
     def _should_create(self):
         # Don't submit new create actions if we have user code running, PA is done or
         # we haven't finished flushing all pending jobs to the PA.
-        return False if (self.is_finished or self._usercode_running()
+        return False if (self.finished or self._usercode_running()
                          or self.jobs.has_pending()) else True
 
     def _usercode_running(self):
         return self._jobs_lock.locked()
 
-    def push_action(self, type: ActionType, data: Optional[List] = None) -> asyncio.Future:
+    def push_action(self, type: ActionType, data: Optional[List] = None) -> Action:
         logger.info('Pushing new %s action', type.value)
         prio = self._task_prio.next() if type != ActionType.shutdown else 0
         action = Action(prio, type, data=data)
 
         # If user code says we're done producing jobs, don't push anymore
         # 'create' actions, or if we're done and caller asks for a shutdown.
-        if ((type == ActionType.shutdown and self._ready_to_exit())
+        if ((type == ActionType.shutdown and self._can_shutdown())
                 or (type == ActionType.create and not self._should_create())):
             action.done()
             return action
@@ -145,19 +134,19 @@ class BaseAgent():
                       kill=[j.jid for j in self.jobs.submit_kills()])
         return ops.to_dict()
 
-    def create_jobs(self) -> asyncio.Future:
-        res = self.submit_pending_jobs()
-        self.push_action(ActionType.create).on_done(raiser)
-        return res
+    def create_jobs(self) -> JobsOps:
+        job_ops = self.submit_pending_jobs()
+        self.push_action(ActionType.create).on_done(raiser)  # remove on_done?
+        return job_ops
 
-    def update_jobs(self, jobs: List[OrkJob]) -> asyncio.Future:
+    def update_jobs(self, jobs: List[OrkJob]) -> Action:
         return self.push_action(ActionType.update, data=jobs)
 
-    def shutdown(self) -> asyncio.Future:
+    def shutdown(self) -> Action:
         return self.push_action(ActionType.shutdown)
 
     def register_callback(self, type: str, callback: Callable):
-        callback = self._ensure_coro(callback)
+        callback = ensure_coroutine(callback, loop=self.loop)
         if type == 'update':
             self.update_callback = callback
         elif type == 'create':
@@ -167,13 +156,16 @@ class BaseAgent():
         else:
             raise Exception(f'Invalid callback type: {type}')
 
-    def get_health(self):
+    def get_health(self) -> Mapping[str, bool]:
+        ready = self._ready
         return {
-            'is_ready': self._ready,
-            'is_shutdown': self._ready_to_exit(),
+            'is_ready': ready,
+            # This is only true when the controller exits
+            # it's .run() loop completely.
+            'is_shutdown': self._can_shutdown() and not ready,
         }
 
-    def get_stats(self):
+    def get_stats(self) -> Mapping[str, Any]:
         return {'jobs': self.jobs.get_stats(), 'queue': self.queue.qsize(), **self.get_health()}
 
     async def run(self):
@@ -181,12 +173,17 @@ class BaseAgent():
         while True:
             try:
                 shutdown = await self._process_action()
-                if shutdown or self._ready_to_exit():
+                if shutdown or self._can_shutdown():
                     break
             except asyncio.CancelledError:
                 logger.debug('Exiting controller due to CancelledError.')
                 break
             finally:
+                if callable(self.done_callback):
+                    try:
+                        await self.done_callback(self.jobs)
+                    except Exception as ex:
+                        logger.exception(ex)
                 self._ready = False
 
         logger.info('Agent done, exiting...')
