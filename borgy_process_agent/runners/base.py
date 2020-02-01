@@ -23,22 +23,21 @@ class BaseRunner():
         self._api_host = api_host
         self._api_port = api_port
         self._loop = asyncio.get_event_loop()
-        # self._loop.set_exception_handler(self._loop_exc_handler)
         self._agent = self.init_agent()
         self._app = server.init(self._agent, self._on_cleanup)
         self._tasks = []
         self._exc_exit = False
-        self._auto_rerun
+        self._auto_rerun = auto_rerun
+
         if debug is not None:
             self._loop.set_debug(debug)
 
     def init_agent(self):
-        return controller.init(self._pa_job_id, self._pa_user, self._loop, debug=self._debug)
-
-    def _loop_exc_handler(self, loop: asyncio.AbstractEventLoop, context: dict):
-        logger.debug('Running GLOBAL loop exception handler.')
-        logger.exception(context.get('exception'))
-        return loop.default_exception_handler(context)
+        return controller.init(self._pa_job_id,
+                               self._pa_user,
+                               self._loop,
+                               debug=self._debug,
+                               auto_rerun=self._auto_rerun)
 
     def _schedule(self):
         self._agent_task: asyncio.Task = self._loop.create_task(self._agent.run())

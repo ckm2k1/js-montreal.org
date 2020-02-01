@@ -129,21 +129,21 @@ async def _send_update_to_clients(app: web.Application, fut: asyncio.Future = No
             await sock.send_json(app['agent'].get_stats(), dumps=customdumps)
 
 
-async def cleanup_handler(user_cleanup, app):
+async def cleanup_handler(app):
     for socket in app['sockets'].values():
         if socket.prepared:
             await socket.close()
     logger.debug('Closed all websockets.')
-    return await user_cleanup(app)
 
 
-def init(agent: BaseAgent, on_cleanup: Callable[[web.Application], None]):
+def init(agent: BaseAgent, on_cleanup: Callable[[web.Application], None] = None):
     global app
+    static_path = pathlib.Path(__file__).parent / 'static'
 
     app = web.Application()
     tmpl_loader = jinja2.PackageLoader('borgy_process_agent.simple_server', 'static')
     aiohttp_jinja2.setup(app, loader=tmpl_loader)
-    app.router.add_static('/static/', path=pathlib.Path(__file__).parent / 'static', name='static')
+    app.router.add_static('/static/', path=static_path, name='static')
     app['agent']: BaseAgent = agent
     app['events']: Signal = Signal(app)
     app['sockets']: dict = {}
@@ -155,7 +155,9 @@ def init(agent: BaseAgent, on_cleanup: Callable[[web.Application], None]):
     app['events'].freeze()
     app.add_routes(routes)
 
-    app.on_cleanup.append(partial(cleanup_handler, on_cleanup))
+    app.on_cleanup.append(cleanup_handler)
+    if on_cleanup is not None:
+        app.on_cleanup.append(on_cleanup)
 
     return app
 

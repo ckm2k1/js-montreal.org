@@ -18,6 +18,8 @@ logger = logging.getLogger(__name__)
 
 def parse_iso_datetime(val):
     return val
+    from datetime import datetime
+    return datetime.fromisoformat(val)
 
 
 class DockerGovernor:
