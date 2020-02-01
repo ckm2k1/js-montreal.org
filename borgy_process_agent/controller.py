@@ -28,8 +28,8 @@ class BaseAgent():
                  queue=None,
                  job_name_prefix='pa_child_job',
                  auto_rerun=True):
-        self.user: str = user
         self.id: UUID = pa_id
+        self.user: str = user
         self.loop: asyncio.AbstractEventLoop = loop
         self.queue: asyncio.Queue = queue if queue is not None else asyncio.PriorityQueue(
             loop=loop)
