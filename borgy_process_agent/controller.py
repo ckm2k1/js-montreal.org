@@ -166,7 +166,11 @@ class BaseAgent():
         }
 
     def get_stats(self) -> Mapping[str, Any]:
-        return {'jobs': self.jobs.get_stats(), 'queue': self.queue.qsize(), **self.get_health()}
+        return {
+            'jobs': self.jobs.get_stats(),
+            'queue': self.queue.qsize(),
+            **self.get_health(),
+        }
 
     async def run(self):
         self._ready = True

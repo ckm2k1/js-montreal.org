@@ -1,6 +1,8 @@
 import uuid
 import pytest
+import inspect
 import asyncio
+from unittest.mock import patch, Mock
 from typing import List, Mapping
 
 from borgy_process_agent_api_server.models import JobsOps
@@ -103,28 +105,6 @@ class TestController:
         with pytest.raises(expected_exception=Exception):
             await fut
 
-    def test_invalid_register(self, agent: BaseAgent):
-        with pytest.raises(expected_exception=Exception):
-            agent.register_callback('invalid', lambda _: _)
-
-    def test_get_health(self, agent: BaseAgent):
-        health = agent.get_health()
-        assert not health['is_ready']
-        assert not health['is_shutdown']
-
-        agent._ready = True
-        health = agent.get_health()
-        assert health['is_ready']
-        assert not health['is_shutdown']
-
-        agent._finish()
-        from unittest.mock import patch
-        with patch.object(agent.jobs, 'all_done', return_value=[True]):
-            agent._ready = False
-            health = agent.get_health()
-            assert not health['is_ready']
-            assert health['is_shutdown']
-
     @pytest.mark.asyncio
     async def test_no_more_jobs(self, event_loop: asyncio.AbstractEventLoop, agent: BaseAgent):
 
@@ -147,20 +127,14 @@ class TestController:
     @pytest.mark.asyncio
     async def test_sync_user_fns(self, event_loop: asyncio.AbstractEventLoop, agent: BaseAgent):
 
-        def user_create(agent):
-            return None
-
-        def user_update(agent, jobs=None):
-            pass
-
-        def user_done(agent):
-            pass
+        user_create = Mock(return_value=None)
+        user_update = Mock()
+        user_done = Mock()
 
         agent.register_callback('create', user_create)
         agent.register_callback('update', user_update)
         agent.register_callback('done', user_done)
 
-        import inspect
         assert inspect.iscoroutinefunction(agent.create_callback)
         assert inspect.iscoroutinefunction(agent.update_callback)
         assert inspect.iscoroutinefunction(agent.done_callback)
@@ -168,5 +142,37 @@ class TestController:
         agent.create_jobs()
         agent.update_jobs([])
         await agent.run()
+        assert user_create.called_once()
+        assert user_update.called_once()
+        assert user_done.called_once()
         assert agent.finished
         assert agent.get_health()['is_shutdown']
+
+    def test_invalid_register(self, agent: BaseAgent):
+        with pytest.raises(expected_exception=Exception):
+            agent.register_callback('invalid', lambda _: _)
+
+    def test_get_health(self, agent: BaseAgent):
+        health = agent.get_health()
+        assert not health['is_ready']
+        assert not health['is_shutdown']
+
+        agent._ready = True
+        health = agent.get_health()
+        assert health['is_ready']
+        assert not health['is_shutdown']
+
+        agent._finish()
+        with patch.object(agent.jobs, 'all_done', return_value=[True]):
+            agent._ready = False
+            health = agent.get_health()
+            assert not health['is_ready']
+            assert health['is_shutdown']
+
+    def test_get_stats(self, agent: BaseAgent):
+        with patch.object(agent.jobs, 'get_stats', return_value={}):
+            stats = agent.get_stats()
+            assert stats['jobs'] == {}
+            assert stats['queue'] == 0
+            assert 'is_ready' in stats
+            assert 'is_shutdown' in stats
