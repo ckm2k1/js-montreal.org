@@ -124,6 +124,12 @@ class TestController:
         assert shutdown is True
         assert agent.finished
 
+    # @pytest.mark.asyncio
+    # async def test_no_actions_while_usercode_running(self, event_loop: asyncio.AbstractEventLoop,
+    #                                                  agent: BaseAgent):
+    #     ops = agent.create_jobs()
+    #     ops = agent.create_jobs()
+
     @pytest.mark.asyncio
     async def test_sync_user_fns(self, event_loop: asyncio.AbstractEventLoop, agent: BaseAgent):
 

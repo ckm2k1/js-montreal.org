@@ -10,7 +10,7 @@ test:
 	@tox
 
 test.full:
-	@tox -e 'flake8,cov-init,py37,coverage'
+	@tox -e 'flake8,py37,coverage'
 
 flake8:
 	python -m flake8
