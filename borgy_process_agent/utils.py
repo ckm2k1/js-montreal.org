@@ -106,6 +106,10 @@ def fmt_datetime(dt: datetime) -> str:
     return dt.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3] if dt else ''
 
 
+def parse_iso_datetime(dt: str) -> datetime:
+    return datetime.fromisoformat(dt)
+
+
 class ObjDict(UserDict):
     """Subclass of dictionary that supports all regular
     dict operations get/set/exists/del using attribute

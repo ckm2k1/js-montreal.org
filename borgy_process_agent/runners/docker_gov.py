@@ -10,16 +10,10 @@ import docker
 import borgy_process_agent_api_client
 from borgy_process_agent.enums import State, Restart
 from borgy_process_agent.utils import (get_now, cpu_str_to_ncpu, get_now_isoformat,
-                                       memory_str_to_nbytes)
+                                       memory_str_to_nbytes, parse_iso_datetime)
 from borgy_process_agent_api_server.models import Job, JobRuns, JobsOps, JobSpec
 
 logger = logging.getLogger(__name__)
-
-
-def parse_iso_datetime(val):
-    return val
-    from datetime import datetime
-    return datetime.fromisoformat(val)
 
 
 class DockerGovernor:
