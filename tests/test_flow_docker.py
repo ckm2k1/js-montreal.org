@@ -5,21 +5,19 @@
 # # Copyright (c) 2018 ElementAI. All rights reserved.
 # #
 
-# from __future__ import absolute_import
-
-# from tests import BaseTestCase
 # from borgy_process_agent import ProcessAgent, ProcessAgentMode
 # from borgy_process_agent.utils import memory_str_to_nbytes
 # from borgy_process_agent.job import State
+# from borgy_process_agent.runners.docker_gov import DockerGovernor
 
 
-# class TestFlowDocker(BaseTestCase):
+# class TestFlowDocker():
 #     """Flow tests with docker mode"""
 
 #     def setUp(self):
 #         if self._pa:
 #             self.tearDown()
-#         self._pa = ProcessAgent(mode=ProcessAgentMode.DOCKER, poll_interval=0.01, docker_tty=True)
+#         self._pa = DockerGovernor(poll_interval=0.01, docker_tty=True)
 
 #     def tearDown(self):
 #         if self._pa:
@@ -44,17 +42,13 @@
 #             if idx_job[0] > len(commands):
 #                 return None
 #             res = {
-#                 'command': [
-#                     'bash',
-#                     '-c',
-#                     commands[idx_job[0] - 1]
-#                 ],
-#                 'name': 'job-'+str(idx_job[0]),
+#                 'command': ['bash', '-c', commands[idx_job[0] - 1]],
+#                 'name': 'job-' + str(idx_job[0]),
 #                 'image': 'ubuntu:16.04'
 #             }
 #             return res
 
-#         self._pa.set_callback_jobs_provider(return_new_jobs)
+#         self._pa.register_callback('create', return_new_jobs)
 
 #         def stop_job(job_name):
 #             jobs = self._pa.get_jobs_by_name(job_name)
@@ -68,79 +62,73 @@
 #                 for job in jobs:
 #                     self._pa.kill_job(job.id)
 
-#         job_events = [
-#             {
-#                 'events': [
-#                     {'name': 'job-1', 'state': State.RUNNING.value},
-#                 ],
-#                 'actions': []
-#             },
-#             {
-#                 'events': [
-#                     {'name': 'job-2', 'state': State.RUNNING.value},
-#                 ],
-#                 'actions': []
-#             },
-#             {
-#                 'events': [
-#                     {'name': 'job-3', 'state': State.RUNNING.value},
-#                 ],
-#                 'actions': []
-#             },
-#             {
-#                 'events': [
-#                     {'name': 'job-4', 'state': State.RUNNING.value},
-#                 ],
-#                 'actions': [
-#                     [kill_job, 'job-3']
-#                 ]
-#             },
-#             {
-#                 'events': [
-#                     {'name': 'job-3', 'state': State.CANCELLED.value},
-#                 ],
-#                 'actions': [
-#                     [stop_job, 'job-1']
-#                 ]
-#             },
-#             {
-#                 'events': [
-#                     {'name': 'job-5', 'state': State.RUNNING.value},
-#                     {'name': 'job-1', 'state': State.SUCCEEDED.value},
-#                 ],
-#                 'actions': [
-#                     [stop_job, 'job-2']
-#                 ]
-#             },
-#             {
-#                 'events': [
-#                     {'name': 'job-2', 'state': State.SUCCEEDED.value},
-#                 ],
-#                 'actions': [
-#                     [stop_job, 'job-4']
-#                 ]
-#             },
-#             {
-#                 'events': [
-#                     {'name': 'job-4', 'state': State.SUCCEEDED.value},
-#                 ],
-#                 'actions': [
-#                     [stop_job, 'job-5']
-#                 ]
-#             },
-#             {
-#                 'events': [
-#                     {'name': 'job-5', 'state': State.FAILED.value},
-#                 ],
-#                 'actions': []
-#             }
-#         ]
+#         job_events = [{
+#             'events': [{
+#                 'name': 'job-1',
+#                 'state': State.RUNNING.value
+#             }],
+#             'actions': []
+#         }, {
+#             'events': [{
+#                 'name': 'job-2',
+#                 'state': State.RUNNING.value
+#             }],
+#             'actions': []
+#         }, {
+#             'events': [{
+#                 'name': 'job-3',
+#                 'state': State.RUNNING.value
+#             }],
+#             'actions': []
+#         }, {
+#             'events': [{
+#                 'name': 'job-4',
+#                 'state': State.RUNNING.value
+#             }],
+#             'actions': [[kill_job, 'job-3']]
+#         }, {
+#             'events': [{
+#                 'name': 'job-3',
+#                 'state': State.CANCELLED.value
+#             }],
+#             'actions': [[stop_job, 'job-1']]
+#         }, {
+#             'events': [
+#                 {
+#                     'name': 'job-5',
+#                     'state': State.RUNNING.value
+#                 },
+#                 {
+#                     'name': 'job-1',
+#                     'state': State.SUCCEEDED.value
+#                 },
+#             ],
+#             'actions': [[stop_job, 'job-2']]
+#         }, {
+#             'events': [{
+#                 'name': 'job-2',
+#                 'state': State.SUCCEEDED.value
+#             }],
+#             'actions': [[stop_job, 'job-4']]
+#         }, {
+#             'events': [{
+#                 'name': 'job-4',
+#                 'state': State.SUCCEEDED.value
+#             }],
+#             'actions': [[stop_job, 'job-5']]
+#         }, {
+#             'events': [{
+#                 'name': 'job-5',
+#                 'state': State.FAILED.value
+#             }],
+#             'actions': []
+#         }]
 #         idx_job_events = [0]
 
 #         def jobs_update(event):
 #             if event.jobs:
 #                 events = []
-#                 print('Event '+str(idx_job_events[0])+':')
+#                 print('Event ' + str(idx_job_events[0]) + ':')
 #                 for j in event.jobs:
 #                     print("\tMy job {} updated to {}".format(j['job'].name, j['job'].state))
 #                     events.append({'name': j['job'].name, 'state': j['job'].state})
@@ -156,8 +144,7 @@
 #         self._pa.start()
 
 #     def test_docker_flow_rerun(self):
-#         """Test case for rerun with docker
-#         """
+#         """Test case for rerun with docker"""
 
 #         idx_job = [0]
 #         commands = [
@@ -170,17 +157,13 @@
 #             if idx_job[0] > len(commands):
 #                 return None
 #             res = {
-#                 'command': [
-#                     'bash',
-#                     '-c',
-#                     commands[idx_job[0] - 1]
-#                 ],
-#                 'name': 'job-'+str(idx_job[0]),
+#                 'command': ['bash', '-c', commands[idx_job[0] - 1]],
+#                 'name': 'job-' + str(idx_job[0]),
 #                 'image': 'ubuntu:16.04'
 #             }
 #             return res
 
-#         self._pa.set_callback_jobs_provider(return_new_jobs)
+#         self._pa.register_callback('create', return_new_jobs)
 
 #         def stop_job(job_name):
 #             jobs = self._pa.get_jobs_by_name(job_name)
@@ -200,58 +183,49 @@
 #                 for job in jobs:
 #                     self._pa.kill_job(job.id)
 
-#         job_events = [
-#             {
-#                 'events': [
-#                     {'name': 'job-1', 'state': State.RUNNING.value},
-#                 ],
-#                 'actions': []
-#             },
-#             {
-#                 'events': [
-#                     {'name': 'job-2', 'state': State.RUNNING.value},
-#                 ],
-#                 'actions': [
-#                     [stop_job, 'job-1']
-#                 ]
-#             },
-#             {
-#                 'events': [
-#                     {'name': 'job-1', 'state': State.FAILED.value},
-#                 ],
-#                 'actions': [
-#                     [rerun_job, 'job-1']
-#                 ]
-#             },
-#             {
-#                 'events': [
-#                     {'name': 'job-1', 'state': State.RUNNING.value},
-#                 ],
-#                 'actions': [
-#                     [stop_job, 'job-1']
-#                 ]
-#             },
-#             {
-#                 'events': [
-#                     {'name': 'job-1', 'state': State.SUCCEEDED.value},
-#                 ],
-#                 'actions': [
-#                     [stop_job, 'job-2']
-#                 ]
-#             },
-#             {
-#                 'events': [
-#                     {'name': 'job-2', 'state': State.SUCCEEDED.value},
-#                 ],
-#                 'actions': []
-#             }
-#         ]
+#         job_events = [{
+#             'events': [{
+#                 'name': 'job-1',
+#                 'state': State.RUNNING.value
+#             }],
+#             'actions': []
+#         }, {
+#             'events': [{
+#                 'name': 'job-2',
+#                 'state': State.RUNNING.value
+#             }],
+#             'actions': [[stop_job, 'job-1']]
+#         }, {
+#             'events': [{
+#                 'name': 'job-1',
+#                 'state': State.FAILED.value
+#             }],
+#             'actions': [[rerun_job, 'job-1']]
+#         }, {
+#             'events': [{
+#                 'name': 'job-1',
+#                 'state': State.RUNNING.value
+#             }],
+#             'actions': [[stop_job, 'job-1']]
+#         }, {
+#             'events': [{
+#                 'name': 'job-1',
+#                 'state': State.SUCCEEDED.value
+#             }],
+#             'actions': [[stop_job, 'job-2']]
+#         }, {
+#             'events': [{
+#                 'name': 'job-2',
+#                 'state': State.SUCCEEDED.value
+#             }],
+#             'actions': []
+#         }]
 #         idx_job_events = [0]
 
 #         def jobs_update(event):
 #             if event.jobs:
 #                 events = []
-#                 print('Event '+str(idx_job_events[0])+':')
+#                 print('Event ' + str(idx_job_events[0]) + ':')
 #                 for j in event.jobs:
 #                     print("\tMy job {} updated to {}".format(j['job'].name, j['job'].state))
 #                     events.append({'name': j['job'].name, 'state': j['job'].state})
@@ -270,9 +244,7 @@
 #         """Test case for injection of environment variables in docker
 #         """
 #         idx_job = [0]
-#         commands = [
-#             ['bash', '-c', 'env|sort']
-#         ]
+#         commands = [['bash', '-c', 'env|sort']]
 
 #         cpu = 2
 #         memory_bytes = memory_str_to_nbytes('2Gi')
@@ -283,7 +255,7 @@
 #                 return None
 #             res = {
 #                 'command': commands[idx_job[0] - 1],
-#                 'name': 'job-'+str(idx_job[0]),
+#                 'name': 'job-' + str(idx_job[0]),
 #                 'image': 'ubuntu:16.04',
 #                 'reqRamGbytes': 2,
 #                 'reqCores': cpu,
@@ -291,7 +263,7 @@
 #             }
 #             return res
 
-#         self._pa.set_callback_jobs_provider(return_new_jobs)
+#         self._pa.register_callback('create', return_new_jobs)
 
 #         self._pa.start()
 
@@ -324,21 +296,25 @@
 #         """Test case to overwrite environment variables injected in docker
 #         """
 #         idx_job = [0]
-#         commands = [
-#             ['bash', '-c', 'env|sort']
-#         ]
+#         commands = [['bash', '-c', 'env|sort']]
 
 #         def return_new_jobs(pa):
 #             idx_job[0] += 1
 #             if idx_job[0] > len(commands):
 #                 return None
 #             res = {
-#                 'command': commands[idx_job[0] - 1],
-#                 'name': 'job-'+str(idx_job[0]),
-#                 'image': 'ubuntu:16.04',
-#                 'reqRamGbytes': 2,
-#                 'reqCores': 2,
-#                 'reqGpus': 4,
+#                 'command':
+#                     commands[idx_job[0] - 1],
+#                 'name':
+#                     'job-' + str(idx_job[0]),
+#                 'image':
+#                     'ubuntu:16.04',
+#                 'reqRamGbytes':
+#                     2,
+#                 'reqCores':
+#                     2,
+#                 'reqGpus':
+#                     4,
 #                 'environmentVars': [
 #                     'EAI_JOB_ID=aaaaaa',  # Should be NOT overwrite
 #                     'NVIDIA_VISIBLE_DEVICES=5',  # Should be overwrite
@@ -346,7 +322,7 @@
 #             }
 #             return res
 
-#         self._pa.set_callback_jobs_provider(return_new_jobs)
+#         self._pa.register_callback('create', return_new_jobs)
 
 #         self._pa.start()
 
@@ -369,9 +345,7 @@
 #         """Test case to check container with max run time
 #         """
 #         idx_job = [0]
-#         commands = [
-#             ['bash', '-c', 'sleep 60']
-#         ]
+#         commands = [['bash', '-c', 'sleep 60']]
 
 #         def return_new_jobs(pa):
 #             idx_job[0] += 1
@@ -379,13 +353,13 @@
 #                 return None
 #             res = {
 #                 'command': commands[idx_job[0] - 1],
-#                 'name': 'job-'+str(idx_job[0]),
+#                 'name': 'job-' + str(idx_job[0]),
 #                 'image': 'ubuntu:16.04',
 #                 'maxRunTimeSecs': 3
 #             }
 #             return res
 
-#         self._pa.set_callback_jobs_provider(return_new_jobs)
+#         self._pa.register_callback('create', return_new_jobs)
 
 #         self._pa.start()
 
@@ -394,8 +368,3 @@
 
 #         job = list(jobs.values())[0]
 #         self.assertEqual(job.state, State.FAILED.value)
-
-
-# if __name__ == '__main__':
-#     import unittest
-#     unittest.main()
