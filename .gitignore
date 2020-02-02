@@ -114,3 +114,6 @@ borgy-process-agent*.tar.gz
 
 #VScode
 .vscode
+
+# sublime
+*.sublime-project
