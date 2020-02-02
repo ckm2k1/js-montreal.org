@@ -6,7 +6,7 @@ from unittest.mock import patch, Mock
 from typing import List, Mapping
 
 from borgy_process_agent_api_server.models import JobsOps
-from borgy_process_agent.controller import init, BaseAgent
+from borgy_process_agent.agent import init, BaseAgent
 
 from tests.utils import make_spec
 
@@ -34,7 +34,7 @@ def agent():
 
 
 @pytest.mark.usefixtures('specs')
-class TestController:
+class TestAgent:
 
     @pytest.mark.asyncio
     async def test_init(self, event_loop: asyncio.AbstractEventLoop):

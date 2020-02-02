@@ -3,14 +3,14 @@ import uuid
 import asyncio
 import logging
 import pathlib
-from typing import Callable
+from typing import Callable, Mapping
 from functools import partial
 
 import jinja2
 import aiohttp_jinja2
 from aiohttp import web, Signal, WSMsgType
 from borgy_process_agent.utils import ComplexEncoder
-from borgy_process_agent.controller import BaseAgent
+from borgy_process_agent.agent import BaseAgent
 
 # from borgy_process_agent_api_server.models import HealthCheck
 
@@ -20,6 +20,8 @@ app = None
 routes = web.RouteTableDef()
 
 customdumps = partial(json.dumps, cls=ComplexEncoder)
+
+UserCallback = Callable[[web.Application], None]
 
 
 def get_loop() -> asyncio.AbstractEventLoop:
@@ -136,7 +138,7 @@ async def cleanup_handler(app):
     logger.debug('Closed all websockets.')
 
 
-def init(agent: BaseAgent, on_cleanup: Callable[[web.Application], None] = None):
+def init(agent: BaseAgent, on_cleanup: UserCallback = None):
     global app
     static_path = pathlib.Path(__file__).parent / 'static'
 
@@ -146,7 +148,7 @@ def init(agent: BaseAgent, on_cleanup: Callable[[web.Application], None] = None)
     app.router.add_static('/static/', path=static_path, name='static')
     app['agent']: BaseAgent = agent
     app['events']: Signal = Signal(app)
-    app['sockets']: dict = {}
+    app['sockets']: Mapping = {}
     app['user'] = agent.user
     app['pa_id'] = agent.id
     app['shutdown'] = asyncio.Event()

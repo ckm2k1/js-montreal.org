@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from borgy_process_agent import controller
+from borgy_process_agent import agent
 from borgy_process_agent.simple_server import server
 
 logger = logging.getLogger(__name__)
@@ -33,11 +33,11 @@ class BaseRunner():
             self._loop.set_debug(debug)
 
     def init_agent(self):
-        return controller.init(self._pa_job_id,
-                               self._pa_user,
-                               self._loop,
-                               debug=self._debug,
-                               auto_rerun=self._auto_rerun)
+        return agent.init(self._pa_job_id,
+                          self._pa_user,
+                          self._loop,
+                          debug=self._debug,
+                          auto_rerun=self._auto_rerun)
 
     def _schedule(self):
         self._agent_task: asyncio.Task = self._loop.create_task(self._agent.run())

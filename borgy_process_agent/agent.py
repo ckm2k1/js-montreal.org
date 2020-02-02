@@ -160,7 +160,7 @@ class BaseAgent():
         ready = self._ready
         return {
             'is_ready': ready,
-            # This is only true when the controller exits
+            # This is only true when the agent exits
             # it's .run() loop completely.
             'is_shutdown': self._can_shutdown() and not ready,
         }
@@ -180,7 +180,7 @@ class BaseAgent():
                 if shutdown or self._can_shutdown():
                     break
             except asyncio.CancelledError:
-                logger.debug('Exiting controller due to CancelledError.')
+                logger.debug('Exiting agent due to CancelledError.')
                 break
             finally:
                 if callable(self.done_callback):
