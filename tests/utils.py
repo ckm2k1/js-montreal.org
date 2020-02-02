@@ -2,7 +2,7 @@ import uuid
 import copy
 from typing import Mapping
 
-from borgy_process_agent_api_server.models import Job, JobSpec, Job as OrkJob
+from borgy_process_agent_api_server.models import Job, JobSpec
 from borgy_process_agent_api_server.models.base_model_ import Model
 
 from borgy_process_agent.job import Restart

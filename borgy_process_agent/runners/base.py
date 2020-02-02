@@ -22,12 +22,12 @@ class BaseRunner():
         self._debug = debug
         self._api_host = api_host
         self._api_port = api_port
+        self._auto_rerun = auto_rerun
+        self._tasks = []
+        self._exc_exit = False
         self._loop = asyncio.get_event_loop()
         self._agent = self.init_agent()
         self._app = server.init(self._agent, self._on_cleanup)
-        self._tasks = []
-        self._exc_exit = False
-        self._auto_rerun = auto_rerun
 
         if debug is not None:
             self._loop.set_debug(debug)
@@ -69,8 +69,8 @@ class BaseRunner():
             self._exc_exit = ex
             self.stop()
         finally:
-            if not self._loop.is_closed():
-                self._loop.close()
+            # if not self._loop.is_closed():
+            #     self._loop.close()
             if self._exc_exit:
                 raise self._exc_exit
 

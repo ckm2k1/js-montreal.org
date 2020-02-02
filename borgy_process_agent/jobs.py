@@ -1,3 +1,4 @@
+from pprint import pformat
 from typing import Optional, List, Mapping, Any, Set
 
 from borgy_process_agent_api_server.models import Job as OrkJob, JobSpec
@@ -181,7 +182,7 @@ class Jobs:
                 else:
                     self._finished_jobs[index] = job
 
-            elif job.is_finished(): # pragma: no branch
+            elif job.is_finished():  # pragma: no branch
                 self._finished_jobs[index] = job
 
         # Updates for kill jobs with any acked or finished
@@ -198,7 +199,7 @@ class Jobs:
             # Is there no case where we don't have diff?
             # It's likely because why send updates for something
             # that didn't change?
-            if job.diff: # pragma: no branch
+            if job.diff:  # pragma: no branch
                 updated.append({'job': job, 'update': job.diff})
 
         return updated
@@ -210,5 +211,4 @@ class Jobs:
         return self._has_more_new_jobs
 
     def __repr__(self):
-        from pprint import pformat
         return pformat(self.get_counts(), indent=4)

@@ -79,14 +79,14 @@ class BaseAgent():
             elif action.type == ActionType.shutdown:
                 self._finish()
                 shutdown = True
-            else:  # pragma: no-branch
+            else:  # pragma: no branch
                 raise Exception('Invalid action type')
 
             self.queue.task_done()
-            action.done()
+            action.complete()
             logger.info('Finished processing action.')
         except Exception as ex:
-            action.fail(exc=ex)
+            action.fail(ex)
             raise
 
         if not self.jobs.has_more():
@@ -115,7 +115,7 @@ class BaseAgent():
         # 'create' actions, or if we're done and caller asks for a shutdown.
         if ((type == ActionType.shutdown and self._can_shutdown())
                 or (type == ActionType.create and not self._should_create())):
-            action.done()
+            action.complete()
             return action
 
         # Shutdown tasks jump immediately to the head of the queue,
