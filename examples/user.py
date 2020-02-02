@@ -14,7 +14,6 @@ base_job: dict = {
     ],
     'preemptable': True,
     'reqGpus': 1,
-    'restart': 'on-interruption',
     'options': {
         'alphabits': {
             'interrupts': 3,
