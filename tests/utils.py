@@ -2,10 +2,11 @@ import uuid
 import copy
 from typing import Mapping
 
-from borgy_process_agent_api_server.models import Job, JobSpec
+from borgy_process_agent_api_server.models import Job as OrkJob, JobSpec
 from borgy_process_agent_api_server.models.base_model_ import Model
 
-from borgy_process_agent.job import Restart
+from borgy_process_agent.job import Job
+from borgy_process_agent.enums import Restart
 from borgy_process_agent.utils import get_now_isoformat, Indexer
 
 SPEC_DEFAULTS = {
@@ -91,7 +92,10 @@ class MockJob():
         self._job['environmentVars'].append(f"EAI_PROCESS_AGENT_INDEX={index}")
 
     def get_job(self):
-        return Job.from_dict(self._job)
+        return OrkJob.from_dict(self._job)
+
+    def get_spec(self):
+        return Job.spec_from_ork_job(self.get_job())
 
     def __contains__(self, key):
         return key in self._job
@@ -138,7 +142,12 @@ def make_spec(*args, **kwargs) -> JobSpec:
     return JobSpec.from_dict(spec)
 
 
-def mock_job_from_job(job: Job, **updates) -> MockJob:
+def mock_job_from_job(job: OrkJob, **updates) -> MockJob:
     spec = model_to_json(job.spec)
     spec.update(updates)
     return MockJob(index=job.index, **spec)
+
+
+def parent_dir(path):
+    from pathlib import Path
+    return Path(path).absolute().parent

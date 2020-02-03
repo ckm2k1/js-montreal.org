@@ -57,7 +57,7 @@ class DockerGovernor:
         while not ready and self._running:
             try:
                 res = self._health_api.v1_health_get()
-            except: # noqa
+            except:  # noqa
                 res = None
 
             if res and res.is_ready:
@@ -77,12 +77,13 @@ class DockerGovernor:
         logger.debug('Get job from PA')
         jobs: JobsOps = self._get_new_jobs()
 
-        for j in jobs.submit:
-            self._create_job(j)
-        for j in jobs.rerun:
-            self._rerun_job(j)
-        for j in jobs.kill:
-            self._kill_job(j)
+        if jobs:
+            for j in jobs.submit:
+                self._create_job(j)
+            for j in jobs.rerun:
+                self._rerun_job(j)
+            for j in jobs.kill:
+                self._kill_job(j)
 
         # Start queuing jobs
         logger.info('Start queuing jobs')
@@ -127,6 +128,11 @@ class DockerGovernor:
     def _kill_job(self, job_id: str) -> Job:
         job = self._update_job_state(job_id, State.CANCELLING)
         logger.info('\t\tReruning job %s (name: %s)', job_id, job['job'].name)
+        return job
+
+    def _rerun_job(self, job_id: str) -> Job:
+        job = self._update_job_state(job_id, State.QUEUING)
+        logger.debug('\t\tRerun job {} (name: {})'.format(job_id, job['job'].name))
         return job
 
     def _run_job(self, job: Job):
