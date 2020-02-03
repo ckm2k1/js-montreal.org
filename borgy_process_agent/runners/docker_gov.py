@@ -47,7 +47,6 @@ class DockerGovernor:
             return
         logger.info('Sending job updates to agent.')
         logger.debug('Sending update to agent: %s jobs', [j for j in jobs])
-        # We need complexencoder here to support bytes objects which
         res = self._jobs_api.v1_jobs_put(jobs)
         return res
 
@@ -110,8 +109,6 @@ class DockerGovernor:
         try:
             while self._running:
                 self._run_iteration()
-
-                # Check if self._running was updated after push update
                 if self._running:
                     logger.info('Loop waiting')
                     time.sleep(self._poll_interval)
