@@ -28,6 +28,7 @@ class BaseRunner():
         self._loop = asyncio.get_event_loop()
         self._agent = self.init_agent()
         self._app = server.init(self._agent, self._on_cleanup)
+        self._main_coro = None
 
         if debug is not None:
             self._loop.set_debug(debug)
@@ -53,9 +54,13 @@ class BaseRunner():
                 raise d.exception()
         return done, pending
 
+    def kill(self):
+        self._main_coro.throw(KeyboardInterrupt)
+
     def start(self):
         try:
-            self._loop.run_until_complete(self._run())
+            self._main_coro = self._run()
+            self._loop.run_until_complete(self._main_coro)
             self.stop()
         except KeyboardInterrupt:
             logger.debug('Handling KeyboardInterrupt.')

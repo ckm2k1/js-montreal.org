@@ -94,10 +94,9 @@ async def health(request: web.Request):
 @routes.get('/v1/jobs')
 async def get_jobs(request: web.Request):
     agent = request.app['agent']
-    loop = request.loop
     jobs, _ = agent.create_jobs()
     logger.debug('GET /v1/jobs -- %s', jobs)
-    loop.create_task(request.app['events'].send())
+    get_loop().create_task(request.app['events'].send())
     return web.json_response(jobs)
 
 
@@ -107,7 +106,7 @@ async def update_jobs(request: web.Request):
     jobs = await request.json()
     logger.debug('PUT /v1/jobs -- %s', jobs)
     fut = agent.update_jobs(jobs)
-    request.loop.create_task(request.app['events'].send(fut))
+    get_loop().create_task(request.app['events'].send(fut))
     return web.Response(text='Updated jobs')
 
 

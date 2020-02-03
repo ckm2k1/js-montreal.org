@@ -55,23 +55,52 @@ class DockerGovernor:
         attempts = 20
         ready = False
 
-        while not ready and attempts and self._running:
+        while not ready and self._running:
             try:
                 res = self._health_api.v1_health_get()
-                if res.is_ready:
-                    ready = True
-                    logger.info('PA is ready!')
-                else:
-                    if not attempts:
-                        raise TimeoutError
-                    time.sleep(0.1)
-            except TimeoutError:
-                raise
-            except Exception:
-                time.sleep(0.1)
-            finally:
+            except: # noqa
+                res = None
+
+            if res and res.is_ready:
+                ready = True
+                logger.info('PA is ready!')
+                return
+            else:
+                if not attempts:
+                    raise TimeoutError(f'PA was not ready after {attempts} attempts.')
                 logger.info('Governor waiting for PA to start.')
                 attempts -= 1
+                time.sleep(0.1)
+
+    def _run_iteration(self):
+        start_time = timer()
+        # Get job from PA
+        logger.debug('Get job from PA')
+        jobs: JobsOps = self._get_new_jobs()
+
+        for j in jobs.submit:
+            self._create_job(j)
+        for j in jobs.rerun:
+            self._rerun_job(j)
+        for j in jobs.kill:
+            self._kill_job(j)
+
+        # Start queuing jobs
+        logger.info('Start queuing jobs')
+        self._start_jobs()
+
+        # Check running container with max run time
+        logger.info('Check running container with max run time')
+        self._check_max_run_time()
+
+        # Check update from container
+        logger.info('Check update from container')
+        updated_jobs = self._check_jobs_update()
+
+        # Push update to PA
+        self._send_job_updates(updated_jobs)
+
+        logger.info("--- run loop: %s seconds ---" % (timer() - start_time))
 
     def start(self):
         self._running = True
@@ -80,34 +109,7 @@ class DockerGovernor:
 
         try:
             while self._running:
-                start_time = timer()
-                # Get job from PA
-                logger.debug('Get job from PA')
-                jobs: JobsOps = self._get_new_jobs()
-
-                for j in jobs.submit:
-                    self._create_job(j)
-                for j in jobs.rerun:
-                    self._rerun_job(j)
-                for j in jobs.kill:
-                    self._kill_job(j)
-
-                # Start queuing jobs
-                logger.info('Start queuing jobs')
-                self._start_jobs()
-
-                # Check running container with max run time
-                logger.info('Check running container with max run time')
-                self._check_max_run_time()
-
-                # Check update from container
-                logger.info('Check update from container')
-                updated_jobs = self._check_jobs_update()
-
-                # Push update to PA
-                self._send_job_updates(updated_jobs)
-
-                logger.info("--- run loop: %s seconds ---" % (timer() - start_time))
+                self._run_iteration()
 
                 # Check if self._running was updated after push update
                 if self._running:
