@@ -12,15 +12,15 @@ logger = logging.getLogger("main")
 logger.setLevel(logging.INFO)
 
 jobs = []
-iteration_max = None
 iteration = 0
+iteration_max = None
 n_children = None
 job_idx_to_kill = None
 job_id_to_kill = None
 
 
 def user_create(agent):
-    nonlocal iteration, iteration_max
+    global iteration, iteration_max
     iteration += 1
 
     if iteration == iteration_max:
@@ -39,7 +39,7 @@ def user_create(agent):
 
 
 def user_update(agent, jobs):
-    nonlocal iteration, job_idx_to_kill, job_id_to_kill
+    global iteration, job_idx_to_kill, job_id_to_kill
     iteration += 1
 
     logger.info("{}: job update".format(iteration))
@@ -60,10 +60,8 @@ def init(env):
 
     try:
         iteration_max = env.get_int('PA_TESTER_ITERATION', default=30)
-        iteration = 0
         n_children = env.get_int('PA_TESTER_CHILDREN', default=0)
         job_idx_to_kill = env.get_int('PA_TESTER_CHILD_IDX_TO_KILL', -1)
-        job_id_to_kill = None
 
         if job_idx_to_kill > -1:
             assert job_idx_to_kill < n_children, \
