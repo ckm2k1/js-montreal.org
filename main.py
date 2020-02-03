@@ -47,6 +47,11 @@ parser.add_argument('--disable-auto-rerun',
                     action='store_true',
                     default=False,
                     help='Do not automatically rerun INTERRUPTED jobs.')
+parser.add_argument('--integration-tests',
+                    action='store_true',
+                    default=False,
+                    help='Special flag to be used only by borgy integration tests. '
+                    'Forces the usercode to examples/integration_tests.py')
 
 
 def import_runner(module):
@@ -69,7 +74,10 @@ if runner_name == 'auto':
 
 Runner: BaseRunner = import_runner(runner_name)
 logger.info('Loading user code module: %s', args.code)
-usercode = load_module_from_path(args.code)
+if args.integration_tests:
+    usercode = load_module_from_path('./examples/integration_tests.py')
+else:
+    usercode = load_module_from_path(args.code)
 auto_rerun = not args.disable_auto_rerun
 runner = Runner(api_host=api_host,
                 api_port=api_port,
