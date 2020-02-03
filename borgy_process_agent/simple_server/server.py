@@ -95,7 +95,7 @@ async def health(request: web.Request):
 async def get_jobs(request: web.Request):
     agent = request.app['agent']
     loop = request.loop
-    jobs = agent.create_jobs()
+    jobs, _ = agent.create_jobs()
     logger.debug('GET /v1/jobs -- %s', jobs)
     loop.create_task(request.app['events'].send())
     return web.json_response(jobs)

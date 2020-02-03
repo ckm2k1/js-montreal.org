@@ -67,8 +67,8 @@ class Env:
 
     def _get_envvar(self, key: str, default: Any, parser: Callable,
                     hardfail: bool) -> Union[None, str]:
-        if key not in os.environ:
-            return default if default is not SENTINEL else None
+        if key not in os.environ and default is not SENTINEL:
+            return default
         try:
             return parser(os.getenv(key))
         except Exception:
@@ -96,18 +96,13 @@ def parse_bool(val: str) -> bool:
     return bool(re.match(r'^(true|1|yes|on)$', val, re.IGNORECASE))
 
 
-def now() -> datetime:
-    """Returns current datetime in UTC."""
-    return datetime.utcnow()
-
-
 def fmt_datetime(dt: datetime) -> str:
     """Returns a formatted datetime with truncated millis."""
     return dt.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3] if dt else ''
 
 
-def parse_iso_datetime(dt: str) -> datetime:
-    return datetime.fromisoformat(dt)
+def parse_iso_datetime(dtstr: str) -> datetime:
+    return datetime.fromisoformat(dtstr)
 
 
 class ObjDict(UserDict):
@@ -267,12 +262,12 @@ class ComplexEncoder(json.JSONEncoder):
     decoding."""
 
     def default(self, obj):
-        if isinstance(obj, bytes):
-            return obj.decode(encoding='utf8', errors='replace')
         if isinstance(obj, uuid.UUID):
             return str(obj)
+        if isinstance(obj, bytes):  # pragma: no branch
+            return obj.decode(encoding='utf8', errors='replace')
         # Let the base class default method raise the TypeError
-        return json.JSONEncoder.default(self, obj)
+        return json.JSONEncoder.default(self, obj)  # pragma: no cover
 
 
 mem_size_units = {

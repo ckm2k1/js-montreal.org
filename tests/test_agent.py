@@ -43,7 +43,7 @@ class TestAgent:
 
     @pytest.mark.asyncio
     async def test_create_action(self, agent: BaseAgent):
-        ops = agent.create_jobs()
+        ops, _ = agent.create_jobs()
         assert ops == {
             'submit': [],
             'kill': [],
@@ -58,7 +58,7 @@ class TestAgent:
         assert agent._finished is False
         assert agent.jobs.has_pending()
 
-        ops = JobsOps.from_dict(agent.create_jobs())
+        ops = JobsOps.from_dict(agent.create_jobs()[0])
         assert len(ops.submit) == 10
         assert len(agent.jobs.get_submitted()) == 10
         assert agent.queue.empty()
@@ -86,7 +86,7 @@ class TestAgent:
         agent.register_callback('create', user_create_raise)
         agent.register_callback('update', user_update_raise)
 
-        ops = agent.create_jobs()
+        ops, _ = agent.create_jobs()
         assert ops == {
             'submit': [],
             'kill': [],
@@ -124,11 +124,21 @@ class TestAgent:
         assert shutdown is True
         assert agent.finished
 
-    # @pytest.mark.asyncio
-    # async def test_no_actions_while_usercode_running(self, event_loop: asyncio.AbstractEventLoop,
-    #                                                  agent: BaseAgent):
-    #     ops = agent.create_jobs()
-    #     ops = agent.create_jobs()
+    @pytest.mark.asyncio
+    async def test_no_actions_while_usercode_running(self, event_loop: asyncio.AbstractEventLoop,
+                                                     agent: BaseAgent):
+
+        ops, _ = agent.create_jobs()
+        await agent._process_action()
+        # Emulate user code in progress.
+        async with agent._jobs_lock:
+            assert ops == {'kill': [], 'rerun': [], 'submit': [], 'submit_parallel': False}
+            # When user code is running create actions
+            # are not queued.
+            ops, action = agent.create_jobs()
+            assert agent.queue.empty()
+            assert action.done()
+            assert not action.failed()
 
     @pytest.mark.asyncio
     async def test_sync_user_fns(self, event_loop: asyncio.AbstractEventLoop, agent: BaseAgent):

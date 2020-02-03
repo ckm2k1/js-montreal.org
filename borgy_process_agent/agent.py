@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from uuid import UUID
-from typing import List, Mapping, Callable, Optional, Awaitable, Any
+from typing import List, Mapping, Callable, Optional, Awaitable, Any, Tuple
 
 from borgy_process_agent_api_server.models import Job as OrkJob, JobSpec, JobsOps
 
@@ -76,22 +76,23 @@ class BaseAgent():
                 await self._create()
             elif action.type == ActionType.update:
                 await self._update(action.data)
-            elif action.type == ActionType.shutdown:
+            elif action.type == ActionType.shutdown:  # pragma: no branch
                 self._finish()
                 shutdown = True
-            else:  # pragma: no branch
+            else:
                 raise Exception('Invalid action type')
 
-            self.queue.task_done()
+            if not self.jobs.has_more():
+                logger.info('User code is finished producing jobs.')
+                self._finish()
+
             action.complete()
             logger.info('Finished processing action.')
         except Exception as ex:
             action.fail(ex)
             raise
-
-        if not self.jobs.has_more():
-            logger.info('User code is finished producing jobs.')
-            self._finish()
+        finally:
+            self.queue.task_done()
 
         logger.info(self.jobs.get_counts())
 
@@ -134,10 +135,10 @@ class BaseAgent():
                       kill=[j.jid for j in self.jobs.submit_kills()])
         return ops.to_dict()
 
-    def create_jobs(self) -> JobsOps:
+    def create_jobs(self) -> Tuple[JobsOps, Action]:
         job_ops = self.submit_pending_jobs()
-        self.push_action(ActionType.create).on_done(raiser)  # remove on_done?
-        return job_ops
+        action = self.push_action(ActionType.create)
+        return job_ops, action
 
     def update_jobs(self, jobs: List[OrkJob]) -> Action:
         return self.push_action(ActionType.update, data=jobs)
@@ -201,7 +202,4 @@ def init(user: str,
          debug: Optional[bool] = None,
          auto_rerun: Optional[bool] = True) -> BaseAgent:
 
-    if agent is None:
-        agent = BaseAgent(loop, user, pa_id, queue=queue, debug=debug, auto_rerun=auto_rerun)
-
-    return agent
+    return BaseAgent(loop, user, pa_id, queue=queue, debug=debug, auto_rerun=auto_rerun)

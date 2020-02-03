@@ -1,6 +1,12 @@
+import os
+import json
+import uuid
+import inspect
+from unittest.mock import Mock
+
 import pytest
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from borgy_process_agent import utils
 
 
@@ -29,6 +35,12 @@ class TestUtils:
         assert dcm['g'] == 20
         del dcm['g']
         assert 'g' not in dcm
+
+        with pytest.raises(expected_exception=KeyError, match='bad'):
+            dcm.pop('bad')
+
+        with pytest.raises(expected_exception=KeyError, match='bad'):
+            del dcm['bad']
 
     def test_fmt_datetime(self):
         assert utils.fmt_datetime(None) == ''
@@ -93,18 +105,93 @@ class TestUtils:
             utils.load_module_from_path('nope')
 
     def test_complex_encoder(self):
-        import json
-        import uuid
         uid = uuid.uuid4()
         obj = {
             'a': 'b',
+            'e': [],
             'c': b'\x99',
             'uid': uid,
         }
-        jstr = json.dumps(obj, cls=utils.ComplexEncoder)
-        assert jstr == f'{{"a": "b", "c": "\\ufffd", "uid": "{uid}"}}'
+        jstr = json.dumps(obj, cls=utils.ComplexEncoder, sort_keys=True)
+        assert jstr == f'{{"a": "b", "c": "\\ufffd", "e": [], "uid": "{uid}"}}'
 
     def test_get_now(self):
         dt = utils.get_now()
         assert dt.tzinfo is not None and dt.tzinfo.utcoffset(dt) is not None
         assert dt.tzinfo == timezone.utc
+
+    def test_memory_to_nbytes(self):
+        assert utils.memory_str_to_nbytes('10Mi') == 10485760
+        assert utils.memory_str_to_nbytes('1K') == 1000
+        assert utils.memory_str_to_nbytes('1Ki') == 1024
+
+        with pytest.raises(expected_exception=ValueError):
+            utils.memory_str_to_nbytes('invalid')
+
+        with pytest.raises(expected_exception=ValueError):
+            utils.memory_str_to_nbytes('10MB')
+
+    def test_cpu_str(self):
+        assert utils.cpu_str_to_ncpu('3') == 3.0
+        assert utils.cpu_str_to_ncpu('3m') == 0.003
+
+        with pytest.raises(expected_exception=ValueError):
+            utils.cpu_str_to_ncpu('invalid')
+
+        with pytest.raises(expected_exception=ValueError):
+            utils.cpu_str_to_ncpu('3sh')
+
+    def test_td_format(self):
+        delta = timedelta(days=1)
+        assert utils.td_format(delta) == '24 hours'
+        delta = timedelta(hours=1, minutes=10, seconds=5)
+        assert utils.td_format(delta) == '1 hour, 10 minutes, 5 seconds'
+
+    def test_datetime_stuff(self):
+        st = '2020-02-02T18:13:05.000+00:00'
+        assert utils.parse_iso_datetime(st) == datetime(2020, 2, 2, 18, 13, 5, tzinfo=timezone.utc)
+
+        # No timezone. Generally not a good idea.
+        st = '2020-02-02T18:13:05.000'
+        assert utils.parse_iso_datetime(st) == datetime(2020, 2, 2, 18, 13, 5)
+
+        now = utils.get_now()
+        assert now.tzinfo == timezone.utc
+
+    @pytest.mark.parametrize('fname,inp,exp', [
+        ('get', 'ohyeah', 'ohyeah'),
+        ('get_bool', 'true', True),
+        ('get_bool', '1', True),
+        ('get_bool', 'yes', True),
+        ('get_bool', 'on', True),
+        ('get_bool', 'false', False),
+        ('get_bool', '0', False),
+        ('get_bool', 'no', False),
+        ('get_bool', 'hellno', False),
+        ('get_int', '10', 10),
+        ('get_int', '0', 0),
+        ('get_float', '10.3331', 10.3331),
+        ('get_float', '0.001', .001),
+        ('get_float', '.002', .002),
+    ])
+    def test_env_types(self, fname, inp, exp):
+        env = utils.Env()
+        os.environ['VAR'] = inp
+        assert getattr(env, fname)('VAR') == exp
+
+    def test_env_misc(self):
+        env = utils.Env()
+        with pytest.raises(expected_exception=Exception):
+            env.get_bool('NOPE')
+
+        assert env.get_bool('NOPE', default=True) is True
+        assert env.get_bool('NOPE', hardfail=False) is None
+
+    @pytest.mark.asyncio
+    async def test_ensure_coro(self):
+        mfn = Mock()
+        assert not inspect.iscoroutinefunction(mfn)
+        cfn = utils.ensure_coroutine(mfn)
+        assert inspect.iscoroutinefunction(cfn)
+        await cfn()
+        assert mfn.called_once()
