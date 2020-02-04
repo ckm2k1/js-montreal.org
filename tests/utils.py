@@ -1,5 +1,7 @@
 import uuid
 import copy
+import inspect
+from unittest.mock import Mock
 from typing import Mapping
 
 from borgy_process_agent_api_server.models import Job as OrkJob, JobSpec
@@ -151,3 +153,13 @@ def mock_job_from_job(job: OrkJob, **updates) -> MockJob:
 def parent_dir(path):
     from pathlib import Path
     return Path(path).absolute().parent
+
+
+class AsyncMock(Mock):
+    """AsyncMock that supports 'wraps'ing coroutines
+    and calling through instead of just plain mocking.
+    """
+    async def __call__(self, *args, **kwargs):
+        if self._mock_wraps is not None and inspect.iscoroutinefunction(self._mock_wraps):
+            return await super().__call__(*args, **kwargs)
+        return super().__call__(*args, **kwargs)

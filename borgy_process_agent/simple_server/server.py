@@ -55,8 +55,13 @@ async def websocket_handler(request: web.Request):
                 await socket.close()
             else:
                 await socket.send_json(request.app['agent'].get_stats(), dumps=customdumps)
-        elif msg.type == WSMsgType.ERROR:
+        # I don't see a way at the moment to force a socket
+        # error and hit this branch since that requires failing
+        # the very internal stream reader used by aiohttp.ClientSession,
+        # which only fails on Future CancelledError or TimeoutErrors
+        elif msg.type == WSMsgType.ERROR: # pragma: no cover
             logger.exception('socket connection closed with exception %s', socket.exception())
+            break
 
     if not socket.closed:
         await socket.close()
@@ -118,10 +123,12 @@ async def get_stats(request: web.Request):
 @routes.get('/kill')
 async def kill(request: web.Request):
     get_loop().call_soon(shutdown)
-    return web.Response(text='Shutting down server.')
+    return web.Response(text='Server shutdown requested via kill.')
 
 
-async def _send_update_to_clients(app: web.Application, fut: asyncio.Future = None):
+async def _send_update_to_clients(fut: asyncio.Future = None):
+    global app
+
     if fut is not None:
         await fut
 
@@ -152,7 +159,7 @@ def init(agent: BaseAgent, on_cleanup: UserCallback = None):
     app['pa_id'] = agent.id
     app['shutdown'] = asyncio.Event()
 
-    app['events'].append(partial(_send_update_to_clients, app))
+    app['events'].append(_send_update_to_clients)
     app['events'].freeze()
     app.add_routes(routes)
 
