@@ -194,4 +194,4 @@ class TestUtils:
         cfn = utils.ensure_coroutine(mfn)
         assert inspect.iscoroutinefunction(cfn)
         await cfn()
-        assert mfn.called_once()
+        mfn.assert_called_once()

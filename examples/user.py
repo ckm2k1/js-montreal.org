@@ -8,7 +8,7 @@ logger = logging.getLogger('user_logger')
 base_job: dict = {
     'image': 'ubuntu:18.04',
     'command': [
-        'bash', '-c', 'if [[ $EAI_PROCESS_AGENT_INDEX = 3 ]]; then exit 1; fi;'
+        'bash', '-c',
         'if [[ `shuf -i 0-10 -n 1` -gt 2 ]]; then sleep 30; echo \'DONE\';'
         'else exit 1; fi;'
     ],

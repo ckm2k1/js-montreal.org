@@ -24,8 +24,8 @@ class Action(asyncio.Future):
     def complete(self) -> bool:
         self.set_result(self.data)
 
-    def on_done(self, callback: Callable):
-        self.add_done_callback(callback)
+    def on_done(self, callback: Callable) -> asyncio.Handle:
+        return self.add_done_callback(callback)
 
     def fail(self, exc: Exception):
         self.set_exception(exc)

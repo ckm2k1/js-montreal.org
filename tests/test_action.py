@@ -4,26 +4,27 @@ from unittest.mock import Mock
 import pytest
 
 from borgy_process_agent.action import Action, ActionType
+from borgy_process_agent.typedefs import EventLoop
 
 
 @pytest.mark.asyncio
 class TestAction:
 
-    async def test_basic_action(self):
+    async def test_basic_action(self, event_loop: EventLoop):
         act = Action(1, ActionType.create, data='123')
-        act.complete()
         done = Mock()
         act.on_done(done)
+        event_loop.call_soon(act.complete)
         res = await act
         assert res == '123'
         assert act.done()
         assert not act.failed()
-        assert done.called_once()
+        done.assert_called_once()
 
-    async def test_action_exc(self):
+    async def test_action_exc(self, event_loop: EventLoop):
         act = Action(1, 'create')
         assert not act.failed()
-        act.fail(Exception('oh no!'))
+        event_loop.call_soon(act.fail, Exception('oh no!'))
         done = Mock()
         act.on_done(done)
         with pytest.raises(expected_exception=Exception, match='oh no!'):
@@ -31,7 +32,7 @@ class TestAction:
 
         assert act.done()
         assert act.failed()
-        assert done.called_once()
+        done.assert_called_once()
 
     async def test_action_priority_and_ordering(self):
         acts = [Action(i, 'update') for i in range(10)]

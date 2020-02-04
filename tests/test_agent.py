@@ -158,9 +158,9 @@ class TestAgent:
         agent.create_jobs()
         agent.update_jobs([])
         await agent.run()
-        assert user_create.called_once()
-        assert user_update.called_once()
-        assert user_done.called_once()
+        user_create.assert_called_once()
+        user_update.assert_called_once()
+        user_done.assert_called_once()
         assert agent.finished
         assert agent.get_health()['is_shutdown']
 

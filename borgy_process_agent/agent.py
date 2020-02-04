@@ -175,21 +175,22 @@ class BaseAgent():
 
     async def run(self):
         self._ready = True
-        while True:
-            try:
-                shutdown = await self._process_action()
-                if shutdown or self._can_shutdown():
+        try:
+            while True:
+                try:
+                    shutdown = await self._process_action()
+                    if shutdown or self._can_shutdown():
+                        break
+                except asyncio.CancelledError:
+                    logger.debug('Exiting agent due to CancelledError.')
                     break
-            except asyncio.CancelledError:
-                logger.debug('Exiting agent due to CancelledError.')
-                break
-            finally:
-                if callable(self.done_callback):
-                    try:
-                        await self.done_callback(self.jobs)
-                    except Exception as ex:
-                        logger.exception(ex)
-                self._ready = False
+        finally:
+            if callable(self.done_callback):
+                try:
+                    await self.done_callback(self.jobs)
+                except Exception as ex:
+                    logger.exception(ex)
+            self._ready = False
 
         logger.info('Agent done, exiting...')
 
