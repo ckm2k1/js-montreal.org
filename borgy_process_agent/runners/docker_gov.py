@@ -16,7 +16,7 @@ from borgy_process_agent_api_server.models import Job, JobRuns, JobsOps, JobSpec
 logger = logging.getLogger(__name__)
 
 
-class DockerGovernor: # pragma: no cover
+class DockerGovernor:
 
     def __init__(self, agent_host='http://localhost', agent_port=8666, poll_interval=2):
         self._running = False

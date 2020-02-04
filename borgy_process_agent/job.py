@@ -133,13 +133,11 @@ class Job:
         # already does this operation for Connexion apps,
         # but we do it manually here since we're not using
         # the BPAA.
-        if self.spec is not None:
-            res = {}
-            for k, v in self.spec.to_dict().items():
-                out_attr = self.spec.attribute_map[k]
-                res[out_attr] = v
-            return res
-        return None
+        res = {}
+        for k, v in self.spec.to_dict().items():
+            out_attr = self.spec.attribute_map[k]
+            res[out_attr] = v
+        return res
 
     def update_from_ork(self, oj: Union[OrkJob, OrkJobDict]):
         if isinstance(oj, dict):

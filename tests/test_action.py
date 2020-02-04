@@ -38,4 +38,5 @@ class TestAction:
         acts = [Action(i, 'update') for i in range(10)]
         shuffle(acts)
         acts.sort()
-        assert acts[0].prio == 0 and acts[-1].prio == 9
+        for i in range(10):
+            assert acts[i].prio == i

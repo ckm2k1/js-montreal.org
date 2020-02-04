@@ -15,17 +15,6 @@ SENTINEL = object()
 KeyPairGenerator = Generator[Tuple[Any, Any], None, None]
 
 
-def taketimes(iterable: Union[List, Mapping], times: int = None) -> KeyPairGenerator:
-    times = len(iterable) if times is None else times
-    gen = enumerate(iterable) if isinstance(iterable, list) else iterable.items().__iter__()
-    while times:
-        try:
-            yield next(gen)
-        except StopIteration:
-            return
-        times -= 1
-
-
 # https://docs.python.org/3.7/library/collections.html#collections.ChainMap
 class DeepChainMap(ChainMap):
     """Variant of ChainMap that allows direct updates to inner scopes"""
@@ -59,6 +48,13 @@ def _identity(x: Any) -> Any:
     return x
 
 
+def parse_bool(val: str) -> bool:
+    """Parse booleans out of strings. Commonly useful for
+    extracting values out of environment variables.
+    """
+    return bool(re.match(r'^(true|1|yes|on)$', val, re.IGNORECASE))
+
+
 class Env:
     """Wrapper class for os.getenv that allows easy conversion
     of string values coming from env variables into python native
@@ -87,22 +83,6 @@ class Env:
 
     def get(self, key: str, default: Any = SENTINEL, hardfail=True) -> str:
         return self._get_envvar(key, default, _identity, hardfail)
-
-
-def parse_bool(val: str) -> bool:
-    """Parse booleans out of strings. Commonly useful for
-    extracting values out of environment variables.
-    """
-    return bool(re.match(r'^(true|1|yes|on)$', val, re.IGNORECASE))
-
-
-def fmt_datetime(dt: datetime) -> str:
-    """Returns a formatted datetime with truncated millis."""
-    return dt.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3] if dt else ''
-
-
-def parse_iso_datetime(dtstr: str) -> datetime:
-    return datetime.fromisoformat(dtstr)
 
 
 class ObjDict(UserDict):
@@ -147,29 +127,6 @@ class ObjDict(UserDict):
             del self[key]
         except KeyError:
             raise AttributeError(key)
-
-
-def td_format(td_object: timedelta) -> str:
-    """Returns the timedelta object formatted as human readable string
-    Ex: 1 day, 15 hours, 18 minutes"""
-    seconds = int(td_object.total_seconds())
-    periods = [
-        ('year', 60 * 60 * 24 * 365),
-        ('month', 60 * 60 * 24 * 30),
-        ('day', 60 * 60 * 24),
-        ('hour', 60 * 60),
-        ('minute', 60),
-        ('second', 1),
-    ]  # noqa
-
-    strings = []
-    for period_name, period_seconds in periods:
-        if seconds > period_seconds:
-            period_value, seconds = divmod(seconds, period_seconds)
-            has_s = 's' if period_value > 1 else ''
-            strings.append("%s %s%s" % (period_value, period_name, has_s))
-
-    return ", ".join(strings)
 
 
 class Indexer(Iterator):
@@ -244,18 +201,6 @@ class Indexer(Iterator):
         return self._last
 
 
-def load_module_from_path(path: str) -> ModuleType:
-    """Returns a live module object loaded
-    from the provided path argument.
-    """
-    assert path, 'Invalid module path.'
-    spec = importlib.util.spec_from_file_location('usercode', location=path)
-    assert spec, f'No valid python module found at path {path}'
-    usercode = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(usercode)
-    return usercode
-
-
 class ComplexEncoder(json.JSONEncoder):
     """JSON encoder that supports bytes serialization. Bytes are
     coerced to a UTF-8 string, replacing any sequences that fail
@@ -268,6 +213,49 @@ class ComplexEncoder(json.JSONEncoder):
             return obj.decode(encoding='utf8', errors='replace')
         # Let the base class default method raise the TypeError
         return json.JSONEncoder.default(self, obj)  # pragma: no cover
+
+
+def fmt_datetime(dt: datetime) -> str:
+    """Returns a formatted datetime with truncated millis."""
+    return dt.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3] if dt else ''
+
+
+def parse_iso_datetime(dtstr: str) -> datetime:
+    return datetime.fromisoformat(dtstr)
+
+
+def td_format(td_object: timedelta) -> str:
+    """Returns the timedelta object formatted as human readable string
+    Ex: 1 day, 15 hours, 18 minutes"""
+    seconds = int(td_object.total_seconds())
+    periods = [
+        ('year', 60 * 60 * 24 * 365),
+        ('month', 60 * 60 * 24 * 30),
+        ('day', 60 * 60 * 24),
+        ('hour', 60 * 60),
+        ('minute', 60),
+        ('second', 1),
+    ]  # noqa
+
+    strings = []
+    for period_name, period_seconds in periods:
+        if seconds > period_seconds:
+            period_value, seconds = divmod(seconds, period_seconds)
+            has_s = 's' if period_value > 1 else ''
+            strings.append("%s %s%s" % (period_value, period_name, has_s))
+
+    return ", ".join(strings)
+
+
+def get_now():
+    """Facilitates testing."""
+    dt = datetime.utcnow()
+    return dt.replace(tzinfo=timezone.utc)
+
+
+def get_now_isoformat():
+    """Facilitates testing."""
+    return get_now().isoformat()
 
 
 mem_size_units = {
@@ -287,17 +275,6 @@ mem_size_units = {
 }
 
 cpu_size_units = {'': 1, 'm': 0.001}
-
-
-def get_now():
-    """Facilitates testing."""
-    dt = datetime.utcnow()
-    return dt.replace(tzinfo=timezone.utc)
-
-
-def get_now_isoformat():
-    """Facilitates testing."""
-    return get_now().isoformat()
 
 
 def memory_str_to_nbytes(mem_size_str):
@@ -336,3 +313,26 @@ def ensure_coroutine(fn, loop=None) -> Coroutine:
         return await loop.run_in_executor(None, partial(fn, *args, **kwargs))
 
     return coro_wrapper
+
+
+def load_module_from_path(path: str) -> ModuleType:
+    """Returns a live module object loaded
+    from the provided path argument.
+    """
+    assert path, 'Invalid module path.'
+    spec = importlib.util.spec_from_file_location('usercode', location=path)
+    assert spec, f'No valid python module found at path {path}'
+    usercode = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(usercode)
+    return usercode
+
+
+def taketimes(iterable: Union[List, Mapping], times: int = None) -> KeyPairGenerator:
+    times = len(iterable) if times is None else times
+    gen = enumerate(iterable) if isinstance(iterable, list) else iterable.items().__iter__()
+    while times:
+        try:
+            yield next(gen)
+        except StopIteration:
+            return
+        times -= 1
