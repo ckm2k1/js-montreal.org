@@ -13,5 +13,4 @@ ENV VERSION ${DPZ_VERSION}
 
 ADD . .
 RUN pip install -e .
-ENTRYPOINT ["borgy_process_agent"]
-CMD []
+CMD ["borgy_process_agent"]
