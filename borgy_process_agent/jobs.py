@@ -205,7 +205,11 @@ class Jobs:
         return updated
 
     def all_done(self) -> bool:
-        return not self.has_more() and len(self._finished_jobs) == len(self._all_jobs)
+        no_more = not self.has_more()
+        no_rerun = not self.get_rerun()
+        no_kill = not self.get_kill()
+        all_done = len(self._finished_jobs) == len(self._all_jobs)
+        return no_more and no_rerun and no_kill and all_done
 
     def has_more(self):
         return self._has_more_new_jobs

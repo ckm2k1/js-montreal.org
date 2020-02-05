@@ -183,7 +183,7 @@ async def run(app, host='0.0.0.0', port=8666, *args, **kwargs):
         await site.start()
         await app['shutdown'].wait()
     except asyncio.CancelledError:
-        logger.info('Server coroutine was cancelled!')
+        logger.info('Server coroutine was cancelled.')
     finally:
         await runner.cleanup()
         logger.info('Server done, exiting.')

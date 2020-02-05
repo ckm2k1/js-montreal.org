@@ -163,4 +163,3 @@ class AsyncMock(Mock):
         if self._mock_wraps is not None and inspect.iscoroutinefunction(self._mock_wraps):
             return await super().__call__(*args, **kwargs)
         return super().__call__(*args, **kwargs)
-

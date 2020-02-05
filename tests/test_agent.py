@@ -7,14 +7,15 @@ from typing import List, Mapping
 
 from borgy_process_agent_api_server.models import JobsOps
 from borgy_process_agent.agent import init, BaseAgent
+from borgy_process_agent.typedefs import EventLoop
 
-from tests.utils import make_spec
+from tests.utils import make_spec, AsyncMock
 
 
 @pytest.fixture
-def agent():
+def agent(event_loop: EventLoop):
     pa_id = uuid.uuid4()
-    agent = init('user', pa_id, asyncio.get_event_loop(), debug=True)
+    agent = init('user', pa_id, event_loop, debug=True)
     jobs = [make_spec().to_dict() for i in range(10)]
 
     async def update(agent, jobs=None):
@@ -28,9 +29,18 @@ def agent():
             out.append(jobs.pop())
         return out
 
+    async def done():
+        pass
+
     agent.register_callback('create', create)
     agent.register_callback('update', update)
-    return agent
+    agent.register_callback('done', done)
+
+    with patch.multiple(agent,
+                        _create_callback=AsyncMock(wraps=agent._create_callback),
+                        _update_callback=AsyncMock(wraps=agent._update_callback),
+                        _done_callback=AsyncMock(wraps=agent._done_callback)):
+        yield agent
 
 
 @pytest.mark.usefixtures('specs')
@@ -51,24 +61,25 @@ class TestAgent:
             'submit_parallel': False,
         }
 
-        shutdown = await agent._process_action()
-        assert shutdown is not True
+        # from pudb import set_trace; set_trace()
+        await agent._process_action()
+        assert not agent.shutdown
 
         assert len(agent.jobs.get_pending()) == 10
-        assert agent._finished is False
+        assert agent.finished is False
         assert agent.jobs.has_pending()
 
         ops = JobsOps.from_dict(agent.create_jobs()[0])
         assert len(ops.submit) == 10
         assert len(agent.jobs.get_submitted()) == 10
-        assert agent.queue.empty()
-        assert agent._finished is False
+        assert agent._queue.empty()
+        assert agent.finished is False
 
     @pytest.mark.asyncio
     async def test_update_action(self, agent: BaseAgent, existing_jobs: List[Mapping]):
         update_fut = agent.update_jobs(existing_jobs)
-        shutdown = await agent._process_action()
-        assert shutdown is False
+        await agent._process_action()
+        assert agent.shutdown is False
         res = await update_fut
         assert res
         assert len(agent.jobs.get_acked()) == 3
@@ -116,13 +127,23 @@ class TestAgent:
         await agent._process_action()
         assert agent.finished
         assert not agent.jobs.has_more()
+        assert agent.ready
+        assert agent._can_shutdown()
 
     @pytest.mark.asyncio
     async def test_shutdown(self, event_loop: asyncio.AbstractEventLoop, agent: BaseAgent):
-        agent.shutdown()
-        shutdown = await agent._process_action()
-        assert shutdown is True
-        assert agent.finished
+        assert not agent.shutdown
+        assert not agent.finished
+        agent.create_jobs()
+        agent.create_jobs()
+        agent.terminate()
+        # Termination disregards any pending
+        # actions, effectively a hard shutdown.
+        await agent.run()
+        assert agent.shutdown
+        assert not agent.finished
+        # from pudb import set_trace; set_trace()
+        agent._done_callback.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_no_actions_while_usercode_running(self, event_loop: asyncio.AbstractEventLoop,
@@ -136,7 +157,7 @@ class TestAgent:
             # When user code is running create actions
             # are not queued.
             ops, action = agent.create_jobs()
-            assert agent.queue.empty()
+            assert agent._queue.empty()
             assert action.done()
             assert not action.failed()
 
@@ -151,9 +172,9 @@ class TestAgent:
         agent.register_callback('update', user_update)
         agent.register_callback('done', user_done)
 
-        assert inspect.iscoroutinefunction(agent.create_callback)
-        assert inspect.iscoroutinefunction(agent.update_callback)
-        assert inspect.iscoroutinefunction(agent.done_callback)
+        assert inspect.iscoroutinefunction(agent._create_callback)
+        assert inspect.iscoroutinefunction(agent._update_callback)
+        assert inspect.iscoroutinefunction(agent._done_callback)
 
         agent.create_jobs()
         agent.update_jobs([])
@@ -162,28 +183,23 @@ class TestAgent:
         user_update.assert_called_once()
         user_done.assert_called_once()
         assert agent.finished
-        assert agent.get_health()['is_shutdown']
+        assert agent.shutdown
 
     def test_invalid_register(self, agent: BaseAgent):
-        with pytest.raises(expected_exception=Exception):
+        with pytest.raises(expected_exception=Exception, match='Invalid callback type: invalid'):
             agent.register_callback('invalid', lambda _: _)
 
-    def test_get_health(self, agent: BaseAgent):
-        health = agent.get_health()
-        assert not health['is_ready']
-        assert not health['is_shutdown']
-
-        agent._ready = True
+    @pytest.mark.asyncio
+    async def test_get_health(self, agent: BaseAgent):
         health = agent.get_health()
         assert health['is_ready']
         assert not health['is_shutdown']
-
-        agent._finish()
-        with patch.object(agent.jobs, 'all_done', return_value=[True]):
-            agent._ready = False
-            health = agent.get_health()
-            assert not health['is_ready']
-            assert health['is_shutdown']
+        agent.register_callback('create', lambda agent: None)
+        agent.create_jobs()
+        await agent.run()
+        health = agent.get_health()
+        assert not health['is_ready']
+        assert health['is_shutdown']
 
     def test_get_stats(self, agent: BaseAgent):
         with patch.object(agent.jobs, 'get_stats', return_value={}):
