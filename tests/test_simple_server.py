@@ -134,7 +134,12 @@ class TestSimpleServer:
                 async for msg in ws:
                     if msg.type == aiohttp.WSMsgType.TEXT:
                         assert msg.json() == {"a": "b"}
-                        # Try the close command
-                        await ws.send_str('close')
+                        # Manual shutdown since we're not using the server.run()
+                        # method which means noone's listening on the shutdown
+                        # async event.
+                        await client.app.shutdown()
+                        await client.app.cleanup()
                     elif msg.type == aiohttp.WSMsgType.ERROR:
                         assert False, msg.data
+
+            client.app['agent'].get_stats.assert_called_once()

@@ -61,7 +61,6 @@ class TestAgent:
             'submit_parallel': False,
         }
 
-        # from pudb import set_trace; set_trace()
         await agent._process_action()
         assert not agent.shutdown
 
@@ -142,7 +141,6 @@ class TestAgent:
         await agent.run()
         assert agent.shutdown
         assert not agent.finished
-        # from pudb import set_trace; set_trace()
         agent._done_callback.assert_called_once()
 
     @pytest.mark.asyncio

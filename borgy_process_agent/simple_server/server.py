@@ -23,6 +23,9 @@ customdumps = partial(json.dumps, cls=ComplexEncoder)
 
 UserCallback = Callable[[web.Application], None]
 
+# 2 sec to wait before hard closing websockets.
+SOCKET_CLOSE_TIMEOUT = 5
+
 
 def get_loop() -> asyncio.AbstractEventLoop:
     return asyncio.get_event_loop()
@@ -42,7 +45,7 @@ async def index(request: web.Request):
 
 @routes.get('/ws')
 async def websocket_handler(request: web.Request):
-    socket = web.WebSocketResponse()
+    socket = web.WebSocketResponse(timeout=SOCKET_CLOSE_TIMEOUT)
     sid = uuid.uuid4()
     request.app['sockets'][sid] = socket
 
@@ -51,10 +54,7 @@ async def websocket_handler(request: web.Request):
 
     async for msg in socket:
         if msg.type == WSMsgType.TEXT:
-            if msg.data == 'close':
-                await socket.close()
-            else:
-                await socket.send_json(request.app['agent'].get_stats(), dumps=customdumps)
+            await socket.send_json(request.app['agent'].get_stats(), dumps=customdumps)
         # I don't see a way at the moment to force a socket
         # error and hit this branch since that requires failing
         # the very internal stream reader used by aiohttp.ClientSession,
@@ -133,13 +133,15 @@ async def _send_update_to_clients(fut: asyncio.Future = None):
         await fut
 
     for sock in app['sockets'].values():
-        if sock.prepared:
-            await sock.send_json(app['agent'].get_stats(), dumps=customdumps)
+        if not sock.prepared:
+            logger.warning('Unprepared socket!', sock)
+            continue
+        await sock.send_json(app['agent'].get_stats(), dumps=customdumps)
 
 
 async def cleanup_handler(app):
-    for socket in app['sockets'].values():
-        if socket.prepared:
+    for socket in list(app['sockets'].values()):
+        if socket.prepared and not socket.closed:
             await socket.close()
     logger.debug('Closed all websockets.')
 
@@ -163,7 +165,8 @@ def init(agent: BaseAgent, on_cleanup: UserCallback = None):
     app['events'].freeze()
     app.add_routes(routes)
 
-    app.on_cleanup.append(cleanup_handler)
+    app.on_shutdown.append(cleanup_handler)
+    # app.on_cleanup.append(cleanup_handler)
     if on_cleanup is not None:
         app.on_cleanup.append(on_cleanup)
 
@@ -179,7 +182,7 @@ async def run(app, host='0.0.0.0', port=8666, *args, **kwargs):
     try:
         runner = web.AppRunner(app, handle_signals=False)
         await runner.setup()
-        site = web.TCPSite(runner, host=host, port=port)
+        site = web.TCPSite(runner, host=host, port=port, shutdown_timeout=SOCKET_CLOSE_TIMEOUT)
         await site.start()
         await app['shutdown'].wait()
     except asyncio.CancelledError:
