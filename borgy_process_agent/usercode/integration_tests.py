@@ -1,7 +1,6 @@
 import json
 import logging
 
-from borgy_process_agent.enums import State
 from borgy_process_agent.utils import Env
 
 logging.basicConfig(datefmt='%Y-%m-%d %H:%M:%S',

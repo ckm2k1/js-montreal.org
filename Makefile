@@ -26,14 +26,11 @@ package.build.%:
 
 .PHONY: test test.full
 
-publish:
-	docker push volatile-images.borgy.elementai.net/borgy/borgy-process-agent:latest
-
 run.ork:
-	borgy pa submit -i volatile-images.borgy.elementai.net/borgy/borgy-process-agent:async -- python main.py -d ork -v
+	borgy pa submit -i volatile-images.borgy.elementai.net/borgy/borgy-process-agent:async -- -v
 
 run.ork.inter:
-	borgy pa submit --restartable --preemptable -a interrupts=1 -a interrupt-after=15 -i volatile-images.borgy.elementai.net/borgy/borgy-process-agent:inter -- python main.py -d ork -v
+	borgy pa submit --restartable --preemptable -a interrupts=1 -a interrupt-after=15 -i volatile-images.borgy.elementai.net/borgy/borgy-process-agent:inter -- -v
 
 run.local:
 	python main.py $(args)
