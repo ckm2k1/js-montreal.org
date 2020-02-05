@@ -11,7 +11,7 @@ from borgy_process_agent_api_server.models.job_spec import JobSpec
 from borgy_process_agent.enums import State, Restart
 
 JOB_SPEC_DEFAULTS = {
-    # 'command': [],
+    'command': [],
     # 'createdBy': self.user,
     # 'name': self._get_job_name(),
     'environmentVars': [],
