@@ -125,12 +125,6 @@ def init(env):
 
         all_jobs = iter(jobs_provider)
 
-        # if job_id_to_kill:
-        #     assert process_agent.get_job_by_id(job_id_to_kill).state in [
-        #         State.CANCELLING.value, State.CANCELLED.value
-        #     ], "This job {} should be cancelled or in cancelling state".format(
-        #         job_id_to_kill)  # noqa
-
     except Exception as e:
         logger.exception(e)
 
