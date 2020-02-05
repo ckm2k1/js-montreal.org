@@ -73,11 +73,9 @@ if runner_name == 'auto':
         runner_name = 'docker'
 
 Runner: BaseRunner = import_runner(runner_name)
-logger.info('Loading user code module: %s', args.code)
-if args.integration_tests:
-    usercode = load_module_from_path('./examples/integration_tests.py')
-else:
-    usercode = load_module_from_path(args.code)
+usercode_path = './examples/integration_tests.py' if args.integration_tests else args.code
+usercode = load_module_from_path(usercode_path)
+logger.info('Loading user code module: %s', usercode_path)
 auto_rerun = not args.disable_auto_rerun
 runner = Runner(api_host=api_host,
                 api_port=api_port,
