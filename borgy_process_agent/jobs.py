@@ -66,6 +66,9 @@ class Jobs:
     def get_by_state(self, state: State) -> List[Job]:
         return [j for j in self._all_jobs.values() if j.state == state]
 
+    def get_by_index(self, idx) -> Optional[Job]:
+        return self._all_jobs.get(idx)
+
     def has_pending(self) -> bool:
         return bool(self._pending_jobs)
 

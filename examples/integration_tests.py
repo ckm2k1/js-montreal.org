@@ -11,7 +11,7 @@ logging.basicConfig(datefmt='%Y-%m-%d %H:%M:%S',
 logger = logging.getLogger("main")
 logger.setLevel(logging.INFO)
 
-jobs = []
+all_jobs = []
 iteration = 0
 iteration_max = None
 n_children = None
@@ -20,14 +20,14 @@ job_id_to_kill = None
 
 
 def user_create(agent):
-    global iteration, iteration_max
+    global iteration, iteration_max, all_jobs
     iteration += 1
 
     if iteration == iteration_max:
         return None
 
     try:
-        rc = next(jobs)
+        rc = next(all_jobs)
         logger.info("{}: job request - Returning {} jobs".format(iteration, len(rc)))
         return rc
     except StopIteration:
@@ -44,19 +44,19 @@ def user_update(agent, jobs):
 
     logger.info("{}: job update".format(iteration))
     for job in jobs:
-        logger.info("{}: {} {}".format(iteration, job['job'].id, job['job'].state))
+        logger.info("{}: {} {}".format(iteration, job['job'].jid, job['job'].state))
 
-    jobs = list(agent.get_jobs().values())
-    if (job_idx_to_kill > -1 and job_idx_to_kill < len(jobs)
-            and jobs[job_idx_to_kill].state == State.RUNNING.value):
-        job_id_to_kill = jobs[job_idx_to_kill].id
-        logger.info("{}: job update - Kill job {}".format(iteration, job_id_to_kill))
-        agent.kill_job(job_id_to_kill)
-        job_idx_to_kill = -1
+    # jobs = list(agent.get_jobs().values())
+    if job_idx_to_kill > -1:
+        job = agent.get_by_index(job_idx_to_kill)
+        if job and job.is_acked():
+            logger.info("{}: job update - Kill job {}".format(iteration, job.jid))
+            agent.kill_job(job)
+            job_idx_to_kill = -1
 
 
 def init(env):
-    global jobs, iteration_max, iteration, n_children, job_idx_to_kill, job_id_to_kill
+    global all_jobs, iteration_max, iteration, n_children, job_idx_to_kill, job_id_to_kill
 
     try:
         iteration_max = env.get_int('PA_TESTER_ITERATION', default=30)
@@ -123,7 +123,7 @@ def init(env):
 
             logger.info("{}: {}".format(i, ids))
 
-        jobs = iter(jobs_provider)
+        all_jobs = iter(jobs_provider)
 
         # if job_id_to_kill:
         #     assert process_agent.get_job_by_id(job_id_to_kill).state in [
