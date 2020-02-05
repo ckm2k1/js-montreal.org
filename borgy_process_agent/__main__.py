@@ -18,7 +18,7 @@ parser.add_argument('-d',
 parser.add_argument('-c',
                     '--code',
                     type=str,
-                    default='./examples/user.py',
+                    default='borgy_process_agent/usercode/user.py',
                     help='Absolute path to a module or file exposing '
                     '2 callbacks to be used by the process agent. The '
                     'functions must be named user_create and user_update.')
@@ -51,37 +51,43 @@ parser.add_argument('--integration-tests',
                     action='store_true',
                     default=False,
                     help='Special flag to be used only by borgy integration tests. '
-                    'Forces the usercode to examples/integration_tests.py')
+                    'Forces the usercode to usercode/integration_tests.py')
 
 
 def import_runner(module):
     return importlib.import_module(f'borgy_process_agent.runners.{module}').Runner
 
 
-args = parser.parse_args()
+def main():
+    args = parser.parse_args()
 
-debug = env.get_bool('PA_DEBUG', default=args.verbose)
-api_host = env.get('PA_API_HOST', default=args.api_host)
-api_port = env.get_int('PA_API_PORT', default=args.api_port)
+    debug = env.get_bool('PA_DEBUG', default=args.verbose)
+    api_host = env.get('PA_API_HOST', default=args.api_host)
+    api_port = env.get_int('PA_API_PORT', default=args.api_port)
 
-logger = configure(debug=debug)
-runner_name = args.driver
-if runner_name == 'auto':
-    if 'EAI_JOB_ID' in os.environ and 'EAI_USER' in os.environ:
-        runner_name = 'ork'
-    else:
-        runner_name = 'docker'
+    logger = configure(debug=debug)
+    runner_name = args.driver
+    if runner_name == 'auto':
+        if 'EAI_JOB_ID' in os.environ and 'EAI_USER' in os.environ:
+            runner_name = 'ork'
+        else:
+            runner_name = 'docker'
 
-Runner: BaseRunner = import_runner(runner_name)
-usercode_path = './examples/integration_tests.py' if args.integration_tests else args.code
-usercode = load_module_from_path(usercode_path)
-logger.info('Loading user code module: %s', usercode_path)
-auto_rerun = not args.disable_auto_rerun
-runner = Runner(api_host=api_host,
-                api_port=api_port,
-                debug=debug,
-                keep_alive=args.keep_alive,
-                auto_rerun=auto_rerun)
-runner.register_callback('create', usercode.user_create)
-runner.register_callback('update', usercode.user_update)
-runner.start()
+    Runner: BaseRunner = import_runner(runner_name)
+    usercode_path = ('borgy_process_agent/usercode/integration_tests.py'
+                     if args.integration_tests else args.code)
+    usercode = load_module_from_path(usercode_path)
+    logger.info('Loading user code module: %s', usercode_path)
+    auto_rerun = not args.disable_auto_rerun
+    runner = Runner(api_host=api_host,
+                    api_port=api_port,
+                    debug=debug,
+                    keep_alive=args.keep_alive,
+                    auto_rerun=auto_rerun)
+    runner.register_callback('create', usercode.user_create)
+    runner.register_callback('update', usercode.user_update)
+    runner.start()
+
+
+if __name__ == '__main__':
+    main()

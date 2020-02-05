@@ -28,5 +28,6 @@ setup(
     description='',
     author='Borgy Team',
     packages=find_packages(exclude=('tests', 'docs')),
-    install_requires=install_requires
+    install_requires=install_requires,
+    entry_points={'console_scripts': ['borgy_process_agent=borgy_process_agent.__main__:main']},
 )

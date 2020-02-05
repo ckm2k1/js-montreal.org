@@ -9,6 +9,8 @@ omit=
     setup.py
     borgy_process_agent/metrics/*
     borgy_process_agent/logger.py
+    borgy_process_agent/usercode/*
+    borgy_process_agent/__main__.py
 [report]
 # Regexes for lines to exclude from consideration
 exclude_lines =

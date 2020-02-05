@@ -1,8 +1,6 @@
 *
-!examples
 !borgy-job-service.crt
 !borgy_process_agent
 !requirements.txt
 !setup.py
 !setup.cfg
-!main.py
