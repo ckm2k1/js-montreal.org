@@ -248,6 +248,10 @@ class DockerGovernor:
                 if self._options.get('docker_remove', True):
                     job['container'].remove()
             elif state == State.INTERRUPTED:
+                # Technically this would never be true in the
+                # real governor because PA child jobs cannot have the
+                # restart flag be set. The PA is supposed to have a
+                # flag to auto-restarts jobs if desired by the user.
                 if job['job'].restart == Restart.ON_INTERRUPTION.value:
                     last_run = job['job'].runs[-1]
                     last_run.state = State.INTERRUPTED.value
@@ -304,6 +308,8 @@ class DockerGovernor:
                 if job['status'] != c.status:
                     if c.status == 'running':
                         self._update_job_state(job_id, State.RUNNING)
+                    if job['status'] == 'running' and c.status == 'paused':
+                        self._update_job_state(job_id, State.INTERRUPTED)
                     elif c.status == 'exited': # pragma: no branch
                         if job['job'].state == State.CANCELLING.value:
                             self._update_job_state(job_id, State.CANCELLED)

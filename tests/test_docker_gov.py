@@ -5,7 +5,7 @@ from unittest.mock import patch, MagicMock
 import pytest
 
 from borgy_process_agent_api_server.models import JobSpec, JobsOps, HealthCheck
-from borgy_process_agent.enums import State
+from borgy_process_agent.enums import State, Restart
 from borgy_process_agent.runners.docker_gov import DockerGovernor
 from borgy_process_agent.utils import ObjDict, parse_iso_datetime
 
@@ -167,12 +167,19 @@ class TestDockerGov:
     @patch('borgy_process_agent_api_client.JobsApi', spec_new=MockJobsApi)
     @patch('borgy_process_agent.runners.docker_gov.docker.from_env', wraps=mock_from_env)
     def test_rerun_job(self, envmock, jobsmock, fixture_loader: Callable):
+        # res = [(make_ops(rerun=[rerun_jid]), 200, {}), (make_ops(), 200, {})]
+        # gov._jobs_api.v1_jobs_get_with_http_info.reset_mock(side_effect=True)
+        # gov._jobs_api.v1_jobs_get_with_http_info.side_effect = res
+
         specs_json = fixture_loader('specs.json')
         gov = DockerGovernor()
         specs = [JobSpec.from_dict(spec) for spec in specs_json['submit']]
+        # Make one job restartable.
+        specs[0].restart = Restart.ON_INTERRUPTION.value
 
         gov._jobs_api.v1_jobs_get_with_http_info.side_effect = [
             (make_ops(submit=specs), 200, {}),
+            (make_ops(), 200, {}),
             (make_ops(), 200, {}),
             (make_ops(), 200, {}),
         ]
@@ -184,20 +191,22 @@ class TestDockerGov:
             job = desc['job']
             assert job.state == State.RUNNING.value
 
-        kill_jid = list(gov._governor_jobs.keys())[0]
-        res = [(make_ops(kill=[kill_jid]), 200, {}), (make_ops(), 200, {})]
-        gov._jobs_api.v1_jobs_get_with_http_info.reset_mock(side_effect=True)
-        gov._jobs_api.v1_jobs_get_with_http_info.side_effect = res
+        rerun_jid = list(gov._governor_jobs.keys())[0]
+        rerun_job = gov._governor_jobs[rerun_jid]['job']
+        rerun_cont = gov._governor_jobs[rerun_jid]['container']
+        rerun_cont.interrupt()
 
         gov._run_iteration()
 
-        dead_job = gov._governor_jobs[kill_jid]['job']
-        dead_cont = gov._governor_jobs[kill_jid]['container']
-        assert dead_job.state == State.CANCELLED.value
-        assert dead_job.runs[-1].cancelled_on == dead_cont.get_state('FinishedAt')
-        assert dead_job.runs[-1].ended_on == dead_cont.get_state('FinishedAt')
-        assert dead_cont.get_state('Status') == DockerStatus.exited.value
-        assert dead_cont._stopped is True
+        assert rerun_job.state == State.QUEUING.value
+        assert len(rerun_job.runs) == 2
+        assert rerun_cont.get_state('Status') == DockerStatus.paused.value
+        assert rerun_cont._stopped is False
+        assert rerun_cont._paused is True
+
+        gov._run_iteration()
+        assert rerun_job.state == State.RUNNING.value
+        assert len(rerun_job.runs) == 2
 
         for cont in gov._docker.containers.list():
             cont.terminate()
@@ -206,11 +215,12 @@ class TestDockerGov:
         assert len(gov._governor_jobs) == 5
         for jid, desc in gov._governor_jobs.items():
             job = desc['job']
-            if jid == kill_jid:
-                assert job.state == State.CANCELLED.value
+            if jid == rerun_jid:
+                assert job.state == State.SUCCEEDED.value
+                assert len(job.runs) == 2
             else:
                 assert job.state == State.SUCCEEDED.value
-            assert len(job.runs) == 1
+                assert len(job.runs) == 1
             assert job.runs[-1].ended_on == desc['container'].get_state('FinishedAt')
 
     @patch('borgy_process_agent_api_client.JobsApi', spec_new=MockJobsApi)
