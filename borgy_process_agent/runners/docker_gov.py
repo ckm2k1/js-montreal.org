@@ -36,21 +36,26 @@ class DockerGovernor:
         self._health_api = borgy_process_agent_api_client.HealthApi(api_client)
 
     def _get_new_jobs(self) -> JobsOps:
+        if not self._running:
+            return
         logger.info('Requesting new jobs from borgy_process_agent.')
         res, code, headers = self._jobs_api.v1_jobs_get_with_http_info()
         return res
 
     def _send_job_updates(self, jobs):
+        if not self._running:
+            return
         logger.info('Sending job updates to agent.')
         logger.debug('Sending update to agent: %s jobs', [j for j in jobs])
         res = self._jobs_api.v1_jobs_put(jobs)
         return res
 
-    def _wait_till_ready(self):
-        attempts = 20
+    def _wait_till_ready(self, attempts=20):
+        _init = attempts
         ready = False
 
         while not ready and self._running:
+            attempts -= 1
             try:
                 res = self._health_api.v1_health_get()
             except:  # noqa
@@ -62,9 +67,8 @@ class DockerGovernor:
                 return
             else:
                 if not attempts:
-                    raise TimeoutError(f'PA was not ready after 20 attempts.')
+                    raise TimeoutError(f'PA was not ready after {_init} attempts.')
                 logger.info('Governor waiting for PA to start.')
-                attempts -= 1
                 time.sleep(0.1)
 
     def _run_iteration(self):
@@ -213,53 +217,43 @@ class DockerGovernor:
                 job['job'].runs[-1].queued_on = get_now_isoformat()
                 job['container'] = self._run_job(job['job'])
             elif state == State.RUNNING:
-                if job['container']:
-                    job['job'].runs[-1].started_on = job['container'].attrs['State']['StartedAt']
-                else:
-                    job['job'].runs[-1].started_on = get_now_isoformat()
+                job['job'].runs[-1].started_on = job['container'].attrs['State']['StartedAt']
             elif state == State.CANCELLING:
                 job['job'].runs[-1].cancel_requested_on = get_now_isoformat()
-                if job['container']:
-                    job['container'].stop(timeout=self._options.get('docker_stop_timeout', 10))
+                job['container'].stop(timeout=self._options.get('docker_stop_timeout', 10))
             elif state == State.CANCELLED:
                 ended_on = get_now_isoformat()
-                if job['container']:
-                    ended_on = job['container'].attrs['State']['FinishedAt']
+                ended_on = job['container'].attrs['State']['FinishedAt']
                 last_run = job['job'].runs[-1]
                 last_run.cancelled_on = ended_on
                 last_run.ended_on = ended_on
             elif state == State.FAILED:
                 ended_on = get_now_isoformat()
-                if job['container']:
-                    ended_on = job['container'].attrs['State']['FinishedAt']
+                ended_on = job['container'].attrs['State']['FinishedAt']
                 last_run = job['job'].runs[-1]
                 last_run.ended_on = ended_on
                 last_run.exit_code = 255
-                if job['container']:
-                    logs = job['container'].logs(stdout=True, stderr=True)
-                    last_run.result = logs.decode('utf8', errors='replace')
-                    if self._options.get('docker_remove', True):
-                        job['container'].remove()
+                logs = job['container'].logs(stdout=True, stderr=True)
+                last_run.result = logs.decode('utf8', errors='replace')
+                if self._options.get('docker_remove', True):
+                    job['container'].remove()
             elif state == State.SUCCEEDED:
                 ended_on = get_now_isoformat()
-                if job['container']:
-                    ended_on = job['container'].attrs['State']['FinishedAt']
+                ended_on = job['container'].attrs['State']['FinishedAt']
                 last_run = job['job'].runs[-1]
                 last_run.ended_on = ended_on
                 last_run.exit_code = 0
-                if job['container']:
-                    logs = job['container'].logs(stdout=True, stderr=True)
-                    last_run.result = logs.decode('utf8', errors='replace')
-                    if self._options.get('docker_remove', True):
-                        job['container'].remove()
+                logs = job['container'].logs(stdout=True, stderr=True)
+                last_run.result = logs.decode('utf8', errors='replace')
+                if self._options.get('docker_remove', True):
+                    job['container'].remove()
             elif state == State.INTERRUPTED:
                 if job['job'].restart == Restart.ON_INTERRUPTION.value:
                     last_run = job['job'].runs[-1]
                     last_run.state = State.INTERRUPTED.value
                     last_run.ended_on = get_now_isoformat()
-                    if job['container']:
-                        logs = job['container'].logs(stdout=True, stderr=True)
-                        last_run.result = logs.decode('utf8', errors='replace')
+                    logs = job['container'].logs(stdout=True, stderr=True)
+                    last_run.result = logs.decode('utf8', errors='replace')
                     new_run = {
                         'createdOn': get_now_isoformat(),
                         'jobId': job_id,
