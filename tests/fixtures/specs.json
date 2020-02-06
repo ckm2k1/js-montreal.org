@@ -15,7 +15,7 @@
             "image": "ubuntu:18.04",
             "interactive": false,
             "labels": [],
-            "maxRunTimeSecs": 0,
+            "maxRunTimeSecs": 100,
             "name": "pa_child_job-0",
             "options": {
                 "alphabits": {
@@ -46,7 +46,7 @@
             "image": "ubuntu:18.04",
             "interactive": false,
             "labels": [],
-            "maxRunTimeSecs": 0,
+            "maxRunTimeSecs": 100,
             "name": "pa_child_job-1",
             "options": {
                 "alphabits": {
@@ -77,7 +77,7 @@
             "image": "ubuntu:18.04",
             "interactive": false,
             "labels": [],
-            "maxRunTimeSecs": 0,
+            "maxRunTimeSecs": 100,
             "name": "pa_child_job-2",
             "options": {
                 "alphabits": {
@@ -108,7 +108,7 @@
             "image": "ubuntu:18.04",
             "interactive": false,
             "labels": [],
-            "maxRunTimeSecs": 0,
+            "maxRunTimeSecs": 100,
             "name": "pa_child_job-3",
             "options": {
                 "alphabits": {
@@ -139,7 +139,7 @@
             "image": "ubuntu:18.04",
             "interactive": false,
             "labels": [],
-            "maxRunTimeSecs": 0,
+            "maxRunTimeSecs": 100,
             "name": "pa_child_job-4",
             "options": {
                 "alphabits": {

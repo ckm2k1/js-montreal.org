@@ -36,15 +36,11 @@ class DockerGovernor:
         self._health_api = borgy_process_agent_api_client.HealthApi(api_client)
 
     def _get_new_jobs(self) -> JobsOps:
-        if not self._running:
-            return
         logger.info('Requesting new jobs from borgy_process_agent.')
         res, code, headers = self._jobs_api.v1_jobs_get_with_http_info()
         return res
 
     def _send_job_updates(self, jobs):
-        if not self._running:
-            return
         logger.info('Sending job updates to agent.')
         logger.debug('Sending update to agent: %s jobs', [j for j in jobs])
         res = self._jobs_api.v1_jobs_put(jobs)
@@ -66,7 +62,7 @@ class DockerGovernor:
                 return
             else:
                 if not attempts:
-                    raise TimeoutError(f'PA was not ready after {attempts} attempts.')
+                    raise TimeoutError(f'PA was not ready after 20 attempts.')
                 logger.info('Governor waiting for PA to start.')
                 attempts -= 1
                 time.sleep(0.1)
@@ -306,7 +302,7 @@ class DockerGovernor:
         updates = {}
         for c in containers:
             job_id = c.name
-            if job_id in self._governor_jobs:
+            if job_id in self._governor_jobs: # pragma: no branch
                 job = self._governor_jobs[job_id]
                 job['container'] = c
                 current_state = job['job'].state
@@ -314,7 +310,7 @@ class DockerGovernor:
                 if job['status'] != c.status:
                     if c.status == 'running':
                         self._update_job_state(job_id, State.RUNNING)
-                    elif c.status == 'exited':
+                    elif c.status == 'exited': # pragma: no branch
                         if job['job'].state == State.CANCELLING.value:
                             self._update_job_state(job_id, State.CANCELLED)
                         elif job_id in job_ids_succedded:
