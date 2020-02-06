@@ -33,4 +33,4 @@ run.ork.inter:
 	borgy pa submit --restartable --preemptable -a interrupts=1 -a interrupt-after=15 -i volatile-images.borgy.elementai.net/borgy/process-agent:inter -- borgy_process_agent -v
 
 run.local:
-	python main.py $(args)
+	borgy_process_agent $(args)

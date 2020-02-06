@@ -11,6 +11,15 @@ body {
     height: 100%;
 }
 
+a {
+    color: #4088ff;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
 header {
     color: #333;
     border-bottom: 1px solid #d1d1d1;
@@ -34,6 +43,10 @@ header .title {
 header .jid {
     font-size: 16px;
     margin: 0;
+    color: black;
+}
+header .jid a {
+    text-decoration: none;
 }
 header .username {
     font-size: 16px;

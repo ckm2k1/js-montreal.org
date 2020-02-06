@@ -66,6 +66,9 @@ class Jobs:
     def get_by_state(self, state: State) -> List[Job]:
         return [j for j in self._all_jobs.values() if j.state == state]
 
+    def get_all(self) -> List[Job]:
+        return self._all_jobs.values()
+
     def get_by_index(self, idx) -> Optional[Job]:
         return self._all_jobs.get(idx)
 

@@ -194,6 +194,7 @@ class BaseAgent():
         return {
             'jobs': self.jobs.get_stats(),
             'queue': self._queue.qsize(),
+            'total': len(self.jobs.get_all()),
             **self.get_health(),
         }
 
