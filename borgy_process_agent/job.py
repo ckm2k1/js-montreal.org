@@ -18,7 +18,7 @@ JOB_SPEC_DEFAULTS = {
     'maxRunTimeSecs': 0,
     'data': {},
     'options': {},
-    'preemptable': True,
+    'preemptable': False,
     'reqCores': 1,
     'reqGpus': 0,
     'reqRamGbytes': 1,
@@ -61,7 +61,7 @@ class Job:
                    spec: Optional[Union[JobSpec, Mapping]] = None,
                    ork_job: Optional[OrkJob] = None) -> Optional[JobSpec]:
         if spec is not None:
-            return self._make_spec(spec) if isinstance(spec, dict) else spec
+            return self._make_spec(spec if isinstance(spec, dict) else spec.to_dict())
         if ork_job is not None:
             return Job.spec_from_ork_job(ork_job)
         raise Exception('A spec or OrkJob is required to initialize a job.')
@@ -81,7 +81,7 @@ class Job:
     @classmethod
     def get_index(cls, job: OrkJob) -> int:
         evars = job.environment_vars
-        if not isinstance(evars, list):
+        if not evars:
             raise Exception(f'{job.id}: No environment vars present on '
                             'job. Most likely doesn\'t belong to this PA.')
         try:
@@ -106,17 +106,13 @@ class Job:
     def _get_job_name(self):
         return f'{self._name_prefix}_{str(self.index)}'
 
-    def _make_base_spec(self) -> JobSpecDict:
-        spec = copy.deepcopy(JOB_SPEC_DEFAULTS)
-        spec.update({
-            'createdBy': self.user,
-            'name': self._get_job_name(),
-        })
-        return spec
-
     def _make_spec(self, spec: JobSpecDict) -> JobSpec:
-        base_spec = self._make_base_spec()
+        base_spec = copy.deepcopy(JOB_SPEC_DEFAULTS)
         base_spec.update(spec)
+        if not base_spec.get('name'):
+            base_spec['name'] = self._get_job_name()
+        # Non-overridable.
+        base_spec['createdBy'] = self.user
 
         if base_spec['restart'] == Restart.ON_INTERRUPTION.value:
             raise ValueError(
@@ -164,6 +160,9 @@ class Job:
     def is_finished(self) -> bool:
         return self.state.is_finished()
 
+    def is_failed(self) -> bool:
+        return self.state == State.FAILED
+
     def is_acked(self) -> bool:
         return self.state.is_acked()
 
@@ -171,10 +170,8 @@ class Job:
         return self.state == State.INTERRUPTED
 
     def get_runs(self) -> List[JobRuns]:
-        oj = self.ork_job
-        if oj:
-            return oj.runs
-        return []
+        runs = self.ork_job.runs
+        return runs if runs is not None else []
 
     def submit(self):
         self.state = State.SUBMITTED
@@ -193,8 +190,9 @@ class Job:
         f'updated={self.updated}, state={self.state.value}, jid={self.jid}>'
 
     def __eq__(self, job) -> bool:
-        if self.jid is not None and job.jid is not None and self.jid == job.jid:
-            return True
+        # Job IDs should supercede index comparisons.
+        if self.jid is not None and job.jid is not None:
+            return self.jid == job.jid
         return self.index == job.index
 
     def copy(self) -> 'Job':

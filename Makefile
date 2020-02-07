@@ -34,3 +34,7 @@ run.ork.inter:
 
 run.local:
 	borgy_process_agent $(args)
+
+test.docker.integ:
+	PA_TESTER_CHILDREN=10 borgy_process_agent -d docker --integration-tests $(args)
+	test -z $? || (echo Integration tests failed.; exit 1)

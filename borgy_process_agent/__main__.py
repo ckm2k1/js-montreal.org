@@ -52,6 +52,12 @@ parser.add_argument('--integration-tests',
                     default=False,
                     help='Special flag to be used only by borgy integration tests. '
                     'Forces the usercode to usercode/integration_tests.py')
+parser.add_argument('-s',
+                    '--max-submit',
+                    type=int,
+                    default=100,
+                    help='Maximum number of jobs to submit to the governor in one batch.'
+                    'Defaults to 100.')
 
 
 def import_runner(module):
@@ -83,6 +89,7 @@ def main():
                     api_port=api_port,
                     debug=debug,
                     keep_alive=args.keep_alive,
+                    max_submit=args.max_submit,
                     auto_rerun=auto_rerun)
     runner.register_callback('create', usercode.user_create)
     runner.register_callback('update', usercode.user_update)

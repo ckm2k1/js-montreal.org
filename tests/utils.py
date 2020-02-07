@@ -14,14 +14,14 @@ from borgy_process_agent.utils import get_now_isoformat, Indexer
 
 SPEC_DEFAULTS = {
     'command': ['bash', '-c', 'sleep 10'],
+    'name': '',
     'createdBy': '',
     'environmentVars': [],
     'interactive': False,
     'labels': [],
     'maxRunTimeSecs': 0,
-    'name': '',
     'options': {},
-    'preemptable': True,
+    'preemptable': False,
     'reqCores': 1,
     'reqGpus': 0,
     'reqRamGbytes': 1,

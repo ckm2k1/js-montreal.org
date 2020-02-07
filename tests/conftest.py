@@ -20,7 +20,7 @@ def jobs(id_=None) -> Jobs:
 
 
 @pytest.fixture
-def specs(id_=None) -> SpecList:
+def specs() -> SpecList:
     return [make_spec() for i in range(20)]
 
 

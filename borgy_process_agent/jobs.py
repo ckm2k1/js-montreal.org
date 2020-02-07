@@ -1,7 +1,7 @@
 from pprint import pformat
 from typing import Optional, List, Mapping, Set, MutableMapping
 
-from borgy_process_agent_api_server.models import Job as OrkJob, JobSpec # type: ignore
+from borgy_process_agent_api_server.models import Job as OrkJob, JobSpec  # type: ignore
 
 from borgy_process_agent.job import Job
 from borgy_process_agent.enums import State
@@ -10,15 +10,28 @@ from borgy_process_agent.utils import Indexer, DeepChainMap, taketimes
 JobMap = MutableMapping[int, Job]
 JobIndex = int
 
+DEFAULT_MAX_SUBMIT: int = 100
+
 
 class Jobs:
 
-    def __init__(self, user: str, pa_id: str, job_name_prefix='pa_child_job', auto_rerun=True):
-        self._user = user
-        self._pa_id = pa_id
+    def __init__(self,
+                 user: str,
+                 pa_id: str,
+                 job_name_prefix='pa_child_job',
+                 auto_rerun=True,
+                 max_submit=None):
+        # String user id, could be unix name or
+        # a UUID in some toolkit scenarios.
+        self._user: str = user
+        # The UUID of the process agent job.
+        self._pa_id: str = pa_id
+        # Maximum amount of jobs to submit in one batch.
+        self._max_submit: Optional[int] = (max_submit
+                                           if max_submit is not None else DEFAULT_MAX_SUBMIT)
 
         # Sequential job index, always increasing.
-        self._idx = Indexer()
+        self._idx: Indexer = Indexer()
         # Child jobs will be prefixed with this string.
         self._job_name_prefix: str = job_name_prefix
         # If true, PA will automatically resubmit INTERRUPTED
@@ -51,6 +64,9 @@ class Jobs:
     def get_submitted(self) -> List[Job]:
         return [j for j in self._pending_jobs.values() if j.is_submitted()]
 
+    def get_failed(self):
+        return [j for j in self._finished_jobs.values() if j.is_failed()]
+
     def get_acked(self) -> List[Job]:
         return list(self._acked_jobs.values())
 
@@ -81,9 +97,20 @@ class Jobs:
     def submit_kills(self) -> List[Job]:
         return self.get_kill()
 
+    def _calc_submit_count(self, count: Optional[int] = None) -> int:
+        """The logic here ensures that at any given moment there are no
+        more than self._max_submit jobs in the SUBMITTED state. If the
+        governor only acknowledges 5 out of 10 already submitted jobs and
+        max_submit == 10, the next iteration will only submit 5 more pending
+        jobs."""
+        submitted = len(self.get_submitted())
+        if count is None:
+            return self._max_submit - submitted if submitted <= self._max_submit else 0
+        return count - submitted if count > submitted else 0
+
     def submit_pending(self, count: Optional[int] = None) -> List[Job]:
-        count = len(self._pending_jobs) if count is None else count
-        to_submit = [v for _, v in taketimes(self._pending_jobs, times=count)]
+        count = self._calc_submit_count(count=count)
+        to_submit = [v for _, v in taketimes(self.get_pending(), times=count)]
         for s in to_submit:
             s.submit()
         return to_submit

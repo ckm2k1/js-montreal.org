@@ -2,7 +2,7 @@ import asyncio
 import logging
 from typing import List, Mapping, Callable, Optional, Any, Tuple, Awaitable
 
-from borgy_process_agent_api_server.models import Job as OrkJob, JobSpec, JobsOps # type: ignore
+from borgy_process_agent_api_server.models import Job as OrkJob, JobSpec, JobsOps  # type: ignore
 
 from borgy_process_agent.job import Job
 from borgy_process_agent.jobs import Jobs
@@ -18,7 +18,7 @@ UpdateCallback = Callable[[Jobs, List[Job]], Awaitable]
 DoneCallback = Callable[[Jobs], Awaitable]
 
 
-class BaseAgent():
+class Agent():
 
     def __init__(self,
                  pa_id: str,
@@ -27,7 +27,8 @@ class BaseAgent():
                  debug: Optional[bool] = None,
                  queue: Optional[asyncio.Queue] = None,
                  job_name_prefix: str = 'pa_child_job',
-                 auto_rerun: Optional[bool] = True):
+                 auto_rerun: Optional[bool] = True,
+                 max_submit: int = None):
         self.id: str = pa_id
         self.user: str = user
         self._debug: Optional[bool] = debug
@@ -38,7 +39,11 @@ class BaseAgent():
         self._done_callback: Optional[DoneCallback] = None
         self._task_prio = Indexer(initial=1)
         self._jobs_lock: asyncio.Lock = asyncio.Lock()
-        self.jobs: Jobs = Jobs(user, pa_id, job_name_prefix=job_name_prefix, auto_rerun=auto_rerun)
+        self.jobs: Jobs = Jobs(user,
+                               pa_id,
+                               job_name_prefix=job_name_prefix,
+                               auto_rerun=auto_rerun,
+                               max_submit=max_submit)
 
         self._finished: bool = False
         self._shutdown: bool = False
@@ -89,7 +94,7 @@ class BaseAgent():
     async def _update(self, ork_jobs: List[OrkJob]):
         async with self._jobs_lock:
             updated = self.jobs.update(ork_jobs)
-            await self._update_callback(self.jobs, updated) # type: ignore[misc] # noqa
+            await self._update_callback(self.jobs, updated)  # type: ignore[misc] # noqa
             logger.info(self.jobs.get_counts())
 
     async def _create(self):
@@ -159,7 +164,7 @@ class BaseAgent():
         if self._usercode_running():
             return JobsOps(submit=[], rerun=[], kill=[]).to_dict()
 
-        ops = JobsOps(submit=[j.to_spec() for j in self.jobs.submit_pending(count=100)],
+        ops = JobsOps(submit=[j.to_spec() for j in self.jobs.submit_pending()],
                       rerun=[j.jid for j in self.jobs.submit_reruns()],
                       kill=[j.jid for j in self.jobs.submit_kills()])
         return ops.to_dict()
@@ -229,14 +234,3 @@ class BaseAgent():
             self.make_shutdown()
 
         logger.info('Agent done, exiting...')
-
-
-def init(user: str,
-         pa_id: str,
-         loop: Optional[EventLoop] = None,
-         queue: Optional[asyncio.Queue] = None,
-         agent: Optional[BaseAgent] = None,
-         debug: Optional[bool] = None,
-         auto_rerun: Optional[bool] = True) -> BaseAgent:
-
-    return BaseAgent(user, pa_id, loop=loop, queue=queue, debug=debug, auto_rerun=auto_rerun)

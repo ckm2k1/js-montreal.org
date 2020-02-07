@@ -6,7 +6,7 @@ from unittest.mock import patch, Mock
 from typing import List, Mapping
 
 from borgy_process_agent_api_server.models import JobsOps
-from borgy_process_agent.agent import init, BaseAgent
+from borgy_process_agent.agent import Agent
 from borgy_process_agent.typedefs import EventLoop
 
 from tests.utils import make_spec, AsyncMock
@@ -14,33 +14,46 @@ from tests.utils import make_spec, AsyncMock
 
 @pytest.fixture
 def agent(event_loop: EventLoop):
-    pa_id = uuid.uuid4()
-    agent = init('user', pa_id, event_loop, debug=True)
-    jobs = [make_spec().to_dict() for i in range(10)]
+    cb_mocks = None
 
-    async def update(agent, jobs=None):
-        assert jobs is not None
+    def init(**kwargs):
+        nonlocal cb_mocks
 
-    async def create(agent):
-        out = []
-        if not jobs:
-            return None
-        while jobs:
-            out.append(jobs.pop())
-        return out
+        pa_id = uuid.uuid4()
+        init_params = {
+            'debug': True,
+        }
+        init_params.update(kwargs)
+        agent = Agent('user', pa_id, event_loop, **init_params)
+        jobs = [make_spec().to_dict() for i in range(10)]
 
-    async def done():
-        pass
+        async def update(agent, jobs=None):
+            assert jobs is not None
 
-    agent.register_callback('create', create)
-    agent.register_callback('update', update)
-    agent.register_callback('done', done)
+        async def create(agent):
+            out = []
+            if not jobs:
+                return None
+            while jobs:
+                out.append(jobs.pop())
+            return out
 
-    with patch.multiple(agent,
-                        _create_callback=AsyncMock(wraps=agent._create_callback),
-                        _update_callback=AsyncMock(wraps=agent._update_callback),
-                        _done_callback=AsyncMock(wraps=agent._done_callback)):
-        yield agent
+        async def done():
+            pass
+
+        agent.register_callback('create', create)
+        agent.register_callback('update', update)
+        agent.register_callback('done', done)
+
+        cb_mocks = patch.multiple(agent,
+                                  _create_callback=AsyncMock(wraps=agent._create_callback),
+                                  _update_callback=AsyncMock(wraps=agent._update_callback),
+                                  _done_callback=AsyncMock(wraps=agent._done_callback))
+        cb_mocks.start()
+        return agent
+
+    yield init
+    cb_mocks.stop()
 
 
 @pytest.mark.usefixtures('specs')
@@ -48,11 +61,15 @@ class TestAgent:
 
     @pytest.mark.asyncio
     async def test_init(self, event_loop: asyncio.AbstractEventLoop):
-        agent = init('user', uuid.uuid4(), event_loop, debug=True)
-        assert isinstance(agent, BaseAgent)
+        jid = uuid.uuid4()
+        agent = Agent(jid, 'user', event_loop, debug=True)
+        assert agent.user == 'user'
+        assert agent.id == jid
+        assert isinstance(agent._queue, asyncio.PriorityQueue)
 
     @pytest.mark.asyncio
-    async def test_create_action(self, agent: BaseAgent):
+    async def test_create_action(self, agent: Agent):
+        agent = agent()
         ops, _ = agent.create_jobs()
         assert ops == {
             'submit': [],
@@ -75,7 +92,47 @@ class TestAgent:
         assert agent.finished is False
 
     @pytest.mark.asyncio
-    async def test_update_action(self, agent: BaseAgent, existing_jobs: List[Mapping]):
+    async def test_create_max_submit(self, agent: Agent, existing_jobs: List[Mapping]):
+        agent = agent(max_submit=3)
+        ops, _ = agent.create_jobs()
+        assert ops == {
+            'submit': [],
+            'kill': [],
+            'rerun': [],
+            'submit_parallel': False,
+        }
+
+        await agent._process_action()
+        assert not agent.shutdown
+
+        assert len(agent.jobs.get_pending()) == 10
+        assert agent.finished is False
+        assert agent.jobs.has_pending()
+        assert len(agent.jobs.get_pending()) == 10
+
+        opsdict, _ = agent.create_jobs()
+        ops = JobsOps.from_dict(opsdict)
+        assert len(ops.submit) == 3
+        assert len(agent.jobs.get_submitted()) == 3
+
+        # ACK jobs 0-2
+        agent.update_jobs(existing_jobs[:3])
+        await agent._process_action()
+
+        opsdict, _ = agent.create_jobs()
+        ops = JobsOps.from_dict(opsdict)
+        assert len(ops.submit) == 3
+        assert len(agent.jobs.get_pending()) == 4
+        assert len(agent.jobs.get_submitted()) == 3
+        assert len(agent.jobs.get_acked()) == 2
+        assert len(agent.jobs.get_failed()) == 1
+
+        assert agent._queue.empty()
+        assert agent.finished is False
+
+    @pytest.mark.asyncio
+    async def test_update_action(self, agent: Agent, existing_jobs: List[Mapping]):
+        agent = agent()
         update_fut = agent.update_jobs(existing_jobs)
         await agent._process_action()
         assert agent.shutdown is False
@@ -85,7 +142,8 @@ class TestAgent:
         assert len(agent.jobs.get_finished()) == 3
 
     @pytest.mark.asyncio
-    async def test_usercode_exception(self, agent: BaseAgent):
+    async def test_usercode_exception(self, agent: Agent):
+        agent = agent()
 
         def user_create_raise(agent):
             raise Exception('create exc')
@@ -116,7 +174,8 @@ class TestAgent:
             await fut
 
     @pytest.mark.asyncio
-    async def test_no_more_jobs(self, event_loop: asyncio.AbstractEventLoop, agent: BaseAgent):
+    async def test_no_more_jobs(self, event_loop: asyncio.AbstractEventLoop, agent: Agent):
+        agent = agent()
 
         def user_create(agent):
             return None
@@ -130,7 +189,8 @@ class TestAgent:
         assert agent._can_shutdown()
 
     @pytest.mark.asyncio
-    async def test_shutdown(self, event_loop: asyncio.AbstractEventLoop, agent: BaseAgent):
+    async def test_shutdown(self, agent: Agent):
+        agent = agent()
         assert not agent.shutdown
         assert not agent.finished
         agent.create_jobs()
@@ -144,9 +204,8 @@ class TestAgent:
         agent._done_callback.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_no_actions_while_usercode_running(self, event_loop: asyncio.AbstractEventLoop,
-                                                     agent: BaseAgent):
-
+    async def test_no_actions_while_usercode_running(self, agent: Agent):
+        agent = agent()
         ops, _ = agent.create_jobs()
         await agent._process_action()
         # Emulate user code in progress.
@@ -160,8 +219,8 @@ class TestAgent:
             assert not action.failed()
 
     @pytest.mark.asyncio
-    async def test_sync_user_fns(self, event_loop: asyncio.AbstractEventLoop, agent: BaseAgent):
-
+    async def test_sync_user_fns(self, agent: Agent):
+        agent = agent()
         user_create = Mock(return_value=None)
         user_update = Mock()
         user_done = Mock()
@@ -183,12 +242,14 @@ class TestAgent:
         assert agent.finished
         assert agent.shutdown
 
-    def test_invalid_register(self, agent: BaseAgent):
+    def test_invalid_register(self, agent: Agent):
+        agent = agent()
         with pytest.raises(expected_exception=Exception, match='Invalid callback type: invalid'):
             agent.register_callback('invalid', lambda _: _)
 
     @pytest.mark.asyncio
-    async def test_get_health(self, agent: BaseAgent):
+    async def test_get_health(self, agent: Agent):
+        agent = agent()
         health = agent.get_health()
         assert health['is_ready']
         assert not health['is_shutdown']
@@ -199,7 +260,8 @@ class TestAgent:
         assert not health['is_ready']
         assert health['is_shutdown']
 
-    def test_get_stats(self, agent: BaseAgent):
+    def test_get_stats(self, agent: Agent):
+        agent = agent()
         with patch.object(agent.jobs, 'get_stats', return_value={}):
             stats = agent.get_stats()
             assert stats['jobs'] == {}

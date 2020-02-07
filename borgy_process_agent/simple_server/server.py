@@ -10,7 +10,7 @@ import jinja2
 import aiohttp_jinja2
 from aiohttp import web, Signal, WSMsgType
 from borgy_process_agent.utils import ComplexEncoder
-from borgy_process_agent.agent import BaseAgent
+from borgy_process_agent.agent import Agent
 
 # from borgy_process_agent_api_server.models import HealthCheck
 
@@ -147,7 +147,7 @@ async def cleanup_handler(app):
     logger.debug('Closed all websockets.')
 
 
-def init(agent: BaseAgent, on_cleanup: UserCallback = None):
+def init(agent: Agent, on_cleanup: UserCallback = None):
     global app
     static_path = pathlib.Path(__file__).parent / 'static'
 
@@ -155,7 +155,7 @@ def init(agent: BaseAgent, on_cleanup: UserCallback = None):
     tmpl_loader = jinja2.PackageLoader('borgy_process_agent.simple_server', 'static')
     aiohttp_jinja2.setup(app, loader=tmpl_loader)
     app.router.add_static('/static/', path=static_path, name='static')
-    app['agent']: BaseAgent = agent  # type: ignore[misc] # noqa
+    app['agent']: Agent = agent  # type: ignore[misc] # noqa
     app['events']: Signal = Signal(app)  # type: ignore[misc] # noqa
     app['sockets']: Mapping = {}  # type: ignore[misc] # noqa
     app['user']: str = agent.user  # type: ignore[misc] # noqa

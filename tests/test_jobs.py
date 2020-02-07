@@ -4,8 +4,8 @@ from typing import List
 
 from borgy_process_agent_api_server.models import JobSpec
 
-from borgy_process_agent.jobs import Jobs
 from borgy_process_agent.job import Job
+from borgy_process_agent.jobs import Jobs
 from borgy_process_agent.enums import State
 from tests.utils import MockJob, model_to_json, mock_job_from_job
 
@@ -39,6 +39,9 @@ class TestJobs:
         jobs.submit_pending(count=10)
         assert len(jobs.get_pending()) == 10
         assert len(jobs.get_submitted()) == 10
+        # submit without count limit, which will
+        # flush the rest of the pending queue given
+        # it's default is 100.
         jobs.submit_pending()
         assert len(jobs.get_pending()) == 0
         assert len(jobs.get_submitted()) == 20
