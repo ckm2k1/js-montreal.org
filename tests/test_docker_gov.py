@@ -1,6 +1,6 @@
 from datetime import timedelta
 from typing import Callable
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, Mock, MagicMock, DEFAULT as MOCK_DEFAULT, call
 
 import pytest
 
@@ -40,6 +40,36 @@ class MockJobsApi:
 
 class TestDockerGov:
 
+    @patch('borgy_process_agent.runners.docker_gov.docker.from_env', wraps=mock_from_env)
+    def test_start_loop(self, envmock):
+        gov = DockerGovernor(poll_interval=.05)
+        call_count = 0
+
+        def stopper():
+            nonlocal call_count
+            call_count += 1
+            if call_count == 3:
+                gov.stop()
+
+        with patch('time.sleep') as sleepmock:
+            with patch.multiple(gov,
+                                _wait_till_ready=MOCK_DEFAULT,
+                                _run_iteration=Mock(side_effect=stopper)):
+                gov.start()
+                assert gov._run_iteration.call_count == 3
+                assert gov._running is False
+                assert sleepmock.call_count == 2
+                sleepmock.assert_has_calls([
+                    call(gov._poll_interval),
+                    call(gov._poll_interval),
+                ])
+
+                gov._run_iteration.reset_mock(side_effect=True)
+                gov._run_iteration.side_effect = RuntimeError('oh oh')
+
+                with pytest.raises(RuntimeError, match='oh oh'):
+                    gov.start()
+
     @patch('borgy_process_agent_api_client.JobsApi', spec_new=MockJobsApi)
     @patch('borgy_process_agent.runners.docker_gov.docker.from_env', wraps=mock_from_env)
     def test_basic_path(self, envmock, jobsmock, fixture_loader: Callable):
@@ -62,6 +92,7 @@ class TestDockerGov:
             job = desc['job']
             assert job.state == State.RUNNING.value
             assert len(job.runs) == 1
+            assert desc['container'].get_state('Status') == DockerStatus.running.value
             assert job.runs[-1].started_on == desc['container'].get_state('StartedAt')
 
         # No change iteration.
@@ -167,10 +198,60 @@ class TestDockerGov:
     @patch('borgy_process_agent_api_client.JobsApi', spec_new=MockJobsApi)
     @patch('borgy_process_agent.runners.docker_gov.docker.from_env', wraps=mock_from_env)
     def test_rerun_job(self, envmock, jobsmock, fixture_loader: Callable):
-        # res = [(make_ops(rerun=[rerun_jid]), 200, {}), (make_ops(), 200, {})]
-        # gov._jobs_api.v1_jobs_get_with_http_info.reset_mock(side_effect=True)
-        # gov._jobs_api.v1_jobs_get_with_http_info.side_effect = res
+        specs_json = fixture_loader('specs.json')
+        gov = DockerGovernor()
+        specs = [JobSpec.from_dict(spec) for spec in specs_json['submit']]
 
+        gov._jobs_api.v1_jobs_get_with_http_info.side_effect = [
+            (make_ops(submit=specs), 200, {}),
+            (make_ops(), 200, {}),
+        ]
+        gov._jobs_api.v1_jobs_put.return_value = None
+        gov._running = True
+
+        gov._run_iteration()
+
+        assert len(gov._governor_jobs) == 5
+        for _, desc in gov._governor_jobs.items():
+            job = desc['job']
+            assert job.state == State.RUNNING.value
+
+        rerun_jid = list(gov._governor_jobs.keys())[0]
+        rerun_job = gov._governor_jobs[rerun_jid]['job']
+        rerun_cont = gov._governor_jobs[rerun_jid]['container']
+        rerun_cont.terminate()
+
+        gov._run_iteration()
+        assert gov._jobs_api.v1_jobs_get_with_http_info.call_count == 2
+        assert rerun_job.state == State.SUCCEEDED.value
+
+        gov._jobs_api.v1_jobs_get_with_http_info.reset_mock(side_effect=True)
+        gov._jobs_api.v1_jobs_get_with_http_info.side_effect = [
+            (make_ops(rerun=[rerun_jid]), 200, {}),
+            (make_ops(), 200, {}),
+            (make_ops(), 200, {}),
+        ]
+
+        gov._run_iteration()
+
+        assert rerun_job.state == State.RUNNING.value
+
+        for cont in gov._docker.containers.list():
+            cont.terminate()
+
+        gov._run_iteration()
+
+        all_jobs = list(gov._governor_jobs.items())
+        assert len(all_jobs) == 5
+        for jid, desc in all_jobs:
+            job = desc['job']
+            if jid == rerun_jid:
+                assert len(job.runs) == 2
+            assert job.state == State.SUCCEEDED.value
+
+    @patch('borgy_process_agent_api_client.JobsApi', spec_new=MockJobsApi)
+    @patch('borgy_process_agent.runners.docker_gov.docker.from_env', wraps=mock_from_env)
+    def test_rerun_interrupted_job(self, envmock, jobsmock, fixture_loader: Callable):
         specs_json = fixture_loader('specs.json')
         gov = DockerGovernor()
         specs = [JobSpec.from_dict(spec) for spec in specs_json['submit']]
@@ -191,22 +272,33 @@ class TestDockerGov:
             job = desc['job']
             assert job.state == State.RUNNING.value
 
-        rerun_jid = list(gov._governor_jobs.keys())[0]
-        rerun_job = gov._governor_jobs[rerun_jid]['job']
-        rerun_cont = gov._governor_jobs[rerun_jid]['container']
-        rerun_cont.interrupt()
+        jids = list(gov._governor_jobs.keys())[:2]
+        restartable_jid, nonrestartable_jid = jids
+        restartable_job = gov._governor_jobs[restartable_jid]['job']
+        restartable_cont = gov._governor_jobs[restartable_jid]['container']
+        restartable_cont.interrupt()
+
+        nonrestartable_job = gov._governor_jobs[nonrestartable_jid]['job']
+        nonrestartable_cont = gov._governor_jobs[nonrestartable_jid]['container']
+        nonrestartable_cont.interrupt()
 
         gov._run_iteration()
 
-        assert rerun_job.state == State.QUEUING.value
-        assert len(rerun_job.runs) == 2
-        assert rerun_cont.get_state('Status') == DockerStatus.paused.value
-        assert rerun_cont._stopped is False
-        assert rerun_cont._paused is True
+        assert restartable_job.state == State.QUEUING.value
+        assert len(restartable_job.runs) == 2
+        assert restartable_cont.get_state('Status') == DockerStatus.paused.value
+        assert restartable_cont._stopped is False
+        assert restartable_cont._paused is True
+
+        assert nonrestartable_job.state == State.INTERRUPTED.value
+        assert len(nonrestartable_job.runs) == 1
+        assert nonrestartable_cont.get_state('Status') == DockerStatus.paused.value
+        assert nonrestartable_cont._stopped is False
+        assert nonrestartable_cont._paused is True
 
         gov._run_iteration()
-        assert rerun_job.state == State.RUNNING.value
-        assert len(rerun_job.runs) == 2
+        assert restartable_job.state == State.RUNNING.value
+        assert len(restartable_job.runs) == 2
 
         for cont in gov._docker.containers.list():
             cont.terminate()
@@ -215,7 +307,7 @@ class TestDockerGov:
         assert len(gov._governor_jobs) == 5
         for jid, desc in gov._governor_jobs.items():
             job = desc['job']
-            if jid == rerun_jid:
+            if jid == restartable_jid:
                 assert job.state == State.SUCCEEDED.value
                 assert len(job.runs) == 2
             else:

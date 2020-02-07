@@ -43,7 +43,7 @@ def user_update(agent, jobs):
 
     logger.info("{}: job update".format(iteration))
     for job in jobs:
-        logger.info("{}: {} {}".format(iteration, job['job'].jid, job['job'].state))
+        logger.info("{}: {} {}".format(iteration, job.jid, job.state))
 
     # jobs = list(agent.get_jobs().values())
     if job_idx_to_kill > -1:

@@ -1,13 +1,11 @@
 import copy
 from datetime import datetime
-from typing import Optional, Union, Mapping
 from collections import namedtuple
+from typing import Optional, Union, MutableMapping, List, Mapping
 
-from dictdiffer import diff
+from dictdiffer import diff  # type: ignore
 
-from borgy_process_agent_api_server.models.job import Job as OrkJob
-from borgy_process_agent_api_server.models.job_spec import JobSpec
-
+from borgy_process_agent_api_server.models import Job as OrkJob, JobSpec, JobRuns  # type: ignore
 from borgy_process_agent.enums import State, Restart
 
 JOB_SPEC_DEFAULTS = {
@@ -30,10 +28,10 @@ JOB_SPEC_DEFAULTS = {
     # 'workdir': ""
 }
 
-diffop = namedtuple('diffop', ('op', 'prop', 'values'))
+DiffOp = namedtuple('diffop', ('op', 'prop', 'values'))
 
-JobSpecDict = Mapping
-OrkJobDict = Mapping
+JobSpecDict = MutableMapping
+OrkJobDict = MutableMapping
 
 
 class Job:
@@ -55,15 +53,18 @@ class Job:
         self._name_prefix: str = name_prefix
         self.pa_id: str = pa_id
         self.ork_job: OrkJob = ork_job if ork_job is not None else OrkJob()
+        self.spec: JobSpec = self._init_spec(spec=spec, ork_job=ork_job)
+        self.name: str = self.spec.name
+        self._diff: List[DiffOp] = []
+
+    def _init_spec(self,
+                   spec: Optional[Union[JobSpec, Mapping]] = None,
+                   ork_job: Optional[OrkJob] = None) -> Optional[JobSpec]:
         if spec is not None:
-            self.spec: JobSpec = self._make_spec(spec) if isinstance(spec, dict) else spec
-        else:
-            if ork_job:
-                self.spec: JobSpec = Job.spec_from_ork_job(ork_job)
-            else:
-                raise Exception('A spec or OrkJob is required to initialize a job.')
-        self.name = self.spec.name
-        self._diff = []
+            return self._make_spec(spec) if isinstance(spec, dict) else spec
+        if ork_job is not None:
+            return Job.spec_from_ork_job(ork_job)
+        raise Exception('A spec or OrkJob is required to initialize a job.')
 
     def to_dict(self):
         return {
@@ -74,7 +75,6 @@ class Job:
             'created': int(self.created.timestamp()),
             'updated': int(self.updated.timestamp()) if self.updated is not None else None,
             'pa_id': self.pa_id,
-            # 'ork_job': self.ork_job.to_dict() if self.ork_job is not None else {},
             'spec': self.spec.to_dict()
         }
 
@@ -99,8 +99,12 @@ class Job:
         spec = {k: getattr(oj, k) for k in JobSpec().attribute_map}
         return JobSpec.from_dict(spec)
 
+    @property
+    def diff(self) -> List[DiffOp]:
+        return self._diff
+
     def _get_job_name(self):
-        return f'{self._name_prefix}-{str(self.index)}'
+        return f'{self._name_prefix}_{str(self.index)}'
 
     def _make_base_spec(self) -> JobSpecDict:
         spec = copy.deepcopy(JOB_SPEC_DEFAULTS)
@@ -148,7 +152,7 @@ class Job:
             self.jid = jid
         self.updated = datetime.utcnow()
         self.state = State(oj.state)
-        self._diff = [diffop(*e) for e in list(diff(oj.to_dict(), self.ork_job.to_dict()))]
+        self._diff = [DiffOp(*e) for e in list(diff(oj.to_dict(), self.ork_job.to_dict()))]
         self.ork_job = copy.deepcopy(oj)
 
     def is_pending(self) -> bool:
@@ -166,6 +170,12 @@ class Job:
     def is_interrupted(self) -> bool:
         return self.state == State.INTERRUPTED
 
+    def get_runs(self) -> List[JobRuns]:
+        oj = self.ork_job
+        if oj:
+            return oj.runs
+        return []
+
     def submit(self):
         self.state = State.SUBMITTED
 
@@ -177,10 +187,6 @@ class Job:
             if d.prop == prop:
                 return True
         return False
-
-    @property
-    def diff(self):
-        return self._diff
 
     def __repr__(self) -> str:
         return f'<Job index={self.index}, created={self.created}, '

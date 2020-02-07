@@ -1,5 +1,6 @@
 import asyncio
 from typing import Optional, List, Callable, Any
+
 from borgy_process_agent.enums import ActionType
 
 
@@ -16,16 +17,15 @@ class Action(asyncio.Future):
 
     def __repr__(self) -> str:
         data = len(self.data) if self.data is not None else 'None'
-        return f'<{self.__class__.__name__}: ' \
-            f'type={self.type.value}, ' \
-            f'data={data}, ' \
-            f'fut={self._repr_info()}>'
+        return '<{}: type={}, data={}, fut={}>'.format(
+            self.__class__.__name__, self.type.value, data,
+            self._repr_info()) # type: ignore[attr-defined] # noqa
 
-    def complete(self) -> bool:
+    def complete(self):
         self.set_result(self.data)
 
-    def on_done(self, callback: Callable) -> asyncio.Handle:
-        return self.add_done_callback(callback)
+    def on_done(self, callback: Callable):
+        self.add_done_callback(callback)
 
     def fail(self, exc: Exception):
         self.set_exception(exc)

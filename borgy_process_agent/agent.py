@@ -1,17 +1,21 @@
 import asyncio
 import logging
-from uuid import UUID
-from typing import List, Mapping, Callable, Optional, Awaitable, Any, Tuple
+from typing import List, Mapping, Callable, Optional, Any, Tuple, Awaitable
 
-from borgy_process_agent_api_server.models import Job as OrkJob, JobSpec, JobsOps
+from borgy_process_agent_api_server.models import Job as OrkJob, JobSpec, JobsOps # type: ignore
 
+from borgy_process_agent.job import Job
 from borgy_process_agent.jobs import Jobs
-from borgy_process_agent.enums import ActionType
-from borgy_process_agent.action import Action
+from borgy_process_agent.action import Action, ActionType
 from borgy_process_agent.utils import Indexer, ensure_coroutine
 from borgy_process_agent.typedefs import EventLoop
 
 logger = logging.getLogger(__name__)
+
+JobSpecList = List[JobSpec]
+CreateCallback = Callable[[Jobs], Awaitable[JobSpecList]]
+UpdateCallback = Callable[[Jobs, List[Job]], Awaitable]
+DoneCallback = Callable[[Jobs], Awaitable]
 
 
 class BaseAgent():
@@ -23,15 +27,15 @@ class BaseAgent():
                  debug: Optional[bool] = None,
                  queue: Optional[asyncio.Queue] = None,
                  job_name_prefix: str = 'pa_child_job',
-                 auto_rerun: bool = True):
-        self.id: UUID = pa_id
+                 auto_rerun: Optional[bool] = True):
+        self.id: str = pa_id
         self.user: str = user
-        self._loop: EventLoop = loop
+        self._debug: Optional[bool] = debug
+        self._loop: Optional[EventLoop] = loop
         self._queue: asyncio.Queue = queue if queue else asyncio.PriorityQueue(loop=loop)
-        self._update_callback: Callable[[BaseAgent, List[Mapping]], None] = None
-        self._create_callback: Callable[[BaseAgent], List[JobSpec]] = None
-        self._done_callback: Callable[[BaseAgent], List[JobSpec]] = None
-        self._debug: bool = debug
+        self._create_callback: Optional[CreateCallback] = None
+        self._update_callback: Optional[UpdateCallback] = None
+        self._done_callback: Optional[DoneCallback] = None
         self._task_prio = Indexer(initial=1)
         self._jobs_lock: asyncio.Lock = asyncio.Lock()
         self.jobs: Jobs = Jobs(user, pa_id, job_name_prefix=job_name_prefix, auto_rerun=auto_rerun)
@@ -85,7 +89,7 @@ class BaseAgent():
     async def _update(self, ork_jobs: List[OrkJob]):
         async with self._jobs_lock:
             updated = self.jobs.update(ork_jobs)
-            await self._update_callback(self.jobs, updated)
+            await self._update_callback(self.jobs, updated) # type: ignore[misc] # noqa
             logger.info(self.jobs.get_counts())
 
     async def _create(self):
@@ -94,7 +98,7 @@ class BaseAgent():
             self.jobs.create(jobs)
             logger.info(self.jobs.get_counts())
 
-    async def _process_action(self) -> Awaitable[bool]:
+    async def _process_action(self):
         logger.info('Waiting for next action...')
         action: Action = await self._queue.get()
         logger.info('Task received: %r', action)

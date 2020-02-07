@@ -7,7 +7,8 @@ import importlib.util
 from functools import partial, wraps
 from datetime import datetime, timedelta, timezone
 from collections import ChainMap, UserDict
-from typing import Any, Union, Callable, Generator, Tuple, List, Iterator, Mapping, Coroutine
+from typing import (Any, Union, Callable, Generator, Tuple, List, Iterator, Mapping, Coroutine,
+                    Optional)
 from types import ModuleType
 
 SENTINEL = object()
@@ -62,7 +63,7 @@ class Env:
     """
 
     def _get_envvar(self, key: str, default: Any, parser: Callable,
-                    hardfail: bool) -> Union[None, str]:
+                    hardfail: bool) -> Any:
         if key not in os.environ and default is not SENTINEL:
             return default
         try:
@@ -72,16 +73,16 @@ class Env:
                 raise
             return None
 
-    def get_bool(self, key: str, default: Any = SENTINEL, hardfail=True) -> bool:
+    def get_bool(self, key: str, default: Any = SENTINEL, hardfail=True) -> Optional[bool]:
         return self._get_envvar(key, default, parse_bool, hardfail)
 
-    def get_float(self, key: str, default: Any = SENTINEL, hardfail=True) -> float:
+    def get_float(self, key: str, default: Any = SENTINEL, hardfail=True) -> Optional[float]:
         return self._get_envvar(key, default, float, hardfail)
 
-    def get_int(self, key: str, default: Any = SENTINEL, hardfail=True) -> int:
+    def get_int(self, key: str, default: Any = SENTINEL, hardfail=True) -> Optional[int]:
         return self._get_envvar(key, default, int, hardfail)
 
-    def get(self, key: str, default: Any = SENTINEL, hardfail=True) -> str:
+    def get(self, key: str, default: Any = SENTINEL, hardfail=True) -> Optional[str]:
         return self._get_envvar(key, default, _identity, hardfail)
 
 
@@ -156,7 +157,7 @@ class Indexer(Iterator):
         self._idx = initial
         self._initial = initial
 
-    def cap(self, num) -> 'Indexer':
+    def cap(self, num) -> Iterator['Indexer']:
         """Returns the current instance of Indexer
         capped to a number of iterations starting from the
         current index. This can be used in a for loop to
@@ -301,7 +302,7 @@ def cpu_str_to_ncpu(cpu_str: str) -> float:
     return cpu_size
 
 
-def ensure_coroutine(fn, loop=None) -> Coroutine:
+def ensure_coroutine(fn, loop=None) -> Callable[..., Coroutine]:
     if asyncio.iscoroutinefunction(fn):
         return fn
 
@@ -323,7 +324,7 @@ def load_module_from_path(path: str) -> ModuleType:
     spec = importlib.util.spec_from_file_location('usercode', location=path)
     assert spec, f'No valid python module found at path {path}'
     usercode = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(usercode)
+    spec.loader.exec_module(usercode) # type: ignore
     return usercode
 
 

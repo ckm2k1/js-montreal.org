@@ -77,13 +77,12 @@ class DockerGovernor:
         logger.debug('Get job from PA')
         jobs: JobsOps = self._get_new_jobs()
 
-        if jobs:
-            for j in jobs.submit:
-                self._create_job(j)
-            for j in jobs.rerun:
-                self._rerun_job(j)
-            for j in jobs.kill:
-                self._kill_job(j)
+        for j in jobs.submit:
+            self._create_job(j)
+        for j in jobs.rerun:
+            self._rerun_job(j)
+        for j in jobs.kill:
+            self._kill_job(j)
 
         # Start queuing jobs
         logger.info('Start queuing jobs')
@@ -247,7 +246,7 @@ class DockerGovernor:
                 last_run.result = logs.decode('utf8', errors='replace')
                 if self._options.get('docker_remove', True):
                     job['container'].remove()
-            elif state == State.INTERRUPTED:
+            elif state == State.INTERRUPTED: # pragma: no branch
                 # Technically this would never be true in the
                 # real governor because PA child jobs cannot have the
                 # restart flag be set. The PA is supposed to have a
@@ -269,7 +268,7 @@ class DockerGovernor:
                     job['job'].runs.append(JobRuns.from_dict(new_run))
                     job['job'].state = State.QUEUING.value
 
-            if job['job'].runs:
+            if job['job'].runs: # pragma: no branch
                 job['job'].runs[-1].state = job['job'].state
 
         return job
@@ -287,7 +286,7 @@ class DockerGovernor:
                 if (get_now() - started_on).total_seconds() > job['job'].max_run_time_secs:
                     logger.info('\t\tStop job %s: max run time exceed (%s seconds)', job_id,
                                 job['job'].max_run_time_secs)
-                    if job['container']:
+                    if job['container']: # pragma: no branch
                         job['container'].stop(timeout=self._options.get('docker_stop_timeout', 10))
 
     def _check_jobs_update(self) -> List[Job]:

@@ -1,13 +1,13 @@
 from pprint import pformat
-from typing import Optional, List, Mapping, Any, Set
+from typing import Optional, List, Mapping, Set, MutableMapping
 
-from borgy_process_agent_api_server.models import Job as OrkJob, JobSpec
+from borgy_process_agent_api_server.models import Job as OrkJob, JobSpec # type: ignore
 
 from borgy_process_agent.job import Job
 from borgy_process_agent.enums import State
 from borgy_process_agent.utils import Indexer, DeepChainMap, taketimes
 
-JobMap = Mapping[int, Job]
+JobMap = MutableMapping[int, Job]
 JobIndex = int
 
 
@@ -67,7 +67,7 @@ class Jobs:
         return [j for j in self._all_jobs.values() if j.state == state]
 
     def get_all(self) -> List[Job]:
-        return self._all_jobs.values()
+        return list(self._all_jobs.values())
 
     def get_by_index(self, idx) -> Optional[Job]:
         return self._all_jobs.get(idx)
@@ -198,7 +198,7 @@ class Jobs:
 
         return job
 
-    def update(self, jobs: List[Mapping]) -> List[Mapping[str, Any]]:
+    def update(self, jobs: List[Mapping]) -> List[Job]:
         updated = []
         for oj in jobs:
             job = self._update_job(OrkJob.from_dict(oj))
@@ -206,7 +206,7 @@ class Jobs:
             # It's likely because why send updates for something
             # that didn't change?
             if job.diff:  # pragma: no branch
-                updated.append({'job': job, 'update': job.diff})
+                updated.append(job)
 
         return updated
 

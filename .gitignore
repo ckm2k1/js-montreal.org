@@ -117,3 +117,4 @@ borgy-process-agent*.tar.gz
 
 # sublime
 *.sublime-project
+.mypy_cache

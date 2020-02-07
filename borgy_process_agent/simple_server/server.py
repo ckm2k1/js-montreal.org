@@ -3,7 +3,7 @@ import uuid
 import asyncio
 import logging
 import pathlib
-from typing import Callable, Mapping
+from typing import Callable, Mapping, Optional, cast, Awaitable
 from functools import partial
 
 import jinja2
@@ -16,15 +16,15 @@ from borgy_process_agent.agent import BaseAgent
 
 logger = logging.getLogger(__name__)
 
-app = None
+app: Optional[web.Application] = None
 routes = web.RouteTableDef()
 
-customdumps = partial(json.dumps, cls=ComplexEncoder)
+customdumps: Callable[..., str] = partial(json.dumps, cls=ComplexEncoder)
 
-UserCallback = Callable[[web.Application], None]
+UserCallback = Callable[[web.Application], Awaitable]
 
 # 2 sec to wait before hard closing websockets.
-SOCKET_CLOSE_TIMEOUT = 5
+SOCKET_CLOSE_TIMEOUT: int = 5
 
 
 def get_loop() -> asyncio.AbstractEventLoop:
@@ -59,7 +59,7 @@ async def websocket_handler(request: web.Request):
         # error and hit this branch since that requires failing
         # the very internal stream reader used by aiohttp.ClientSession,
         # which only fails on Future CancelledError or TimeoutErrors
-        elif msg.type == WSMsgType.ERROR: # pragma: no cover
+        elif msg.type == WSMsgType.ERROR:  # pragma: no cover
             logger.exception('socket connection closed with exception %s', socket.exception())
             break
 
@@ -128,6 +128,7 @@ async def kill(request: web.Request):
 
 async def _send_update_to_clients(fut: asyncio.Future = None):
     global app
+    app = cast(web.Application, app)
 
     if fut is not None:
         await fut
@@ -136,7 +137,7 @@ async def _send_update_to_clients(fut: asyncio.Future = None):
         if not sock.prepared:
             logger.warning('Unprepared socket!', sock)
             continue
-        await sock.send_json(app['agent'].get_stats(), dumps=customdumps)
+        await sock.send_json(app['agent'].get_stats(), dumps=customdumps)  # type: ignore
 
 
 async def cleanup_handler(app):
@@ -154,11 +155,11 @@ def init(agent: BaseAgent, on_cleanup: UserCallback = None):
     tmpl_loader = jinja2.PackageLoader('borgy_process_agent.simple_server', 'static')
     aiohttp_jinja2.setup(app, loader=tmpl_loader)
     app.router.add_static('/static/', path=static_path, name='static')
-    app['agent']: BaseAgent = agent
-    app['events']: Signal = Signal(app)
-    app['sockets']: Mapping = {}
-    app['user'] = agent.user
-    app['pa_id'] = agent.id
+    app['agent']: BaseAgent = agent  # type: ignore[misc] # noqa
+    app['events']: Signal = Signal(app)  # type: ignore[misc] # noqa
+    app['sockets']: Mapping = {}  # type: ignore[misc] # noqa
+    app['user']: str = agent.user  # type: ignore[misc] # noqa
+    app['pa_id']: str = agent.id  # type: ignore[misc] # noqa
     app['shutdown'] = asyncio.Event()
 
     app['events'].append(_send_update_to_clients)
