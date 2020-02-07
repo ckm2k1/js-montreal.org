@@ -9,7 +9,7 @@ from borgy_process_agent_api_server.models import JobsOps
 from borgy_process_agent.agent import Agent
 from borgy_process_agent.typedefs import EventLoop
 
-from tests.utils import make_spec, AsyncMock
+from tests.utils import make_spec, AsyncMock, MockJob
 
 
 @pytest.fixture
@@ -92,8 +92,8 @@ class TestAgent:
         assert agent.finished is False
 
     @pytest.mark.asyncio
-    async def test_create_max_submit(self, agent: Agent, existing_jobs: List[Mapping]):
-        agent = agent(max_submit=3)
+    async def test_create_max_running(self, agent: Agent, existing_jobs: List[Mapping]):
+        agent = agent(max_running=3)
         ops, _ = agent.create_jobs()
         assert ops == {
             'submit': [],
@@ -116,16 +116,31 @@ class TestAgent:
         assert len(agent.jobs.get_submitted()) == 3
 
         # ACK jobs 0-2
-        agent.update_jobs(existing_jobs[:3])
+        ojs = [MockJob(index=i, state='RUNNING').get() for i in range(3)]
+        agent.update_jobs(ojs)
         await agent._process_action()
 
         opsdict, _ = agent.create_jobs()
         ops = JobsOps.from_dict(opsdict)
-        assert len(ops.submit) == 3
-        assert len(agent.jobs.get_pending()) == 4
-        assert len(agent.jobs.get_submitted()) == 3
-        assert len(agent.jobs.get_acked()) == 2
-        assert len(agent.jobs.get_failed()) == 1
+        # Since we have 3 running jobs, ops
+        # will not have any new submissions.
+        assert len(ops.submit) == 0
+        assert len(agent.jobs.get_pending()) == 7
+        assert len(agent.jobs.get_submitted()) == 0
+        assert len(agent.jobs.get_acked()) == 3
+
+        # Finish jobs 0 and 1.
+        ojs = ojs = [MockJob(index=i, state='SUCCEEDED').get() for i in range(2)]
+        agent.update_jobs(ojs)
+        await agent._process_action()
+
+        opsdict, _ = agent.create_jobs()
+        ops = JobsOps.from_dict(opsdict)
+        assert len(ops.submit) == 2
+        assert len(agent.jobs.get_pending()) == 5
+        assert len(agent.jobs.get_submitted()) == 2
+        assert len(agent.jobs.get_acked()) == 1
+        assert len(agent.jobs.get_finished()) == 2
 
         assert agent._queue.empty()
         assert agent.finished is False

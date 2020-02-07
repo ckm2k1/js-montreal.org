@@ -16,7 +16,7 @@ class BaseRunner():
                  api_host='0.0.0.0',
                  api_port=8666,
                  keep_alive=False,
-                 max_submit=None,
+                 max_running=None,
                  auto_rerun=True):
         self._pa_job_id = pa_jid
         self._pa_user = pa_user
@@ -27,7 +27,7 @@ class BaseRunner():
         self._tasks = []
         self._exc_exit = False
         self._loop = asyncio.get_event_loop()
-        self._agent = self.init_agent(max_submit=max_submit)
+        self._agent = self.init_agent(max_running=max_running)
         self._app = server.init(self._agent, self._on_cleanup)
         self._main_coro = None
 

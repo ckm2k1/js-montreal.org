@@ -28,7 +28,7 @@ class Agent():
                  queue: Optional[asyncio.Queue] = None,
                  job_name_prefix: str = 'pa_child_job',
                  auto_rerun: Optional[bool] = True,
-                 max_submit: int = None):
+                 max_running: int = None):
         self.id: str = pa_id
         self.user: str = user
         self._debug: Optional[bool] = debug
@@ -43,7 +43,7 @@ class Agent():
                                pa_id,
                                job_name_prefix=job_name_prefix,
                                auto_rerun=auto_rerun,
-                               max_submit=max_submit)
+                               max_running=max_running)
 
         self._finished: bool = False
         self._shutdown: bool = False

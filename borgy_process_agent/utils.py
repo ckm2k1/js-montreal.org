@@ -328,12 +328,13 @@ def load_module_from_path(path: str) -> ModuleType:
     return usercode
 
 
-def taketimes(iterable: Union[List, Mapping], times: int = None) -> KeyPairGenerator:
+def taketimes(iterable: Union[List, Mapping], times: int = None, vals=False) -> KeyPairGenerator:
     times = len(iterable) if times is None else times
     gen = enumerate(iterable) if isinstance(iterable, list) else iterable.items().__iter__()
     while times:
         try:
-            yield next(gen)
+            key, val = next(gen)
+            yield val if vals else key, val
         except StopIteration:
             return
         times -= 1

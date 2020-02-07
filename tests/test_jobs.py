@@ -47,6 +47,9 @@ class TestJobs:
         assert len(jobs.get_submitted()) == 20
         assert jobs.all_done() is False
 
+    def test_submit_max_running(self, jobs: Jobs, specs: SpecList):
+        pass
+
     def test_update(self, jobs: Jobs, specs: SpecList):
         jobs.create(s.to_dict() for s in specs)
         ojs = [

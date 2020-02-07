@@ -10,7 +10,19 @@ from borgy_process_agent.utils import Indexer, DeepChainMap, taketimes
 JobMap = MutableMapping[int, Job]
 JobIndex = int
 
-DEFAULT_MAX_SUBMIT: int = 100
+# ----------- DO NOT CHANGE ------------
+# We can never submit more than 100 jobs
+# at the same to the Governor or we'll
+# be killed. This constant is completely
+# invariant.
+MAX_SUBMIT: int = 100
+# Maximum number of jobs to allow running
+# in parallel in the cluster. The default
+# value is quite high and should be usable
+# for most users, but can be increased
+# (or decreased) via the --max-running flag
+# to the cli.
+DEFAULT_MAX_RUNNING: int = 500
 
 
 class Jobs:
@@ -20,15 +32,15 @@ class Jobs:
                  pa_id: str,
                  job_name_prefix='pa_child_job',
                  auto_rerun=True,
-                 max_submit=None):
+                 max_running=None):
         # String user id, could be unix name or
         # a UUID in some toolkit scenarios.
         self._user: str = user
         # The UUID of the process agent job.
         self._pa_id: str = pa_id
         # Maximum amount of jobs to submit in one batch.
-        self._max_submit: Optional[int] = (max_submit
-                                           if max_submit is not None else DEFAULT_MAX_SUBMIT)
+        self._max_running: Optional[int] = (max_running
+                                            if max_running is not None else DEFAULT_MAX_RUNNING)
 
         # Sequential job index, always increasing.
         self._idx: Indexer = Indexer()
@@ -97,23 +109,23 @@ class Jobs:
     def submit_kills(self) -> List[Job]:
         return self.get_kill()
 
-    def _calc_submit_count(self, count: Optional[int] = None) -> int:
-        """The logic here ensures that at any given moment there are no
-        more than self._max_submit jobs in the SUBMITTED state. If the
-        governor only acknowledges 5 out of 10 already submitted jobs and
-        max_submit == 10, the next iteration will only submit 5 more pending
-        jobs."""
+    def submit_pending(self, count: Optional[int] = None):
         submitted = len(self.get_submitted())
-        if count is None:
-            return self._max_submit - submitted if submitted <= self._max_submit else 0
-        return count - submitted if count > submitted else 0
+        running = len(self.get_acked())
+        room_for_running_jobs = max(self._max_running, running) - running
 
-    def submit_pending(self, count: Optional[int] = None) -> List[Job]:
-        count = self._calc_submit_count(count=count)
-        to_submit = [v for _, v in taketimes(self.get_pending(), times=count)]
-        for s in to_submit:
-            s.submit()
-        return self.get_submitted()
+        # Restrict the submission slice by 'count' if needed.
+        if count is not None and count < room_for_running_jobs:
+            room_for_running_jobs = count
+
+        # If we have more room for running jobs than jobs to submit,
+        # fill up the submission queue from pending jobs.
+        if submitted < room_for_running_jobs:
+            backfill = room_for_running_jobs - submitted
+            for _, p in taketimes(self.get_pending(), times=min(backfill, MAX_SUBMIT)):
+                p.submit()
+
+        return [s for _, s in taketimes(self.get_submitted(), times=room_for_running_jobs)]
 
     def kill_job(self, job: Job):
         if job.is_finished():

@@ -10,13 +10,13 @@ base_job: dict = {
     'command': [
         'bash', '-c',
         'rand=`shuf -i 0-10 -n 1`; if [[ $rand -gt 0 ]]; then echo '
-        '"oh yeah $rand"; sleep 12; echo "DONE"; else echo "FAILED with $rand"; exit 1; fi;'
+        '"oh yeah $rand"; sleep 15; echo "DONE"; else echo "FAILED with $rand"; exit 1; fi;'
     ],
     'preemptable': True,
     'reqGpus': 1,
     'options': {
         'alphabits': {
-            'interrupts': 3,
+            'interrupts': 1,
             'interrupt-after': 5
         }
     }
