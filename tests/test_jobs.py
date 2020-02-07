@@ -219,7 +219,7 @@ class TestJobs:
         jobs.create(None)
         assert jobs.has_more() is False
 
-    def test_by_state(self, jobs: Jobs, specs: SpecList):
+    def test_get_by(self, jobs: Jobs, specs: SpecList):
         jobs.create(s.to_dict() for s in specs)
         assert len(jobs.get_by_state(State.PENDING)) == 20
         jobs.submit_pending(10)
@@ -231,6 +231,14 @@ class TestJobs:
             mock_job_from_job(job, state=State.RUNNING.value).get()
             for job in jobs.get_submitted())
         assert len(jobs.get_by_state(State.RUNNING)) == 10
+
+        assert len(jobs.get_failed()) == 0
+        assert jobs.get_by_index(5).index == jobs._all_jobs[5].index
+
+        jobs.update(
+            mock_job_from_job(job, state=State.FAILED.value).get()
+            for job in jobs.get_by_state(State.RUNNING)[:5])
+        assert len(jobs.get_failed()) == 5
 
     def test_stats(self, jobs: Jobs, specs: SpecList):
         stats = jobs.get_counts()
