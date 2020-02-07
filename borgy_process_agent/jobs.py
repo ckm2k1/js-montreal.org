@@ -113,7 +113,7 @@ class Jobs:
         to_submit = [v for _, v in taketimes(self.get_pending(), times=count)]
         for s in to_submit:
             s.submit()
-        return to_submit
+        return self.get_submitted()
 
     def kill_job(self, job: Job):
         if job.is_finished():
