@@ -3,7 +3,7 @@
 [![Drone](https://drone.elementai.com:8443/api/badges/ElementAI/borgy-process-agent/status.svg?branch=dev)](https://drone.elementai.com:8443/ElementAI/borgy-process-agent)
 [![Coverage Status](https://coveralls.io/repos/github/ElementAI/borgy-process-agent/badge.svg?branch=master&t=zqIPKC)](https://coveralls.io/github/ElementAI/borgy-process-agent)
 
-## What is the process agent?
+## Process agent?
 The process agent is designed primarily as a low level tool for running, managing and monitoring multiple jobs in the
 Ork cluster. You can find details about it's internals in the sections below.
 The agent runs mostly like any other job in the cluster but with the important distinction that it is also
@@ -14,6 +14,14 @@ The agent can be used by anyone with access to the cluster, but is generally rec
 run multiple jobs with usecases that are too simple or unfitting to run with Shuriken. Additionally, anyone looking
 to implement job run patterns that are not currently supported or are too custom to implement in the agent can
 easily extend the agent for their own use.
+
+### [Documentation](tutorial.md)
+
+If you want to start using the agent as quickly as possible without the hassles of installing
+and running it locally, read the [Basic use case](tutorial.md#basic-use-case) section and you'll be well on your way.
+
+###
+<br />
 
 ## Installation & Usage
 
@@ -43,11 +51,6 @@ Install via [Setuptools](https://pypi.python.org/pypi/setuptools).
 python setup.py install --user
 ```
 (or `sudo python setup.py install` to install the package for all users)
-
-
-### Getting Started
-
-Read the full tutorial here: [Tutorial](tutorial.md)
 
 ## Contributing
 
