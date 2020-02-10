@@ -18,7 +18,7 @@ easily extend the agent for their own use.
 ### [Documentation](tutorial.md)
 
 If you want to start using the agent as quickly as possible without the hassles of installing
-and running it locally, read the [Basic use case](tutorial.md#basic-use-case) section and you'll be well on your way.
+and running it locally, read the [Basic use case](tutorial.md#basic-usage) section and you'll be well on your way.
 
 ###
 <br />
