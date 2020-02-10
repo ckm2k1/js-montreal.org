@@ -7,10 +7,9 @@ DPZ_PROJECT=borgy
 -include deployzor/deployzor.mk
 
 test:
-	@tox
-
-test.full:
 	@tox -e 'py37'
+
+test.full: test # backwards compat.
 
 flake8:
 	python -m flake8

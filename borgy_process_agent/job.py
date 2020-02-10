@@ -157,6 +157,9 @@ class Job:
     def is_submitted(self) -> bool:
         return self.state == State.SUBMITTED
 
+    def is_successful(self) -> bool:
+        return self.state == State.SUCCEEDED
+
     def is_finished(self) -> bool:
         return self.state.is_finished()
 

@@ -3,26 +3,28 @@
 [![Drone](https://drone.elementai.com:8443/api/badges/ElementAI/borgy-process-agent/status.svg?branch=dev)](https://drone.elementai.com:8443/ElementAI/borgy-process-agent)
 [![Coverage Status](https://coveralls.io/repos/github/ElementAI/borgy-process-agent/badge.svg?branch=master&t=zqIPKC)](https://coveralls.io/github/ElementAI/borgy-process-agent)
 
-Process agents allow submission of a single job to EAI which is composed of many jobs and can evolve based on results from previously submitted jobs.
+## What is the process agent?
+The process agent is designed primarily as a low level tool for running, managing and monitoring multiple jobs in the
+Ork cluster. You can find details about it's internals in the sections below.
+The agent runs mostly like any other job in the cluster but with the important distinction that it is also
+responsible for it's child jobs and if terminated, all children will be shutdown as well.
 
-![Process agent schema](./docs/process-agent.png)
-
-## Requirements.
-
-Python 3.7+
+### Who is it for?
+The agent can be used by anyone with access to the cluster, but is generally recommended for users who wish
+run multiple jobs with usecases that are too simple or unfitting to run with Shuriken. Additionally, anyone looking
+to implement job run patterns that are not currently supported or are too custom to implement in the agent can
+easily extend the agent for their own use.
 
 ## Installation & Usage
 
-### pip install
+### Installing locally
 
-If the python package is hosted on Github, you can install directly from Github
-
+From github:
 ```sh
 pip install git+ssh://git@github.com/ElementAI/borgy-process-agent.git
 ```
 
 You can also install from the distribution server:
-
 ```sh
 pip install https://distrib.borgy.elementai.net/python/borgy-process-agent/borgy-process-agent-[version].tar.gz
 ```
@@ -42,100 +44,44 @@ python setup.py install --user
 ```
 (or `sudo python setup.py install` to install the package for all users)
 
+
 ### Getting Started
 
-
-Please follow the [installation procedure](#installation--usage) and then here is a Python 3 example:
-
-```python
-from borgy_process_agent import ProcessAgent
-
-i_job = 0
-process_agent = ProcessAgent()
-
-def return_new_jobs(pa):
-    global i_job
-    i_job = i_job + 1
-    res = [{'command': ['sleep', str(i_job)]}]
-    return res
-
-process_agent.set_callback_jobs_provider(return_new_jobs)
-
-def jobs_update(event):
-    print(event.pa)
-    print(event.jobs)
-
-process_agent.subscribe_jobs_update(jobs_update)
-
-process_agent.start()
-```
-
-Another example to launch a set of jobs:
-```python
-process_agent = ProcessAgent()
-
-jobs_idx = 0
-jobs_to_submit = [
-{'command': ['sleep', 5]},
-{'command': ['sleep', 5]},
-{'command': ['sleep', 5]},
-{'command': ['sleep', 5]}
-]
-
-def return_new_jobs(pa):
-    global jobs_idx, jobs_to_submit
-    specs = jobs_to_submit[jobs_idx:jobs_idx+100]
-    if not specs:
-        return None
-    jobs_idx = jobs_idx + 100
-    return specs
-
-process_agent.set_callback_jobs_provider(return_new_jobs)
-
-def jobs_update(event):
-    print(event.pa)
-    print(event.jobs)
-
-process_agent.subscribe_jobs_update(jobs_update)
-
-process_agent.start()
-```
-
-### Submit the process agent job
-
-To submit the job, you need to use the `pa` subset of commands in borgy CLI.
-
-Example to submit a jobs:
-
-```sh
-borgy pa submit -e PA_TESTER_CHILDREN=3 -i images.borgy.elementai.net/borgy/process-agent:1.16.0
-```
-
+Read the full tutorial here: [Tutorial](tutorial.md)
 
 ## Contributing
 
 ### Install requirements
 
-Update `~/.pip/pip.conf` with extra index url:
+Before you start, we highly recommend creating a new virtual env and installing dependencies inside it.
+Python 3.7+ is required to run the agent.
+
+1. Update `~/.pip/pip.conf` with extra index url:
 ```sh
 [global]
 extra-index-url = https://username:password@pypi.elmt.io/repo/eai-core
 ```
-and call pip to install requirements
+1. Install requirements
 ```sh
 pip install -r ./requirements.txt
 ```
-
 OR call directly pip with extra index url in parameter:
-
 ```sh
 pip install --extra-index-url https://username:password@pypi.elmt.io/repo/eai-core -r ./requirements.txt
 ```
+1. Install test dependencies
+```sh
+pip install -r ./requirements-tests.txt
+```
+1. If you want to be able to invoke the agent as a cli command, install the package:
+```sh
+pip install -e .
+```
+You can now use `borgy_process_agent` while your virtualenv is active.
 
 ## Build
 
 The project uses deployzor to build and distrib the process agent.
-
 
 To build pip package:
 ```
@@ -151,18 +97,15 @@ make package.build.process-agent package.distrib.process-agent
 
 ### Testing
 
-In a virtual env, do the following:
+Make sure tests dependencies are installed first.
+Run the following for the full test suite, including coverage:
 
 ```sh
 # Unit tests using the generated tests
-pip install -r requirements.txt
-pip install -r requirements-tests.txt
-
 make test
-
-# Full test - All python versions
-make test.full
 ```
+You can view an HTML version of the coverage report by opening the `index.html` file in the
+coverage_html directory that will be generated after the tests have run.
 
 ### Releasing
 
@@ -179,3 +122,6 @@ release the package through drone. Release notes will be added to the repo on gi
 a source distribution will be made available in:
 
 https://distrib.borgy.elementai.net/python/borgy-process-agent/
+
+
+![Process agent schema](./docs/process-agent.png)
