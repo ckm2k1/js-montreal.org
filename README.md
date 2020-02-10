@@ -125,6 +125,3 @@ release the package through drone. Release notes will be added to the repo on gi
 a source distribution will be made available in:
 
 https://distrib.borgy.elementai.net/python/borgy-process-agent/
-
-
-![Process agent schema](./docs/process-agent.png)

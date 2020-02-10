@@ -8,6 +8,8 @@ The agent can be thought of as a kind of process manager, starting, observing an
 updates to the user about the status of each job. At the same time it also acts like a mini-dashboard,
 used see the current state of your jobs, like the Task Manager in Windows or the Activity Monitor in OSX.
 
+![Process agent schema](./docs/process-agent.png)
+
 
 ## Basic usage
 Let's walk through a simple usecase to get a sense of how the agent works.
