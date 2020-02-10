@@ -107,11 +107,10 @@ used to start up the process agent. The first bit is self-explanatory, but note 
 framework where to find your usercode, and since we already have it mounted for us by the `-H` flag above, there's
 nothing else we need to do.
 
-![Sample output](./docs/running_agent.png)
-
 Once you run this command you'll get a UUID back from the CLI with your process agent's job id. Copy this somewhere
 as we'll be using it right away to get some information about the agent and it's child jobs.
 
+![Sample output](./docs/running_agent.png)
 
 A nifty feature of the agent is a small monitoring UI we can use to see the progress of our jobs rather
 than being forced to use the `borgy ps` command and filtering it down.
