@@ -107,6 +107,8 @@ used to start up the process agent. The first bit is self-explanatory, but note 
 framework where to find your usercode, and since we already have it mounted for us by the `-H` flag above, there's
 nothing else we need to do.
 
+![Sample output](./docs/running_agent.png)
+
 Once you run this command you'll get a UUID back from the CLI with your process agent's job id. Copy this somewhere
 as we'll be using it right away to get some information about the agent and it's child jobs.
 
@@ -119,11 +121,15 @@ run this command: `borgy info $agent_job_id | grep 'ip:'`
 You won't have any output until the agent job itself is running so just repeat this command until you get an
 ip address.
 
+![Out from info command without the grep](./docs/agent_ip.png)
+
 Once you have it, open this url in a browser: http://my.agent.ip.addr:8666 (The port has to be 8666)
 You should be able to see a table listing some of your jobs and their current state. The page will
 auto-update itself as new jobs are submitted, run and terminate. You can use this page with any agent
 until the agent terminates. You'll get a browser alert when the agent disconnects from the browser,
 most likely meaning everything finished, but possibly due an error that caused the agent to crash.
+
+![Agent monitor](./docs/agent_monitor.png)
 
 Extras:
 1. You can follow some of the agent's internal machinery by looking at it's logs using `borgy logs -f agent_job_id `
