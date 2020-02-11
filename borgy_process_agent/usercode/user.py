@@ -8,8 +8,7 @@ logger = logging.getLogger('user_logger')
 base_job: dict = {
     'image': 'ubuntu:18.04',
     'command': [
-        'bash', '-c',
-        'rand=`shuf -i 0-10 -n 1`; if [[ $rand -gt 0 ]]; then echo '
+        'bash', '-c', 'rand=`shuf -i 0-10 -n 1`; if [[ $rand -gt 0 ]]; then echo '
         '"oh yeah $rand"; sleep 15; echo "DONE"; else echo "FAILED with $rand"; exit 1; fi;'
     ],
     'preemptable': True,
@@ -27,13 +26,7 @@ jobs = deque([copy.deepcopy(base_job) for i in range(50)])
 
 async def user_update(agent, jobs):
     for job in jobs:
-        # if job.index == 5 and job.is_finished() and len(job.get_runs()) < 2:
-        #     agent.rerun_job(job)
-
         logger.debug('Updating job %s -- %s', job.index, job.state)
-        # if not job.index % 5:
-        #     logger.debug('*********KILLING JOB***********: %s -- %s', job.index, job.jid)
-        #     agent.kill_job(job)
 
 
 async def user_create(agent):

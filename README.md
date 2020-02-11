@@ -43,7 +43,7 @@ Finally, it is also possible to install from our private pypi repository:
 pip install --extra-index-url https://pypi.elmt.io/repo/eai-core borgy-process-agent==[version]
 ```
 
-### Setuptools
+### Installing locally with Setuptools
 
 Install via [Setuptools](https://pypi.python.org/pypi/setuptools).
 
@@ -51,6 +51,46 @@ Install via [Setuptools](https://pypi.python.org/pypi/setuptools).
 python setup.py install --user
 ```
 (or `sudo python setup.py install` to install the package for all users)
+
+### Commandline Flags
+When using the pre-built agent docker image or having installed locally, the agent
+can be invoked as a commandline utility with the following: `borgy_process_cli --some --flags`.
+
+```text
+usage: borgy_process_agent [-h] [-d {auto,ork,docker}] [-c CODE] [-v]
+                           [--api_host API_HOST] [--api_port API_PORT] [-k]
+                           [--disable-auto-rerun] [--integration-tests]
+                           [-s MAX_RUNNING]
+
+Ork Process Agent
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -d {auto,ork,docker}, --driver {auto,ork,docker}
+                        Specify the driver type, ork, docker or auto (default:
+                        auto)
+  -c CODE, --code CODE  Absolute path to a module or file exposing 2 callbacks
+                        to be used by the process agent. The functions must be
+                        named user_create and user_update. (default:
+                        borgy_process_agent/usercode/user.py)
+  -v, --verbose         Turn on _very_ verbose debug mode. (default: False)
+  --api_host API_HOST   Host address to use for the PA api server. This flag
+                        should normally only be used in Docker mode. (default:
+                        0.0.0.0)
+  --api_port API_PORT   Port to use for the PA api server. This flag should
+                        normally only be used in Docker mode. (default: 8666)
+  -k, --keep-alive      Keep the API server alive after all jobs complete.
+                        Allows to keep using the UI for exploring jobs.
+                        (default: False)
+  --disable-auto-rerun  Do not automatically rerun INTERRUPTED jobs. (default:
+                        False)
+  --integration-tests   Special flag to be used only by borgy integration
+                        tests. Forces the usercode to
+                        usercode/integration_tests.py (default: False)
+  -s MAX_RUNNING, --max-running MAX_RUNNING
+                        Maximum number of jobs to allow running in parallel in
+                        the cluster. Defaults to 500. (default: 500)
+```
 
 ## Contributing
 
@@ -86,17 +126,11 @@ You can now use `borgy_process_agent` while your virtualenv is active.
 
 The project uses deployzor to build and distrib the process agent.
 
-To build pip package:
-```
-make
-```
-
 To simulate the distribution of the pip packages locally:
 ```
 export DEPLOYZOR_DISTRIB_BASE=./distrib
 make package.build.process-agent package.distrib.process-agent
 ```
-
 
 ### Testing
 

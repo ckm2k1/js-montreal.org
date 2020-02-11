@@ -87,7 +87,7 @@ class Agent():
         # We also check for queue.empty() because
         # we want to be sure all update() actions have been
         # processed before deciding we're really done.
-        # CREATE actions are prevented from being queue'd
+        # Create actions are prevented from being queue'd
         # once usercode reports .has_more() == false.
         return self.finished and self.jobs.all_done() and self._queue.empty()
 
@@ -221,7 +221,7 @@ class Agent():
                     if self.shutdown or self._can_shutdown():
                         break
                 except asyncio.CancelledError:
-                    logger.debug('Exiting agent due to CancelledError.')
+                    logger.debug('Agent coroutine was cancelled.')
                     break
         finally:
             if callable(self._done_callback):

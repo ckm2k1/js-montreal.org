@@ -45,7 +45,6 @@ def user_update(agent, jobs):
     for job in jobs:
         logger.info("{}: {} {}".format(iteration, job.jid, job.state))
 
-    # jobs = list(agent.get_jobs().values())
     if job_idx_to_kill > -1:
         job = agent.get_by_index(job_idx_to_kill)
         if job and job.is_acked():

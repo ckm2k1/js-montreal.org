@@ -19,7 +19,8 @@ class Runner(BaseRunner):
                  poll_interval=3,
                  **kwargs):
         super().__init__(jid, user, **kwargs)
-        logger.info(f'Starting Docker PA for {user} -- {jid}')
+        logger.info('Running in Docker mode.')
+        logger.info(f'Starting PA for {user} -- {jid}')
         self._dockergov = DockerGovernor()
         self._poll_interval = poll_interval
 

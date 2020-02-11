@@ -8,8 +8,7 @@ The agent can be thought of as a kind of process manager, starting, observing an
 updates to the user about the status of each job. At the same time it also acts like a mini-dashboard,
 used see the current state of your jobs, like the Task Manager in Windows or the Activity Monitor in OSX.
 
-![Process agent schema](./docs/process-agent.png)
-
+![Process agent schema](./docs/agent_arch.png)
 
 ## Basic usage
 Let's walk through a simple usecase to get a sense of how the agent works.
@@ -133,6 +132,7 @@ most likely meaning everything finished, but possibly due an error that caused t
 ![Agent monitor](./docs/agent_monitor.png)
 
 Extras:
+
 1. You can follow some of the agent's internal machinery by looking at it's logs using `borgy logs -f agent_job_id `
 1. You can use `borgy help pa submit` for a full list of options to the `pa submit` command.
 1. You can still use the normal `borgy ps` command to see both your agent and all of it's child jobs.

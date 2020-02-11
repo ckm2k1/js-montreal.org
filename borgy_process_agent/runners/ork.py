@@ -14,7 +14,8 @@ class Runner(BaseRunner):
     def __init__(self, *args, **kwargs):
         jid = env.get('EAI_JOB_ID')
         user = env.get('EAI_USER')
-        logger.info(f'Starting Ork PA for {user} -- {jid}')
+        logger.info('Running in Ork mode.')
+        logger.info(f'Starting PA for {user} -- {jid}')
         if not jid or not user:
             raise RuntimeError('Missing job id or user. The Ork runner '
                                'should generally be run in the Ork cluster.')

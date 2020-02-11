@@ -8,7 +8,8 @@ from borgy_process_agent.runners.base import BaseRunner
 
 env = Env()
 
-parser = argparse.ArgumentParser(description='Ork Process Agent')
+parser = argparse.ArgumentParser(description='Ork Process Agent',
+                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-d',
                     '--driver',
                     type=str,
@@ -31,12 +32,12 @@ parser.add_argument('--api_host',
                     type=str,
                     default='0.0.0.0',
                     help='Host address to use for the PA api server. '
-                    'Unless really needed this should be kept to the default.')
+                    'This flag should normally only be used in Docker mode.')
 parser.add_argument('--api_port',
                     type=int,
                     default=8666,
                     help='Port to use for the PA api server. '
-                    'Unless really needed this should be kept to the default.')
+                    'This flag should normally only be used in Docker mode.')
 parser.add_argument('-k',
                     '--keep-alive',
                     action='store_true',
@@ -56,9 +57,8 @@ parser.add_argument('-s',
                     '--max-running',
                     type=int,
                     default=500,
-                    help='Maximum number of jobs to allow running in parallel in the cluster.'
-                    'Defaults to 500.')
-
+                    help='Maximum number of jobs to allow running in parallel '
+                    'in the cluster.')
 
 def import_runner(module):
     return importlib.import_module(f'borgy_process_agent.runners.{module}').Runner
@@ -67,9 +67,9 @@ def import_runner(module):
 def main():
     args = parser.parse_args()
 
-    debug = env.get_bool('PA_DEBUG', default=args.verbose)
-    api_host = env.get('PA_API_HOST', default=args.api_host)
-    api_port = env.get_int('PA_API_PORT', default=args.api_port)
+    debug: bool = env.get_bool('PA_DEBUG', default=args.verbose)
+    api_host: str = env.get('PA_API_HOST', default=args.api_host)
+    api_port: int = env.get_int('PA_API_PORT', default=args.api_port)
 
     logger = configure(debug=debug)
     runner_name = args.driver
@@ -80,11 +80,11 @@ def main():
             runner_name = 'docker'
 
     Runner: BaseRunner = import_runner(runner_name)
-    usercode_path = ('borgy_process_agent/usercode/integration_tests.py'
-                     if args.integration_tests else args.code)
+    usercode_path: str = ('borgy_process_agent/usercode/integration_tests.py'
+                          if args.integration_tests else args.code)
     usercode = load_module_from_path(usercode_path)
     logger.info('Loading user code module: %s', usercode_path)
-    auto_rerun = not args.disable_auto_rerun
+    auto_rerun: bool = not args.disable_auto_rerun
     runner = Runner(api_host=api_host,
                     api_port=api_port,
                     debug=debug,
