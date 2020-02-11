@@ -1,12 +1,23 @@
 import os
 import argparse
 import importlib
+from functools import partial
 
 from borgy_process_agent.utils import Env, load_module_from_path
 from borgy_process_agent.logger import configure
 from borgy_process_agent.runners.base import BaseRunner
 
 env = Env()
+
+
+def check_min_max(min, max, value):
+    ivalue = int(value)
+    if ivalue < min:
+        raise argparse.ArgumentTypeError(f'Argument must be greater than {min}.')
+    if ivalue > max:
+        raise argparse.ArgumentTypeError(f'Argument must be less than {max}.')
+    return ivalue
+
 
 parser = argparse.ArgumentParser(description='Ork Process Agent',
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -28,13 +39,13 @@ parser.add_argument('-v',
                     action='store_true',
                     default=False,
                     help='Turn on _very_ verbose debug mode.')
-parser.add_argument('--api_host',
+parser.add_argument('--api-host',
                     type=str,
                     default='0.0.0.0',
                     help='Host address to use for the PA api server. '
                     'This flag should normally only be used in Docker mode.')
-parser.add_argument('--api_port',
-                    type=int,
+parser.add_argument('--api-port',
+                    type=partial(check_min_max, 1024, 65535),
                     default=8666,
                     help='Port to use for the PA api server. '
                     'This flag should normally only be used in Docker mode.')
@@ -55,10 +66,16 @@ parser.add_argument('--integration-tests',
                     'Forces the usercode to usercode/integration_tests.py')
 parser.add_argument('-s',
                     '--max-running',
-                    type=int,
+                    type=partial(check_min_max, 1, 1000),
                     default=500,
                     help='Maximum number of jobs to allow running in parallel '
                     'in the cluster.')
+parser.add_argument('-m',
+                    '--max-submit',
+                    type=partial(check_min_max, 0, 100),
+                    default=100,
+                    help='Maximum number of jobs to submit in a single batch.')
+
 
 def import_runner(module):
     return importlib.import_module(f'borgy_process_agent.runners.{module}').Runner
@@ -88,8 +105,9 @@ def main():
     runner = Runner(api_host=api_host,
                     api_port=api_port,
                     debug=debug,
-                    keep_alive=args.keep_alive,
                     max_running=args.max_running,
+                    # keep_alive=args.keep_alive,
+                    # max_submit=args.max_submit,
                     auto_rerun=auto_rerun)
     runner.register_callback('create', usercode.user_create)
     runner.register_callback('update', usercode.user_update)

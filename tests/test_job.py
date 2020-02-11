@@ -69,6 +69,7 @@ class TestJob:
         assert job.is_failed() is False
         assert job.is_acked() is False
         assert job.is_interrupted() is False
+        assert job.is_successful() is False
         assert job.has_changed('state') is False
         assert len(job.get_runs()) == 0
 

@@ -4,7 +4,7 @@ import pytest
 import aiohttp
 from aiohttp.test_utils import TestClient
 
-from borgy_process_agent.simple_server import server
+from borgy_process_agent import server
 from borgy_process_agent.typedefs import EventLoop
 from borgy_process_agent.action import Action
 
@@ -143,3 +143,26 @@ class TestSimpleServer:
                         assert False, msg.data
 
             client.app['agent'].get_stats.assert_called_once()
+
+    async def test_socket_client_update(self, agent, client: TestClient, loop: EventLoop):
+        client = await client
+        payloads = [{'a': 'b'}, {'kill': 'it'}]
+        with patch.object(client.app['agent'], 'get_stats', side_effect=payloads, create=True):
+            async with client.ws_connect('/ws') as ws:
+                await ws.send_str('gimme stats')
+                async for msg in ws:
+                    if msg.type == aiohttp.WSMsgType.TEXT:
+                        data = msg.json()
+                        if 'kill' in data:
+                            await client.app.shutdown()
+                            await client.app.cleanup()
+                        else:
+                            assert data == {"a": "b"}
+                            loop.create_task(client.app['events'].send())
+                        # Manual shutdown since we're not using the server.run()
+                        # method which means noone's listening on the shutdown
+                        # async event.
+                    elif msg.type == aiohttp.WSMsgType.ERROR:
+                        assert False, msg.data
+
+            assert client.app['agent'].get_stats.call_count == 2

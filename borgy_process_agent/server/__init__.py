@@ -63,7 +63,7 @@ async def websocket_handler(request: web.Request):
             logger.exception('socket connection closed with exception %s', socket.exception())
             break
 
-    if not socket.closed:
+    if not socket.closed: # pragma: no branch
         await socket.close()
     del request.app['sockets'][sid]
 
@@ -134,7 +134,7 @@ async def _send_update_to_clients(fut: asyncio.Future = None):
         await fut
 
     for sock in app['sockets'].values():
-        if not sock.prepared:
+        if not sock.prepared: # pragma: no cover
             logger.warning('Unprepared socket!', sock)
             continue
         await sock.send_json(app['agent'].get_stats(), dumps=customdumps)  # type: ignore
@@ -142,7 +142,7 @@ async def _send_update_to_clients(fut: asyncio.Future = None):
 
 async def cleanup_handler(app):
     for socket in list(app['sockets'].values()):
-        if socket.prepared and not socket.closed:
+        if socket.prepared and not socket.closed: # pragma: no branch
             await socket.close()
     logger.debug('Closed all websockets.')
 
@@ -152,7 +152,7 @@ def init(agent: Agent, on_cleanup: UserCallback = None):
     static_path = pathlib.Path(__file__).parent / 'static'
 
     app = web.Application()
-    tmpl_loader = jinja2.PackageLoader('borgy_process_agent.simple_server', 'static')
+    tmpl_loader = jinja2.PackageLoader('borgy_process_agent.server', 'static')
     aiohttp_jinja2.setup(app, loader=tmpl_loader)
     app.router.add_static('/static/', path=static_path, name='static')
     app['agent']: Agent = agent  # type: ignore[misc] # noqa

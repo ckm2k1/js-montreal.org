@@ -9,6 +9,9 @@ DPZ_PROJECT=borgy
 test:
 	@tox -e 'py37'
 
+test.local:
+	pytest -sv --cov --cov-branch && coverage html
+
 test.full: test # backwards compat.
 
 flake8:
