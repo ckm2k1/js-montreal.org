@@ -36,6 +36,3 @@ class State(Enum):
 
     def is_acked(self):
         return self in [self.QUEUED, self.QUEUING, self.RUNNING, self.CANCELLING]
-
-    def is_failed(self):
-        return self in [self.QUEUED, self.QUEUING, self.RUNNING, self.CANCELLING]

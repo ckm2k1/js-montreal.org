@@ -11,13 +11,13 @@ logger = logging.getLogger(__name__)
 class BaseRunner():
 
     def __init__(self,
-                 pa_jid: str,
+                 pa_id: str,
                  pa_user: str,
                  debug: Optional[bool] = None,
                  api_host: str = '0.0.0.0',
                  api_port: int = 8666,
                  **kwargs):
-        self._pa_job_id = pa_jid
+        self._pa_id = pa_id
         self._pa_user = pa_user
         self._debug = debug
         self._api_host = api_host
@@ -34,7 +34,7 @@ class BaseRunner():
             self._loop.set_debug(debug)
 
     def init_agent(self):
-        return Agent(self._pa_job_id,
+        return Agent(self._pa_id,
                      self._pa_user,
                      self._loop,
                      debug=self._debug,
@@ -74,8 +74,6 @@ class BaseRunner():
             self._exc_exit = ex
             self.stop()
         finally:
-            # if not self._loop.is_closed():
-            #     self._loop.close()
             if self._exc_exit:
                 raise self._exc_exit
 

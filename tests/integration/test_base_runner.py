@@ -22,9 +22,17 @@ class MockGov:
 class TestBaseRunner:
 
     def test_start(self, loop: EventLoop):
-        runner = BaseRunner('pa_job_id', 'user')
+        runner = BaseRunner('pa_job_id', 'user', debug=True)
         runner.register_callback('create', lambda x: x)
         runner.register_callback('update', lambda x: x)
+
+        assert runner._pa_id == 'pa_job_id'
+        assert runner._pa_user == 'user'
+        assert runner._exc_exit is False
+        assert runner._api_host == '0.0.0.0'
+        assert runner._api_port == 8666
+        assert isinstance(runner._agent_opts, dict)
+        assert runner._loop.get_debug() is True
 
         loop.call_soon(runner.kill)
         runner.start()
@@ -80,3 +88,17 @@ class TestBaseRunner:
 
         loop.call_later(.5, runner.kill)
         runner.start()
+
+    @patch('borgy_process_agent.runners.docker.DockerGovernor', create=True)
+    def test_docker_stop_fail(self, gov, loop: EventLoop):
+        runner = DockerRunner()
+        runner.register_callback('create', lambda agent: [])
+        runner.register_callback('update', lambda agent, jobs: None)
+        exc = Exception('oh no')
+
+        with patch.object(runner._dockergov, 'stop', side_effect=exc):
+            with patch('logging.Logger.exception') as logmock:
+                loop.call_later(.5, runner.kill)
+                runner.start()
+                logmock.assert_called_once_with('Failed shutting down dockergov',
+                                                exc_info=exc)

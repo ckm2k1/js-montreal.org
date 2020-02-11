@@ -378,6 +378,13 @@ class TestDockerGov:
             gov._wait_till_ready()
             assert gov._health_api.v1_health_get.call_count == 4
 
+            # Cancel readiness when not running
+            gov._running = False
+            gov._wait_till_ready()
+            gov._running = True
+            # no change in call count.
+            assert gov._health_api.v1_health_get.call_count == 4
+
             # Complete fail the ready check
             health.reset_mock(side_effect=True)
             health.side_effect = [HealthCheck(is_ready=False) for i in range(21)]
