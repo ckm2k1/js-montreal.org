@@ -79,9 +79,6 @@ optional arguments:
                         0.0.0.0)
   --api_port API_PORT   Port to use for the PA api server. This flag should
                         normally only be used in Docker mode. (default: 8666)
-  -k, --keep-alive      Keep the API server alive after all jobs complete.
-                        Allows to keep using the UI for exploring jobs.
-                        (default: False)
   --disable-auto-rerun  Do not automatically rerun INTERRUPTED jobs. (default:
                         False)
   --integration-tests   Special flag to be used only by borgy integration

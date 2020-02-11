@@ -49,12 +49,6 @@ parser.add_argument('--api-port',
                     default=8666,
                     help='Port to use for the PA api server. '
                     'This flag should normally only be used in Docker mode.')
-parser.add_argument('-k',
-                    '--keep-alive',
-                    action='store_true',
-                    default=False,
-                    help='Keep the API server alive after all jobs complete. '
-                    'Allows to keep using the UI for exploring jobs.')
 parser.add_argument('--disable-auto-rerun',
                     action='store_true',
                     default=False,
@@ -106,7 +100,6 @@ def main():
                     api_port=api_port,
                     debug=debug,
                     max_running=args.max_running,
-                    # keep_alive=args.keep_alive,
                     # max_submit=args.max_submit,
                     auto_rerun=auto_rerun)
     runner.register_callback('create', usercode.user_create)
