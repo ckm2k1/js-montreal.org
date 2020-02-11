@@ -54,7 +54,7 @@ registry before it's usable in the cluster. (ex: images.borgy.elementai.net/mypr
 Next, we define the `user_create` function. This function will be called by the agent to submit new jobs to
 the cluster on your behalf. In the case above we only submit a single job at a time but we put it in an array
 because that's what the agent expects as the return value from `user_create`. We'll visit the `agent` argument
-passed into this function in a later section to see how it's used but for now it's not needed except that it has
+passed into this function in a later section (See: [Using Agent API](#using-the-agent-api-todo)) to see how it's used but for now it's not needed except that it has
 to be declared.
 
 ```python
@@ -136,3 +136,8 @@ Extras:
 1. You can follow some of the agent's internal machinery by looking at it's logs using `borgy logs -f agent_job_id `
 1. You can use `borgy help pa submit` for a full list of options to the `pa submit` command.
 1. You can still use the normal `borgy ps` command to see both your agent and all of it's child jobs.
+
+
+## Implementing user_update (TODO)
+## Using the Agent as a base Docker image (TODO)
+## Using the Agent API (TODO)
