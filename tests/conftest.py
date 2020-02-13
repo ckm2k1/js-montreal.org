@@ -1,16 +1,15 @@
 import uuid
 import json
 from typing import List
-from pathlib import Path
 
 import pytest
 
-from borgy_process_agent_api_server.models import JobSpec
 from borgy_process_agent.jobs import Jobs
+from borgy_process_agent.models import OrkSpec
 
 from tests.utils import make_spec, parent_dir
 
-SpecList = List[JobSpec]
+SpecList = List[OrkSpec]
 
 
 @pytest.fixture
@@ -25,14 +24,6 @@ def specs() -> SpecList:
 
 
 @pytest.fixture
-def existing_jobs() -> List:
-    fixtures = Path(__file__).absolute().parent / 'fixtures'
-    with open(fixtures / 'existing_jobs.json', 'r') as fp:
-        data = json.load(fp)
-    return data
-
-
-@pytest.fixture
 def fixture_loader():
 
     def load(path, **load_opts):
@@ -41,3 +32,8 @@ def fixture_loader():
         return data
 
     return load
+
+
+@pytest.fixture
+def existing_jobs(fixture_loader) -> List:
+    return fixture_loader('existing_jobs.json')

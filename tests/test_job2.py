@@ -4,9 +4,9 @@ from datetime import datetime, timezone
 
 import pytest
 
+from borgy_process_agent.job import Job
 from borgy_process_agent.models import OrkJob, EnvList
 from borgy_process_agent.enums import State, Restart
-from borgy_process_agent.job2 import Job
 
 UTC = timezone.utc
 fixed_dt = datetime(2020, 1, 1, 12, 0, 0, tzinfo=UTC)
@@ -21,9 +21,9 @@ def make_spec(**kwargs):
     return spec
 
 
-class TestJob2:
+class TestJob:
 
-    @patch('borgy_process_agent.job2.get_now', return_value=fixed_dt)
+    @patch('borgy_process_agent.job.get_now', return_value=fixed_dt)
     def test_init_from_new_spec(self, utcmock):
         job = Job.from_spec(1, 'user', 'parent', spec=make_spec())
 
@@ -55,7 +55,7 @@ class TestJob2:
             Job.from_spec(1, 'user', 'blah', make_spec(restart=Restart.ON_INTERRUPTION.value))
 
     @pytest.mark.parametrize('as_dict', [True, False])
-    @patch('borgy_process_agent.job2.get_now', return_value=fixed_dt)
+    @patch('borgy_process_agent.job.get_now', return_value=fixed_dt)
     def test_init_from_ork(self, utcmock, fixture_loader, as_dict):
         ojdict = fixture_loader('ork_job.json')
         if as_dict:
@@ -100,7 +100,7 @@ class TestJob2:
             ojdict['environmentVars'] = env.to_list()
             Job.from_ork(ojdict)
 
-    @patch('borgy_process_agent.job2.get_now', return_value=fixed_dt)
+    @patch('borgy_process_agent.job.get_now', return_value=fixed_dt)
     def test_update_from(self, utcmock, fixture_loader):
         ojdict = fixture_loader('ork_job.json')
         spec = {
@@ -223,7 +223,7 @@ class TestJob2:
         # Makes sure we output OrkSpec and not OrkJob.
         assert not hasattr(exp, 'runs')
 
-    @patch('borgy_process_agent.job2.get_now', return_value=fixed_dt)
+    @patch('borgy_process_agent.job.get_now', return_value=fixed_dt)
     def test_to_dict(self, utcmock):
         spec = make_spec()
         job = Job.from_spec(1, 'user', 'blah', spec=spec)

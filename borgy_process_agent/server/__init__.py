@@ -9,10 +9,9 @@ from functools import partial
 import jinja2
 import aiohttp_jinja2
 from aiohttp import web, Signal, WSMsgType
+
 from borgy_process_agent.utils import ComplexEncoder
 from borgy_process_agent.agent import Agent
-
-# from borgy_process_agent_api_server.models import HealthCheck
 
 logger = logging.getLogger(__name__)
 

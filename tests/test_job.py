@@ -3,7 +3,7 @@ import pytest
 
 from borgy_process_agent_api_server.models import JobSpec, Job as OrkJob
 
-from borgy_process_agent.job import Job, State, Restart
+from borgy_process_agent.job1 import Job, State, Restart
 
 from tests.utils import make_spec, MockJob
 

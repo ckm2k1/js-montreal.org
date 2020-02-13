@@ -1,6 +1,6 @@
 import pytest
 
-from borgy_process_agent.models import OrkJob, OrkSpec, OrkJobRuns, EnvList
+from borgy_process_agent.models import OrkJob, OrkSpec, OrkJobRuns, OrkJobsOps, EnvList
 
 
 def make_spec(**kwargs):
@@ -14,7 +14,7 @@ def make_spec(**kwargs):
 
 class TestModels:
 
-    @pytest.mark.parametrize('klass', [OrkJob, OrkSpec, OrkJobRuns])
+    @pytest.mark.parametrize('klass', [OrkJob, OrkSpec, OrkJobRuns, OrkJobsOps])
     def test_json_serialize(self, klass):
         inst = klass()
         js = inst.to_json()

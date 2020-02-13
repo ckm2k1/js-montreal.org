@@ -2,17 +2,16 @@ import asyncio
 import logging
 from typing import List, Mapping, Callable, Optional, Any, Tuple, Awaitable
 
-from borgy_process_agent_api_server.models import Job as OrkJob, JobSpec, JobsOps  # type: ignore
-
 from borgy_process_agent.job import Job
 from borgy_process_agent.jobs import Jobs
 from borgy_process_agent.action import Action, ActionType
 from borgy_process_agent.utils import Indexer, ensure_coroutine
 from borgy_process_agent.typedefs import EventLoop
+from borgy_process_agent.models import OrkJob, OrkSpec, OrkJobsOps
 
 logger = logging.getLogger(__name__)
 
-JobSpecList = List[JobSpec]
+JobSpecList = List[OrkSpec]
 CreateCallback = Callable[[Jobs], Awaitable[JobSpecList]]
 UpdateCallback = Callable[[Jobs, List[Job]], Awaitable]
 DoneCallback = Callable[[Jobs], Awaitable]
@@ -162,14 +161,14 @@ class Agent():
 
     def submit_pending_jobs(self) -> Mapping:
         if self._usercode_running():
-            return JobsOps(submit=[], rerun=[], kill=[]).to_dict()
+            return OrkJobsOps(submit=[], rerun=[], kill=[]).to_dict()
 
-        ops = JobsOps(submit=[j.to_spec() for j in self.jobs.submit_pending()],
-                      rerun=[j.jid for j in self.jobs.submit_reruns()],
-                      kill=[j.jid for j in self.jobs.submit_kills()])
+        ops = OrkJobsOps(submit=[j.to_spec() for j in self.jobs.submit_pending()],
+                         rerun=[j.jid for j in self.jobs.submit_reruns()],
+                         kill=[j.jid for j in self.jobs.submit_kills()])
         return ops.to_dict()
 
-    def create_jobs(self) -> Tuple[JobsOps, Action]:
+    def create_jobs(self) -> Tuple[OrkJobsOps, Action]:
         job_ops = self.submit_pending_jobs()
         action = self.push_action(ActionType.create)
         return job_ops, action

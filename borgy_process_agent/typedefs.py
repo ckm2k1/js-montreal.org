@@ -6,3 +6,6 @@ EventLoop = asyncio.AbstractEventLoop
 Datetime = datetime
 Dict = MutableMapping
 Map = Mapping
+JobDict = MutableMapping
+OrkSpecDict = MutableMapping
+OrkJobDict = MutableMapping

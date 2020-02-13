@@ -30,6 +30,10 @@ class OrkSpec(JobSpec, JsonSerializable):
     pass
 
 
+class OrkJobsOps(JobSpec, JsonSerializable):
+    pass
+
+
 class OrkJobRuns(JobRuns, JsonSerializable):
     pass
 
@@ -60,14 +64,8 @@ class EnvList(UserDict):
         return res
 
     def to_list(self):
-        return [f'{k}={v if v else ""}' for k, v in self.items()]
+        return [f'{k}={v if v is not None else ""}' for k, v in self.items()]
 
-
-# def ork_to_spec(oj: OrkJob) -> OrkSpec:
-#     spec = {}
-#     for k in spec.attribute_map:
-#         spec[k] = getattr(oj, k)
-#     return OrkSpec(**spec)
 
 JOB_SPEC_DEFAULTS = {
     'command': [],

@@ -5,9 +5,9 @@ import asyncio
 from unittest.mock import patch, Mock
 from typing import List, Mapping
 
-from borgy_process_agent_api_server.models import JobsOps
 from borgy_process_agent.agent import Agent
 from borgy_process_agent.typedefs import EventLoop
+from borgy_process_agent.models import OrkJobsOps
 
 from tests.utils import make_spec, AsyncMock, MockJob
 
@@ -56,7 +56,6 @@ def agent(event_loop: EventLoop):
     cb_mocks.stop()
 
 
-@pytest.mark.usefixtures('specs')
 class TestAgent:
 
     @pytest.mark.asyncio
@@ -85,7 +84,7 @@ class TestAgent:
         assert agent.finished is False
         assert agent.jobs.has_pending()
 
-        ops = JobsOps.from_dict(agent.create_jobs()[0])
+        ops = OrkJobsOps.from_dict(agent.create_jobs()[0])
         assert len(ops.submit) == 10
         assert len(agent.jobs.get_submitted()) == 10
         assert agent._queue.empty()
@@ -111,7 +110,7 @@ class TestAgent:
         assert len(agent.jobs.get_pending()) == 10
 
         opsdict, _ = agent.create_jobs()
-        ops = JobsOps.from_dict(opsdict)
+        ops = OrkJobsOps.from_dict(opsdict)
         assert len(ops.submit) == 3
         assert len(agent.jobs.get_submitted()) == 3
 
@@ -121,7 +120,7 @@ class TestAgent:
         await agent._process_action()
 
         opsdict, _ = agent.create_jobs()
-        ops = JobsOps.from_dict(opsdict)
+        ops = OrkJobsOps.from_dict(opsdict)
         # Since we have 3 running jobs, ops
         # will not have any new submissions.
         assert len(ops.submit) == 0
@@ -135,7 +134,7 @@ class TestAgent:
         await agent._process_action()
 
         opsdict, _ = agent.create_jobs()
-        ops = JobsOps.from_dict(opsdict)
+        ops = OrkJobsOps.from_dict(opsdict)
         assert len(ops.submit) == 2
         assert len(agent.jobs.get_pending()) == 5
         assert len(agent.jobs.get_submitted()) == 2

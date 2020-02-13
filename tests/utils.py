@@ -2,34 +2,23 @@ import uuid
 import copy
 import enum
 import inspect
+from pathlib import Path
 from unittest.mock import Mock
 from typing import Mapping, List
 
-from borgy_process_agent_api_server.models import Job as OrkJob, JobSpec
-from borgy_process_agent_api_server.models.base_model_ import Model
-
 from borgy_process_agent.job import Job
-from borgy_process_agent.enums import Restart
+from borgy_process_agent.models import OrkJob, OrkSpec, JOB_SPEC_DEFAULTS, EnvList
+from borgy_process_agent.enums import Restart, State
 from borgy_process_agent.utils import get_now_isoformat, Indexer
 
-SPEC_DEFAULTS = {
+SPEC_DEFAULTS = copy.deepcopy(JOB_SPEC_DEFAULTS)
+SPEC_DEFAULTS.update({
     'command': ['bash', '-c', 'sleep 10'],
-    'name': '',
     'createdBy': '',
-    'environmentVars': [],
-    'interactive': False,
-    'labels': [],
-    'maxRunTimeSecs': 0,
-    'options': {},
-    'preemptable': False,
-    'reqCores': 1,
-    'reqGpus': 0,
-    'reqRamGbytes': 1,
-    'restart': Restart.NO.value,
-    'stdin': False,
-    'volumes': [],
-    'workdir': ''
-}
+    'name': '',
+    'workdir': '',
+    'billCode': '',
+})
 
 
 class MockJob():
@@ -41,9 +30,12 @@ class MockJob():
             'alive': False,
             'billCode': '',
             'command': [],
-            'createdBy': 'guillaume.smaha@elementai.com',
+            'createdBy': 'user@elementai.com',
             'createdOn': get_now_isoformat(),
-            'environmentVars': [f'EAI_PROCESS_AGENT_INDEX={self._idx.next()}'],
+            'environmentVars': [
+                'EAI_PROCESS_AGENT=12341234-1234-1234-1234-123456789012',
+                f'EAI_PROCESS_AGENT_INDEX={self._idx.next()}',
+            ],
             'evictOthersIfNeeded': False,
             'image': 'images.borgy.elementai.net/borgy/borsh:latest',
             'id': job_id,
@@ -62,12 +54,12 @@ class MockJob():
                 'id': str(uuid.uuid4()),
                 'jobId': job_id,
                 'createdOn': get_now_isoformat(),
-                'state': 'QUEUING',
+                'state': State.QUEUING.value,
                 'info': {},
                 'ip': '127.0.0.1',
                 'nodeName': 'local',
             }],
-            'state': 'QUEUING',
+            'state': State.QUEUING.value,
             'stateInfo': '',
             'stdin': False,
             'volumes': [],
@@ -79,80 +71,45 @@ class MockJob():
             self._job['runs'][0]['state'] = kwargs['state']
 
         for k, v in kwargs.items():
-            self._job[k] = v
+            if k == 'environmentVars':
+                self._job[k] = self._merge_env(self._job[k], v or [])
+            else:
+                self._job[k] = v
 
         if index is not None:
             self._set_index(index)
 
-    def get(self):
+    def get(self) -> dict:
         return self._job
 
-    def _set_index(self, index):
-        for var in self._job['environmentVars']:
-            if var.startswith('EAI_PROCESS_AGENT_INDEX='):
-                self._job['environmentVars'].remove(var)
-                break
-        self._job['environmentVars'].append(f"EAI_PROCESS_AGENT_INDEX={index}")
+    def _merge_env(self, local, overrides):
+        local = EnvList(local)
+        overrides = EnvList(overrides)
+        local.update(overrides)
+        return local.to_list()
 
-    def get_job(self):
-        return OrkJob.from_dict(self._job)
+    def _set_index(self, index: int):
+        env = EnvList(self._job['environmentVars'])
+        env['EAI_PROCESS_AGENT_INDEX'] = index
+        self._job['environmentVars'] = env.to_list()
 
-    def get_spec(self):
-        return Job.spec_from_ork_job(self.get_job())
-
-    def __contains__(self, key):
-        return key in self._job
-
-    def __getitem__(self, key):
-        return self._job[key]
-
-    def __setitem__(self, key, value):
-        self._job[key] = value
-
-    def __delitem__(self, key):
-        del self._job[key]
-
-    def __len__(self):
-        return len(self._job)
-
-    def __iter__(self):
-        return iter(self._job)
-
-    def __reversed__(self):
-        return reversed(self._job)
-
-    def __repr__(self):
-        return repr(self._job)
-
-    def __getstate__(self):
-        return self._job
-
-    def __setstate__(self, job):
-        self._job = job
+    def get_job(self) -> OrkJob:
+        return OrkJob.from_json(self._job)
 
 
-def model_to_json(model: Model) -> Mapping:
-    mdict = model.to_dict()
-    out = {}
-    for k, v in mdict.items():
-        out[model.attribute_map[k]] = v
-    return out
-
-
-def make_spec(*args, **kwargs) -> JobSpec:
+def make_spec(*args, **kwargs) -> OrkSpec:
     spec = copy.deepcopy(SPEC_DEFAULTS)
     spec.update(kwargs)
-    return JobSpec.from_dict(spec)
+    return OrkSpec.from_json(spec)
 
 
-def mock_job_from_job(job: OrkJob, **updates) -> MockJob:
-    spec = model_to_json(job.spec)
-    spec.update(updates)
-    return MockJob(index=job.index, **spec)
+def mock_job_from_job(job: Job, **updates) -> MockJob:
+    oj = job.to_spec().to_json()
+    oj.update(updates)
+    return MockJob(index=job.index, **oj)
 
 
-def parent_dir(path):
-    from pathlib import Path
+def parent_dir(path) -> Path:
     return Path(path).absolute().parent
 
 

@@ -1,10 +1,9 @@
 from pprint import pformat
 from typing import Optional, List, Mapping, Set, MutableMapping
 
-from borgy_process_agent_api_server.models import Job as OrkJob, JobSpec  # type: ignore
-
 from borgy_process_agent.job import Job
 from borgy_process_agent.enums import State
+from borgy_process_agent.models import OrkSpec
 from borgy_process_agent.utils import Indexer, DeepChainMap, taketimes
 
 JobMap = MutableMapping[int, Job]
@@ -175,41 +174,37 @@ class Jobs:
                           stats['failed'] + stats['cancelled'])
         return stats
 
-    def create(self, new_jobs: Optional[List[JobSpec]]):
+    def create(self, new_jobs: Optional[List[Mapping]]):
         if new_jobs is None:
             self._has_more_new_jobs = False
             return
 
         for j in new_jobs:
-            job = Job(self._idx.next(),
-                      self._user,
-                      pa_id=self._pa_id,
-                      spec=j,
-                      name_prefix=self._job_name_prefix)
+            job = Job.from_spec(self._idx.next(),
+                                self._user,
+                                self._pa_id,
+                                spec=j,
+                                name_prefix=self._job_name_prefix)
             if job.index in self._all_jobs:
                 continue
             else:
                 self._pending_jobs[job.index] = job
 
-    def _update_job(self, oj: OrkJob) -> Job:
-        index: int = Job.get_index(oj)
+    def _update_job(self, new_job: Job) -> Job:
+        index = new_job.index
         job: Optional[Job] = self._all_jobs.get(index)
 
         # The PA was restarted most likely (or governor) and we're
         # receiving updates for running jobs that are running in
         # the cluster but don't exist in our internal state yet.
         if job is None:
-            job = Job(index,
-                      self._user,
-                      self._pa_id,
-                      jid=oj.id,
-                      name_prefix=self._job_name_prefix,
-                      spec=Job.spec_from_ork_job(oj))
+            job = Job.from_spec(index, new_job.user, new_job.parent_id,
+                                new_job.to_spec().to_json())
             self._acked_jobs[index] = job
 
-        job.update_from_ork(oj)
+        job.update_from(new_job.ork_job)
         if job.has_changed('state'):
-            self._all_jobs.pop(index)
+            self._all_jobs.pop(index, None)
 
             # Getting an update for a rerun job
             # means the gov is dealing with it
@@ -240,7 +235,7 @@ class Jobs:
     def update(self, jobs: List[Mapping]) -> List[Job]:
         updated = []
         for oj in jobs:
-            job = self._update_job(OrkJob.from_dict(oj))
+            job = self._update_job(Job.from_ork(oj))
             # Is there no case where we don't have diff?
             # It's likely because why send updates for something
             # that didn't change?
