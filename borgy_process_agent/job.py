@@ -59,11 +59,16 @@ class Job:
         if not isinstance(oj, OrkJob):
             oj = OrkJob.from_dict(oj)
 
-        env = EnvList(oj.environment_vars)
-        index = int(env.get('EAI_PROCESS_AGENT_INDEX'))
-        parent_id = env.get('EAI_PROCESS_AGENT')
-        if index is None or not parent_id:
-            raise Exception('OrkJob does not have a valid index or agent id in it\'s environment.')
+        try:
+            env = EnvList(oj.environment_vars)
+            index = int(env.get('EAI_PROCESS_AGENT_INDEX'))
+            parent_id = env.get('EAI_PROCESS_AGENT')
+        except: # noqa
+            index = None
+        finally:
+            if index is None or not parent_id:
+                raise Exception('OrkJob does not have a valid index'
+                                ' or agent id in it\'s environment.')
 
         return cls(index, parent_id, ork_job=oj)
 
