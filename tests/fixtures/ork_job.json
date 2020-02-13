@@ -1,0 +1,45 @@
+{
+  "alive": false,
+  "billCode": "default",
+  "command": ["/bin/bash"],
+  "createdBy": "user@elementai.com",
+  "createdOn": "2019-05-09T19:45:36.879276+00:00",
+  "environmentVars": ["EAI_PROCESS_AGENT_INDEX=0", "EAI_PROCESS_AGENT=aaaabbbb-1234-1234-1234-aaabbbcccddd"],
+  "evictOthersIfNeeded": false,
+  "id": "ddddffff-1234-1234-1234-cccdddeeefff",
+  "image": "ubuntu:18.04",
+  "interactive": false,
+  "isProcessAgent": false,
+  "labels": [],
+  "maxRunTimeSecs": 0,
+  "name": "child-job-0",
+  "options": {},
+  "preemptable": true,
+  "reqCores": 1.2,
+  "reqGpus": 1,
+  "reqRamGbytes": 6,
+  "restart": "no",
+  "runs": [{
+    "createdOn": "2019-05-09T19:45:36.879276+00:00",
+    "endedOn": "2019-05-10T02:21:00+00:00",
+    "exitCode": 0,
+    "id": "12345678-1234-1234-1234-123456789012",
+    "info": {
+      "gpu_uuids": ["GPU-9e0ab4c3-2da0-a56a-0f68-087fc49478b0"],
+      "gpus": [
+        1
+      ]
+    },
+    "ip": "10.200.34.99",
+    "jobId": "ddddffff-1234-1234-1234-cccdddeeefff",
+    "nodeName": "dc1-8gpu-21",
+    "queuedOn": "2019-05-09T19:45:43.409909+00:00",
+    "startedOn": "2019-05-09T19:45:45+00:00",
+    "state": "RUNNING"
+  }],
+  "state": "RUNNING",
+  "stateInfo": "",
+  "stdin": false,
+  "volumes": [],
+  "workdir": ""
+}

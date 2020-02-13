@@ -31,7 +31,7 @@ class OrkSpec(JobSpec, JsonSerializable):
     pass
 
 
-class JobRuns(JobRuns, JsonSerializable):
+class OrkJobRuns(JobRuns, JsonSerializable):
     pass
 
 

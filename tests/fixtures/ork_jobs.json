@@ -1,0 +1,254 @@
+[
+  {
+    "alive": false,
+    "billCode": "default",
+    "command": [
+      "python3",
+      "-m",
+      "model.tadam",
+      "--log_dir=/logs",
+      "--number_of_steps=21000"
+    ],
+    "createdBy": "thomas@elementai.com",
+    "createdOn": "2019-05-09T19:45:36.879276+00:00",
+    "environmentVars": [
+      "EAI_PROCESS_AGENT_INDEX=0",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "SHK_TRIAL_ID=646174",
+      "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
+    ],
+    "evictOthersIfNeeded": false,
+    "id": "11f4d244-c5bb-4706-93c3-55b4abf7b2df",
+    "image": "images.borgy.elementai.net/tadam/tadam:de9f22b4c41c9105be1abdd2c9ca9560b85adb69",
+    "interactive": false,
+    "isProcessAgent": false,
+    "labels": [],
+    "maxRunTimeSecs": 0,
+    "name": "tadam-sgd-aixfe-646174",
+    "options": {},
+    "preemptable": true,
+    "reqCores": 1.2,
+    "reqGpus": 1,
+    "reqRamGbytes": 6,
+    "restart": "no",
+    "runs": [
+      {
+        "createdOn": "2019-05-09T19:45:36.879276+00:00",
+        "endedOn": "2019-05-10T02:21:00+00:00",
+        "exitCode": 0,
+        "id": "266c6ebf-2ac6-4d82-921f-b1e8bb8257ac",
+        "info": {
+          "gpu_uuids": [
+            "GPU-9e0ab4c3-2da0-a56a-0f68-087fc49478b0"
+          ],
+          "gpus": [
+            1
+          ]
+        },
+        "ip": "10.200.34.99",
+        "jobId": "11f4d244-c5bb-4706-93c3-55b4abf7b2df",
+        "nodeName": "dc1-8gpu-21",
+        "queuedOn": "2019-05-09T19:45:43.409909+00:00",
+        "startedOn": "2019-05-09T19:45:45+00:00",
+        "state": "SUCCEEDED"
+      }
+    ],
+    "state": "SUCCEEDED",
+    "stateInfo": "",
+    "stdin": false,
+    "volumes": [
+      "/mnt/datasets/public/:/data",
+      "/mnt/home/thomas/logs/tadam:/logs"
+    ],
+    "workdir": ""
+  },
+  {
+    "alive": false,
+    "billCode": "default",
+    "command": [
+      "python3",
+      "-m",
+      "model.tadam",
+      "--log_dir=/logs",
+      "--number_of_steps=21000"
+    ],
+    "createdBy": "thomas@elementai.com",
+    "createdOn": "2019-05-09T19:45:36.954862+00:00",
+    "environmentVars": [
+      "EAI_PROCESS_AGENT_INDEX=1",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "SHK_TRIAL_ID=646175",
+      "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
+    ],
+    "evictOthersIfNeeded": false,
+    "id": "0bee808d-8630-426d-be66-187b7aca1faa",
+    "image": "images.borgy.elementai.net/tadam/tadam:de9f22b4c41c9105be1abdd2c9ca9560b85adb69",
+    "interactive": false,
+    "isProcessAgent": false,
+    "labels": [],
+    "maxRunTimeSecs": 0,
+    "name": "tadam-sgd-aixfe-646175",
+    "options": {},
+    "preemptable": true,
+    "reqCores": 1.2,
+    "reqGpus": 1,
+    "reqRamGbytes": 6,
+    "restart": "no",
+    "runs": [
+      {
+        "createdOn": "2019-05-09T19:45:36.954862+00:00",
+        "endedOn": "2019-05-10T02:22:47+00:00",
+        "exitCode": 0,
+        "id": "b8d65855-7732-4e55-ad9d-cc82ddaff189",
+        "info": {
+          "gpu_uuids": [
+            "GPU-b8268b81-6a3b-6a2a-bf25-1837128b4cbf"
+          ],
+          "gpus": [
+            4
+          ]
+        },
+        "ip": "10.200.56.37",
+        "jobId": "0bee808d-8630-426d-be66-187b7aca1faa",
+        "nodeName": "dc1-8gpu-30",
+        "queuedOn": "2019-05-09T19:45:43.474861+00:00",
+        "startedOn": "2019-05-09T19:45:46+00:00",
+        "state": "SUCCEEDED"
+      }
+    ],
+    "state": "SUCCEEDED",
+    "stateInfo": "",
+    "stdin": false,
+    "volumes": [
+      "/mnt/datasets/public/:/data",
+      "/mnt/home/thomas/logs/tadam:/logs"
+    ],
+    "workdir": ""
+  },
+  {
+    "alive": false,
+    "billCode": "default",
+    "command": [
+      "python3",
+      "-m",
+      "model.tadam",
+      "--log_dir=/logs",
+      "--number_of_steps=21000"
+    ],
+    "createdBy": "thomas@elementai.com",
+    "createdOn": "2019-05-09T19:45:37.024634+00:00",
+    "environmentVars": [
+      "EAI_PROCESS_AGENT_INDEX=2",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "SHK_TRIAL_ID=646176",
+      "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
+    ],
+    "evictOthersIfNeeded": false,
+    "id": "8aee3ed5-11e4-45f7-a5a6-c2aaecbb1098",
+    "image": "images.borgy.elementai.net/tadam/tadam:de9f22b4c41c9105be1abdd2c9ca9560b85adb69",
+    "interactive": false,
+    "isProcessAgent": false,
+    "labels": [],
+    "maxRunTimeSecs": 0,
+    "name": "tadam-sgd-aixfe-646176",
+    "options": {},
+    "preemptable": true,
+    "reqCores": 1.2,
+    "reqGpus": 1,
+    "reqRamGbytes": 6,
+    "restart": "no",
+    "runs": [
+      {
+        "createdOn": "2019-05-09T19:45:37.024634+00:00",
+        "endedOn": "2019-05-10T02:22:56+00:00",
+        "exitCode": 0,
+        "id": "e98b425b-81db-4ea5-9263-2646c3971e35",
+        "info": {
+          "gpu_uuids": [
+            "GPU-0e381e37-016f-a928-6d30-3de82332b809"
+          ],
+          "gpus": [
+            2
+          ]
+        },
+        "ip": "10.200.72.146",
+        "jobId": "8aee3ed5-11e4-45f7-a5a6-c2aaecbb1098",
+        "nodeName": "dc1-8gpu-43",
+        "queuedOn": "2019-05-09T19:46:13.792015+00:00",
+        "startedOn": "2019-05-09T19:46:20+00:00",
+        "state": "SUCCEEDED"
+      }
+    ],
+    "state": "SUCCEEDED",
+    "stateInfo": "",
+    "stdin": false,
+    "volumes": [
+      "/mnt/datasets/public/:/data",
+      "/mnt/home/thomas/logs/tadam:/logs"
+    ],
+    "workdir": ""
+  },
+  {
+    "alive": false,
+    "billCode": "default",
+    "command": [
+      "python3",
+      "-m",
+      "model.tadam",
+      "--log_dir=/logs",
+      "--number_of_steps=21000"
+    ],
+    "createdBy": "thomas@elementai.com",
+    "createdOn": "2019-05-09T19:45:37.095269+00:00",
+    "environmentVars": [
+      "EAI_PROCESS_AGENT_INDEX=3",
+      "EAI_PROCESS_AGENT=d45e066c-3177-4a1d-b03c-cb196232d2a4",
+      "SHK_TRIAL_ID=646177",
+      "SHK_API_URL=http://shk-service.eai-shuriken-prod.svc.borgy-k8s.elementai.lan/api/v1"
+    ],
+    "evictOthersIfNeeded": false,
+    "id": "1235c582-8a91-4cc2-92aa-25fdf5b0ad6c",
+    "image": "images.borgy.elementai.net/tadam/tadam:de9f22b4c41c9105be1abdd2c9ca9560b85adb69",
+    "interactive": false,
+    "isProcessAgent": false,
+    "labels": [],
+    "maxRunTimeSecs": 0,
+    "name": "tadam-sgd-aixfe-646177",
+    "options": {},
+    "preemptable": true,
+    "reqCores": 1.2,
+    "reqGpus": 1,
+    "reqRamGbytes": 6,
+    "restart": "no",
+    "runs": [
+      {
+        "createdOn": "2019-05-09T19:45:37.095269+00:00",
+        "endedOn": "2019-05-10T02:17:45+00:00",
+        "exitCode": 0,
+        "id": "a941851e-05d6-4ccb-a0f3-de000c7fdfb5",
+        "info": {
+          "gpu_uuids": [
+            "GPU-79f01a27-f353-df5e-635c-8604bbfeef39"
+          ],
+          "gpus": [
+            3
+          ]
+        },
+        "ip": "10.200.117.233",
+        "jobId": "1235c582-8a91-4cc2-92aa-25fdf5b0ad6c",
+        "nodeName": "dc1-8gpu-64",
+        "queuedOn": "2019-05-09T19:46:13.857707+00:00",
+        "startedOn": "2019-05-09T19:47:44+00:00",
+        "state": "SUCCEEDED"
+      }
+    ],
+    "state": "SUCCEEDED",
+    "stateInfo": "",
+    "stdin": false,
+    "volumes": [
+      "/mnt/datasets/public/:/data",
+      "/mnt/home/thomas/logs/tadam:/logs"
+    ],
+    "workdir": ""
+  }
+]

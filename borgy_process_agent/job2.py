@@ -7,45 +7,26 @@ from dictdiffer import diff  # type: ignore
 from borgy_process_agent.utils import get_now
 from borgy_process_agent.typedefs import Datetime
 from borgy_process_agent.enums import State, Restart
-from borgy_process_agent.models import OrkJob, OrkSpec, EnvList, JOB_SPEC_DEFAULTS
+from borgy_process_agent.models import OrkJob, OrkSpec, OrkJobRuns, EnvList, JOB_SPEC_DEFAULTS
 
 DiffOp = namedtuple('diffop', ('op', 'prop', 'values'))
 
 
 class Job:
 
-    def __init__(self, index: int, parent_id: str, ork_job: Optional[OrkJob] = None):
+    def __init__(self, index: int, parent_id: str, ork_job: OrkJob):
         self.index = index
+        self.created = get_now()
         self.parent_id = parent_id
         self.state = State.PENDING
         self.updated: Optional[Datetime] = None
-        self._diff: List[DiffOp] = []
-        self.ork_job = OrkJob()
-        if ork_job:
-            self.update_from(ork_job)
-
-    def update_from(self, oj: OrkJob):
-        self.updated = get_now()
-        if oj.state:
-            self.state = State(oj.state)
-        self._diff = [DiffOp(*e) for e in list(diff(oj.to_dict(), self.ork_job.to_dict()))]
-        self.ork_job = copy.deepcopy(oj)
-
-    @property
-    def user(self) -> str:
-        return self.ork_job.created_by
-
-    @property
-    def created(self) -> Datetime:
-        return self.ork_job.created_on
-
-    @property
-    def id(self) -> str:
-        return self.ork_job.id
+        self.diff: List[DiffOp] = []
+        self.ork_job = None
+        self.update_from(ork_job)
 
     @classmethod
     def get_job_name(cls, index: int, name_prefix: str) -> str:
-        return f'{name_prefix}_{str(index)}'
+        return f'{name_prefix}-{str(index)}'
 
     @classmethod
     def from_spec(cls,
@@ -84,16 +65,33 @@ class Job:
         if index is None or not parent_id:
             raise Exception('OrkJob does not have valid index and agent id in it\'s environment.')
 
-        return cls(index, oj.created_by, parent_id, ork_job=oj)
+        return cls(index, parent_id, ork_job=oj)
 
-    def __repr__(self) -> str:
-        return f'<Job index={self.index}, created={self.created}, ' \
-            f'updated={self.updated}, state={self.state.value}, id={self.id}>'
+    @property
+    def user(self) -> str:
+        return self.ork_job.created_by
 
-    def __eq__(self, other_job):
-        if self.id and other_job.id:
-            return self.id == other_job.id
-        return self.index == other_job.index
+    @property
+    def id(self) -> str:
+        return self.ork_job.id
+
+    @property
+    def name(self) -> str:
+        return self.ork_job.name
+
+    def update_from(self, oj: OrkJob):
+        if oj.state:
+            self.state = State(oj.state)
+        if self.ork_job:
+            self.updated = get_now()
+            self.diff = [DiffOp(*e) for e in list(diff(oj.to_dict(), self.ork_job.to_dict()))]
+        self.ork_job = copy.deepcopy(oj)
+
+    def has_changed(self, prop: str) -> bool:
+        for d in self.diff:
+            if d.prop == prop:
+                return True
+        return False
 
     def to_spec(self):
         return self.ork_job.to_spec()
@@ -127,3 +125,16 @@ class Job:
 
     def is_interrupted(self) -> bool:
         return self.state == State.INTERRUPTED
+
+    def get_runs(self) -> List[OrkJobRuns]:
+        runs = self.ork_job.runs
+        return runs if runs is not None else []
+
+    def __repr__(self) -> str:
+        return f'<Job index={self.index}, created={self.created}, ' \
+            f'updated={self.updated}, state={self.state.value}, id={self.id}>'
+
+    def __eq__(self, other_job):
+        if self.id and other_job.id:
+            return self.id == other_job.id
+        return self.index == other_job.index
