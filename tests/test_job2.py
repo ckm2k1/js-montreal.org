@@ -1,12 +1,15 @@
 import uuid
 from unittest.mock import patch
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytest
 
 from borgy_process_agent.models import OrkJob, EnvList
 from borgy_process_agent.enums import State, Restart
 from borgy_process_agent.job2 import Job
+
+UTC = timezone.utc
+fixed_dt = datetime(2020, 1, 1, 12, 0, 0, tzinfo=UTC)
 
 
 def make_spec(**kwargs):
@@ -20,7 +23,7 @@ def make_spec(**kwargs):
 
 class TestJob2:
 
-    @patch('borgy_process_agent.job2.get_now', return_value=datetime(2020, 1, 1, 12, 0, 0))
+    @patch('borgy_process_agent.job2.get_now', return_value=fixed_dt)
     def test_init_from_new_spec(self, utcmock):
         job = Job.from_spec(1, 'user', 'parent', spec=make_spec())
 
@@ -31,7 +34,7 @@ class TestJob2:
         assert job.state == State.PENDING
         assert not job.has_changed('state')
         assert job.id is None
-        assert job.created == datetime(2020, 1, 1, 12, 0, 0)
+        assert job.created == datetime(2020, 1, 1, 12, 0, 0, tzinfo=UTC)
         assert job.ork_job.command == ['/bin/bash']
         assert job.ork_job.image == 'ubuntu:18.04'
         assert job.ork_job.restart == Restart.NO.value
@@ -52,7 +55,7 @@ class TestJob2:
             Job.from_spec(1, 'user', 'blah', make_spec(restart=Restart.ON_INTERRUPTION.value))
 
     @pytest.mark.parametrize('as_dict', [True, False])
-    @patch('borgy_process_agent.job2.get_now', return_value=datetime(2020, 1, 1, 12, 0, 0))
+    @patch('borgy_process_agent.job2.get_now', return_value=fixed_dt)
     def test_init_from_ork(self, utcmock, fixture_loader, as_dict):
         ojdict = fixture_loader('ork_job.json')
         if as_dict:
@@ -66,7 +69,7 @@ class TestJob2:
         assert job.state == State.RUNNING
         assert not job.has_changed('state')
         assert job.id == 'ddddffff-1234-1234-1234-cccdddeeefff'
-        assert job.created == datetime(2020, 1, 1, 12, 0, 0)
+        assert job.created == datetime(2020, 1, 1, 12, 0, 0, tzinfo=UTC)
         assert job.ork_job.command == ["/bin/bash"]
         assert job.ork_job.image == 'ubuntu:18.04'
         assert job.ork_job.restart == Restart.NO.value
@@ -97,7 +100,7 @@ class TestJob2:
             ojdict['environmentVars'] = env.to_list()
             Job.from_ork(ojdict)
 
-    @patch('borgy_process_agent.job2.get_now', return_value=datetime(2020, 1, 1, 12, 0, 0))
+    @patch('borgy_process_agent.job2.get_now', return_value=fixed_dt)
     def test_update_from(self, utcmock, fixture_loader):
         ojdict = fixture_loader('ork_job.json')
         spec = {
@@ -122,8 +125,8 @@ class TestJob2:
 
         job.update_from(OrkJob.from_dict(ojdict))
         assert job.id == 'ddddffff-1234-1234-1234-cccdddeeefff'
-        assert job.created == datetime(2020, 1, 1, 12, 0, 0)
-        assert job.updated == datetime(2020, 1, 1, 12, 0, 0)
+        assert job.created == datetime(2020, 1, 1, 12, 0, 0, tzinfo=UTC)
+        assert job.updated == datetime(2020, 1, 1, 12, 0, 0, tzinfo=UTC)
         assert job.ork_job.command == ["/bin/bash"]
         assert job.ork_job.image == 'ubuntu:18.04'
         assert job.name == 'child-job-0'
@@ -219,3 +222,19 @@ class TestJob2:
         assert exp.environment_vars
         # Makes sure we output OrkSpec and not OrkJob.
         assert not hasattr(exp, 'runs')
+
+    @patch('borgy_process_agent.job2.get_now', return_value=fixed_dt)
+    def test_to_dict(self, utcmock):
+        spec = make_spec()
+        job = Job.from_spec(1, 'user', 'blah', spec=spec)
+        jd = job.to_dict()
+
+        assert jd['id'] is None
+        assert jd['index'] == 1
+        assert jd['user'] == 'user'
+        assert jd['parent_id'] == 'blah'
+        assert jd['state'] == State.PENDING.value
+        assert jd['created'] == 1577880000
+        assert jd['updated'] is None
+        assert jd['ork_job'] == job.ork_job.to_json()
+        assert jd['ork_job']['createdBy'] == 'user'

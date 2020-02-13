@@ -1,5 +1,5 @@
 import copy
-from typing import List, Optional
+from typing import List, Optional, MutableMapping
 from collections import namedtuple
 
 from dictdiffer import diff  # type: ignore
@@ -10,6 +10,7 @@ from borgy_process_agent.enums import State, Restart
 from borgy_process_agent.models import OrkJob, OrkSpec, OrkJobRuns, EnvList, JOB_SPEC_DEFAULTS
 
 DiffOp = namedtuple('diffop', ('op', 'prop', 'values'))
+JobDict = MutableMapping
 
 
 class Job:
@@ -78,6 +79,18 @@ class Job:
     @property
     def name(self) -> str:
         return self.ork_job.name
+
+    def to_dict(self) -> JobDict:
+        return {
+            'id': self.id,
+            'index': self.index,
+            'user': self.user,
+            'state': self.state.value,
+            'parent_id': self.parent_id,
+            'created': int(self.created.timestamp()),
+            'updated': int(self.updated.timestamp()) if self.updated is not None else None,
+            'ork_job': self.ork_job.to_json()
+        }
 
     def update_from(self, oj: OrkJob):
         if oj.state:
