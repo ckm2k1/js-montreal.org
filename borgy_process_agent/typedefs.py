@@ -1,3 +1,8 @@
-import asyncio # pragma: no cover
+import asyncio
+from datetime import datetime
+from typing import MutableMapping, Mapping
 
-EventLoop = asyncio.AbstractEventLoop # pragma: no cover
+EventLoop = asyncio.AbstractEventLoop
+Datetime = datetime
+Dict = MutableMapping
+Map = Mapping
