@@ -39,8 +39,8 @@ class Job:
         base_spec.update(spec)
         oj = OrkJob.from_dict(base_spec)
 
-        if not oj.name:
-            oj.name = cls.get_job_name(index, name_prefix)
+        name_prefix = oj.name if oj.name else name_prefix
+        oj.name = cls.get_job_name(index, name_prefix)
 
         oj.created_by = user
 
@@ -63,7 +63,7 @@ class Job:
         index = env.get('EAI_PROCESS_AGENT_INDEX')
         parent_id = env.get('EAI_PROCESS_AGENT')
         if index is None or not parent_id:
-            raise Exception('OrkJob does not have valid index and agent id in it\'s environment.')
+            raise Exception('OrkJob does not have a valid index or agent id in it\'s environment.')
 
         return cls(index, parent_id, ork_job=oj)
 
@@ -93,10 +93,10 @@ class Job:
                 return True
         return False
 
-    def to_spec(self):
+    def to_spec(self) -> OrkSpec:
         return self.ork_job.to_spec()
 
-    def copy(self):
+    def copy(self) -> 'Job':
         return copy.deepcopy(self)
 
     def submit(self):
@@ -134,7 +134,7 @@ class Job:
         return f'<Job index={self.index}, created={self.created}, ' \
             f'updated={self.updated}, state={self.state.value}, id={self.id}>'
 
-    def __eq__(self, other_job):
+    def __eq__(self, other_job) -> bool:
         if self.id and other_job.id:
             return self.id == other_job.id
         return self.index == other_job.index

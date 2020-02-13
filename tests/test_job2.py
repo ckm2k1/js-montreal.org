@@ -1,11 +1,10 @@
 import uuid
 from unittest.mock import patch
-from typing import List
 from datetime import datetime
 
 import pytest
 
-from borgy_process_agent.models import OrkJob
+from borgy_process_agent.models import OrkJob, EnvList
 from borgy_process_agent.enums import State, Restart
 from borgy_process_agent.job2 import Job
 
@@ -19,17 +18,9 @@ def make_spec(**kwargs):
     return spec
 
 
-@patch('borgy_process_agent.job2.get_now', return_value=datetime(2020, 1, 1, 12, 0, 0))
 class TestJob2:
 
-    # def test_init_fail(self):
-    #     job = Job(1, 'parent')
-    #     assert job.updated is None
-    #     assert job.created is not None
-    #     assert job.user is None
-    #     assert job.parent_id == 'parent'
-    #     assert job.state == State.PENDING
-
+    @patch('borgy_process_agent.job2.get_now', return_value=datetime(2020, 1, 1, 12, 0, 0))
     def test_init_from_new_spec(self, utcmock):
         job = Job.from_spec(1, 'user', 'parent', spec=make_spec())
 
@@ -48,9 +39,23 @@ class TestJob2:
         assert utcmock.call_count == 1
         assert job.is_pending()
 
-    def test_init_from_ork_job(self, utcmock, fixture_loader):
+        # custom name
+        job = Job.from_spec(1, 'user', 'parent', spec=make_spec(name='customname'))
+        assert job.name == 'customname-1'
+
+        with pytest.raises(expected_exception=ValueError,
+                           match='Process agent jobs can\'t have automatic restart. '
+                           'The agent will handle restarts automatically.'):
+            Job.from_spec(1, 'user', 'blah', make_spec(restart=Restart.ON_INTERRUPTION.value))
+
+    @pytest.mark.parametrize('as_dict', [True, False])
+    @patch('borgy_process_agent.job2.get_now', return_value=datetime(2020, 1, 1, 12, 0, 0))
+    def test_init_from_ork(self, utcmock, fixture_loader, as_dict):
         ojdict = fixture_loader('ork_job.json')
-        job = Job.from_ork(ojdict)
+        if as_dict:
+            job = Job.from_ork(ojdict)
+        else:
+            job = Job.from_ork(OrkJob.from_dict(ojdict))
 
         assert isinstance(job.ork_job, OrkJob)
         assert job.user == 'user@elementai.com'
@@ -66,6 +71,30 @@ class TestJob2:
         assert utcmock.call_count == 1
         assert job.is_acked()
 
+        evars = EnvList(ojdict['environmentVars'])
+        with pytest.raises(
+                expected_exception=Exception,
+                match='OrkJob does not have a valid index or agent id in it\'s environment.'):
+            ojdict['environmentVars'] = []
+            Job.from_ork(ojdict)
+
+        with pytest.raises(
+                expected_exception=Exception,
+                match='OrkJob does not have a valid index or agent id in it\'s environment.'):
+            env = evars.copy()
+            env.pop('EAI_PROCESS_AGENT_INDEX')
+            ojdict['environmentVars'] = env.to_list()
+            Job.from_ork(ojdict)
+
+        with pytest.raises(
+                expected_exception=Exception,
+                match='OrkJob does not have a valid index or agent id in it\'s environment.'):
+            env = evars.copy()
+            env.pop('EAI_PROCESS_AGENT')
+            ojdict['environmentVars'] = env.to_list()
+            Job.from_ork(ojdict)
+
+    @patch('borgy_process_agent.job2.get_now', return_value=datetime(2020, 1, 1, 12, 0, 0))
     def test_update_from(self, utcmock, fixture_loader):
         ojdict = fixture_loader('ork_job.json')
         spec = {
@@ -102,7 +131,7 @@ class TestJob2:
         assert job.has_changed('id')
         assert not job.has_changed('createdBy')
 
-    def test_equality(self, utcmock):
+    def test_equality(self):
 
         # index based
         j1 = Job.from_spec(1, 'user', 'blah', spec=make_spec())
@@ -123,7 +152,7 @@ class TestJob2:
         j2 = Job.from_spec(1, 'user', 'blah', spec=make_spec(id=uuid.uuid4()))
         assert j1 != j2
 
-    def test_copy(self, utcmock):
+    def test_copy(self):
         j1 = Job.from_spec(1, 'user', 'blah', spec=make_spec())
         j2 = j1.copy()
 
@@ -137,7 +166,7 @@ class TestJob2:
         # mistakes.
         assert id(j1.ork_job) != id(j2.ork_job)
 
-    def test_methods(self, utcmock, fixture_loader):
+    def test_methods(self, fixture_loader):
 
         job = Job.from_spec(1, 'user', 'pa_id', spec=make_spec())
         assert job.is_pending() is True
@@ -170,3 +199,14 @@ class TestJob2:
         assert len(runs) == 1
         assert runs[0].job_id is not None and runs[0].job_id == job.id
         assert job.has_changed('state')
+
+    def test_to_spec(self):
+        spec = make_spec(preemptable=True, req_cores=1)
+        job = Job.from_spec(1, 'user', uuid.uuid4(), spec=spec)
+        exp = job.to_spec()
+
+        assert exp.command == ['/bin/bash']
+        assert exp.image == 'ubuntu:18.04'
+        assert exp.environment_vars
+        # Makes sure we output OrkSpec and not OrkJob.
+        assert not hasattr(exp, 'runs')

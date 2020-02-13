@@ -23,8 +23,9 @@ class JsonSerializable:
     # the JSON version of the model. The get the same
     # result as implied by the from_dict() name, we
     # can use Model(**mdata).
-    def from_json(self, data):
-        return self.from_dict(data)
+    @classmethod
+    def from_json(cls, data): # pragma: no cover
+        return cls.from_dict(data)
 
 
 class OrkSpec(JobSpec, JsonSerializable):
@@ -37,15 +38,11 @@ class OrkJobRuns(JobRuns, JsonSerializable):
 
 class OrkJob(Job, JsonSerializable):
 
-    def to_spec(self):
+    def to_spec(self) -> OrkSpec:
         spec = {}
-        for k in spec.attribute_map:
+        for k in OrkSpec().attribute_map:
             spec[k] = getattr(self, k)
         return OrkSpec(**spec)
-
-
-class EnvVarNotFound(Exception):
-    pass
 
 
 class EnvList(UserDict):
@@ -65,17 +62,14 @@ class EnvList(UserDict):
         return res
 
     def to_list(self):
-        return [f'{k}={v}' for k, v in self.items()]
+        return [f'{k}={v if v else ""}' for k, v in self.items()]
 
 
-# raise EnvVarNotFound(f'{name} was not found.')
-
-
-def ork_to_spec(oj: OrkJob) -> OrkSpec:
-    spec = {}
-    for k in spec.attribute_map:
-        spec[k] = getattr(oj, k)
-    return OrkSpec(**spec)
+# def ork_to_spec(oj: OrkJob) -> OrkSpec:
+#     spec = {}
+#     for k in spec.attribute_map:
+#         spec[k] = getattr(oj, k)
+#     return OrkSpec(**spec)
 
 
 JOB_SPEC_DEFAULTS = {
