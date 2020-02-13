@@ -38,6 +38,9 @@ class TestJob2:
         assert job.name == 'child-job-1'
         assert utcmock.call_count == 1
         assert job.is_pending()
+        env = EnvList(job.ork_job.environment_vars)
+        assert env['EAI_PROCESS_AGENT_INDEX'] == '1'
+        assert env['EAI_PROCESS_AGENT'] == 'parent'
 
         # custom name
         job = Job.from_spec(1, 'user', 'parent', spec=make_spec(name='customname'))
@@ -118,7 +121,6 @@ class TestJob2:
         assert job.is_pending()
 
         job.update_from(OrkJob.from_dict(ojdict))
-
         assert job.id == 'ddddffff-1234-1234-1234-cccdddeeefff'
         assert job.created == datetime(2020, 1, 1, 12, 0, 0)
         assert job.updated == datetime(2020, 1, 1, 12, 0, 0)
@@ -130,6 +132,10 @@ class TestJob2:
         assert job.has_changed('state')
         assert job.has_changed('id')
         assert not job.has_changed('createdBy')
+
+        # No change
+        job.update_from(OrkJob.from_dict(ojdict))
+        assert not job.has_changed('state')
 
     def test_equality(self):
 
@@ -199,6 +205,9 @@ class TestJob2:
         assert len(runs) == 1
         assert runs[0].job_id is not None and runs[0].job_id == job.id
         assert job.has_changed('state')
+
+        job.kill()
+        assert job.state == State.KILLED
 
     def test_to_spec(self):
         spec = make_spec(preemptable=True, req_cores=1)

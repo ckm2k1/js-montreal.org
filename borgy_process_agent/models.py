@@ -1,5 +1,3 @@
-import copy
-from typing import List, Any
 from collections import UserDict
 
 from borgy_process_agent_api_server.models import Job, JobSpec, JobRuns
@@ -24,7 +22,7 @@ class JsonSerializable:
     # result as implied by the from_dict() name, we
     # can use Model(**mdata).
     @classmethod
-    def from_json(cls, data): # pragma: no cover
+    def from_json(cls, data):  # pragma: no cover
         return cls.from_dict(data)
 
 
@@ -70,7 +68,6 @@ class EnvList(UserDict):
 #     for k in spec.attribute_map:
 #         spec[k] = getattr(oj, k)
 #     return OrkSpec(**spec)
-
 
 JOB_SPEC_DEFAULTS = {
     'command': [],
